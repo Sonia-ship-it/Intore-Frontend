@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type MouseEvent as ReactMouseEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
 import {
   Diamond, Menu, Sparkles, FileText, ShieldCheck,
@@ -9,18 +9,10 @@ import { Footer } from '@/components/layout/Footer';
 import { cn } from '@/lib/utils';
 
 export default function LandingPage() {
-  const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [featuresVisible, setFeaturesVisible] = useState(false);
   const [cursor, setCursor] = useState({ x: 0, y: 0 });
   const featuresRef = useRef<HTMLElement | null>(null);
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -43,11 +35,32 @@ export default function LandingPage() {
     return () => observer.disconnect();
   }, []);
 
-  const scrollToSection = (e: React.MouseEvent, id: string) => {
+  const smoothScrollTo = (targetY: number, duration = 1850) => {
+    const startY = window.scrollY;
+    const deltaY = targetY - startY;
+    const startTime = performance.now();
+
+    const easeInOutQuint = (t: number) =>
+      t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2;
+
+    const step = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = easeInOutQuint(progress);
+      window.scrollTo(0, startY + deltaY * eased);
+      if (progress < 1) requestAnimationFrame(step);
+    };
+
+    requestAnimationFrame(step);
+  };
+
+  const scrollToSection = (e: ReactMouseEvent, id: string) => {
     e.preventDefault();
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      const navOffset = 88;
+      const targetY = el.getBoundingClientRect().top + window.scrollY - navOffset;
+      smoothScrollTo(targetY);
       setMobileMenuOpen(false);
     }
   };
@@ -267,7 +280,7 @@ export default function LandingPage() {
           
           {/* LEFT CARD */}
           <div className="hidden md:block absolute left-0 top-[40px] w-[220px] h-[240px] rounded-[16px] p-4 text-white z-[15]" 
-               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5s ease-in-out infinite', ...({ '--card-rot': '-2deg' } as React.CSSProperties) }}>
+               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5s ease-in-out infinite', ...({ '--card-rot': '-2deg' } as CSSProperties) }}>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse"></div>
               <span className="text-[11px] font-medium text-white/80">Live Screening</span>
@@ -406,7 +419,7 @@ export default function LandingPage() {
 
           {/* RIGHT CARD */}
           <div className="hidden md:block absolute right-0 top-[60px] w-[200px] h-[200px] rounded-[16px] p-4 text-white z-[15]"
-               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 4.5s ease-in-out infinite 0.5s', ...({ '--card-rot': '2deg' } as React.CSSProperties) }}>
+               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 4.5s ease-in-out infinite 0.5s', ...({ '--card-rot': '2deg' } as CSSProperties) }}>
             <div className="text-[32px] font-bold text-white leading-none">2.4×</div>
             <div className="text-[12px] text-white/60 mt-1">Faster hiring</div>
             <div className="text-[11px] text-white/40 mt-0.5">vs. manual screening</div>
@@ -419,7 +432,7 @@ export default function LandingPage() {
 
           {/* SMALL FLOATING BADGES */}
           <div className="hidden lg:flex absolute left-[40px] top-[180px] w-[160px] rounded-[16px] p-[14px] text-white items-center gap-2 z-[15]"
-               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5.5s ease-in-out infinite 1s', ...({ '--card-rot': '-3deg' } as React.CSSProperties) }}>
+               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5.5s ease-in-out infinite 1s', ...({ '--card-rot': '-3deg' } as CSSProperties) }}>
             <ShieldCheck className="w-4 h-4 text-amber-500" />
             <div>
               <span className="block text-[11px] font-medium leading-tight">Bias Check Passed</span>
@@ -427,7 +440,7 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex lg:hidden xl:flex absolute left-[80px] bottom-[20px] lg:bottom-[40px] w-[140px] items-center gap-2 bg-white border border-[#E2E8F0] shadow-md rounded-xl p-2 z-[15]"
-               style={{ animation: 'gentleFloat 5s ease-in-out infinite 0.8s', ...({ '--card-rot': '0deg' } as React.CSSProperties) }}>
+               style={{ animation: 'gentleFloat 5s ease-in-out infinite 0.8s', ...({ '--card-rot': '0deg' } as CSSProperties) }}>
             <div className="text-amber-500">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
             </div>
@@ -437,7 +450,7 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex lg:hidden xl:flex absolute right-[60px] lg:right-[80px] bottom-[10px] lg:bottom-[30px] w-[140px] items-center gap-2 bg-white border border-[#E2E8F0] shadow-md rounded-xl p-2 z-[15]"
-               style={{ animation: 'gentleFloat 4s ease-in-out infinite 1.2s', ...({ '--card-rot': '0deg' } as React.CSSProperties) }}>
+               style={{ animation: 'gentleFloat 4s ease-in-out infinite 1.2s', ...({ '--card-rot': '0deg' } as CSSProperties) }}>
             <CheckCircle className="w-4 h-4 text-[#22C55E]" />
             <div>
               <span className="block text-[10px] text-slate-800 font-semibold leading-tight">Ready to Int</span>
@@ -445,7 +458,7 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden lg:flex absolute right-[80px] top-[-30px] h-[80px] w-[160px] rounded-[16px] p-[12px] items-center gap-3 text-white z-[15]"
-               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 6s ease-in-out infinite 0.3s', ...({ '--card-rot': '0deg' } as React.CSSProperties) }}>
+               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 6s ease-in-out infinite 0.3s', ...({ '--card-rot': '0deg' } as CSSProperties) }}>
             <img src="https://images.unsplash.com/photo-1573497019236-17f8177b81e8?w=80&h=80&fit=crop&crop=face" className="w-[28px] h-[28px] rounded-full object-cover" />
             <div>
               <div className="text-[10px] font-medium leading-tight">Amara J.</div>
