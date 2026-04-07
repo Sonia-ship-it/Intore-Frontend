@@ -53,16 +53,28 @@ export function AppHeader({ title }: { title: string }) {
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-card rounded-xl shadow-md border py-1 animate-fade-in">
-              <button onClick={() => { setDropdownOpen(false); router.push('/recruiter/settings'); }} className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-muted transition-colors">
-                <User className="h-4 w-4" /> Profile
+            <div className="absolute right-0 mt-2 w-52 rounded-xl shadow-lg border py-1.5 animate-fade-in bg-white/95 backdrop-blur-md">
+              <button
+                onClick={() => { setDropdownOpen(false); router.push('/recruiter/settings'); }}
+                className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors rounded-md hover:bg-slate-100"
+                style={{ color: '#0f172a' }}
+              >
+                <User className="h-4 w-4" style={{ color: '#334155' }} /> Profile
               </button>
-              <button onClick={() => { setDropdownOpen(false); router.push('/recruiter/settings'); }} className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-muted transition-colors">
-                <Settings className="h-4 w-4" /> Settings
+              <button
+                onClick={() => { setDropdownOpen(false); router.push('/recruiter/settings'); }}
+                className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors rounded-md hover:bg-slate-100"
+                style={{ color: '#0f172a' }}
+              >
+                <Settings className="h-4 w-4" style={{ color: '#334155' }} /> Settings
               </button>
-              <hr className="my-1 border-border" />
-              <button onClick={() => { logout(); router.push('/login'); }} className="flex items-center gap-2 w-full px-4 py-2 text-sm text-destructive hover:bg-muted transition-colors">
-                <LogOut className="h-4 w-4" /> Logout
+              <hr className="my-1 border-slate-200" />
+              <button
+                onClick={() => { logout(); router.push('/login'); }}
+                className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors rounded-md hover:bg-rose-50"
+                style={{ color: '#dc2626' }}
+              >
+                <LogOut className="h-4 w-4" style={{ color: '#dc2626' }} /> Logout
               </button>
             </div>
           )}
