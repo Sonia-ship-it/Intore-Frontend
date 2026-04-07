@@ -12,7 +12,7 @@ export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [featuresVisible, setFeaturesVisible] = useState(false);
-  const [cursor, setCursor] = useState({ x: 50, y: 35 });
+  const [cursor, setCursor] = useState({ x: 0, y: 0 });
   const featuresRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
     const handleScroll = () => {
@@ -23,11 +23,11 @@ export default function LandingPage() {
   }, []);
 
   useEffect(() => {
-    const previous = document.documentElement.style.scrollBehavior;
-    document.documentElement.style.scrollBehavior = 'smooth';
-    return () => {
-      document.documentElement.style.scrollBehavior = previous;
+    const handleMouseMove = (event: MouseEvent) => {
+      setCursor({ x: event.clientX, y: event.clientY });
     };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   useEffect(() => {
@@ -54,6 +54,17 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
+      <div
+        className="pointer-events-none fixed hidden md:block z-[6] w-[520px] h-[520px] rounded-full"
+        style={{
+          left: cursor.x,
+          top: cursor.y,
+          transform: 'translate(-50%, -50%)',
+          background: 'radial-gradient(circle, rgba(75,123,255,0.24) 0%, rgba(75,123,255,0.12) 30%, rgba(75,123,255,0.04) 52%, transparent 72%)',
+          filter: 'blur(26px)',
+          transition: 'left 120ms ease-out, top 120ms ease-out',
+        }}
+      />
       {/* GLOBAL LANDING STYLES */}
       <style dangerouslySetInnerHTML={{__html: `
         :root {
@@ -171,13 +182,6 @@ export default function LandingPage() {
         id="hero"
         className="relative w-full h-auto overflow-visible flex flex-col items-center pt-[100px] pb-24 md:pb-32 lg:pb-40"
         style={{ background: '#05071A' }}
-        onMouseMove={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          setCursor({
-            x: ((e.clientX - rect.left) / rect.width) * 100,
-            y: ((e.clientY - rect.top) / rect.height) * 100,
-          });
-        }}
       >
         
         {/* BACKGROUND LAYERS */}
@@ -208,18 +212,6 @@ export default function LandingPage() {
         {/* Layer 3: Glow Orbs */}
         <div className="absolute top-[-100px] left-[-100px] w-[500px] h-[500px] rounded-full pointer-events-none z-[3]" style={{ background: 'radial-gradient(circle, rgba(45,61,181,0.5) 0%, transparent 70%)', filter: 'blur(80px)' }} />
         <div className="absolute bottom-[-50px] right-[-50px] w-[300px] h-[300px] rounded-full pointer-events-none z-[3]" style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%)', filter: 'blur(60px)' }} />
-        <div
-          className="hidden md:block absolute pointer-events-none z-[4] w-[360px] h-[360px] rounded-full"
-          style={{
-            left: `${cursor.x}%`,
-            top: `${cursor.y}%`,
-            transform: 'translate(-50%, -50%)',
-            background: 'radial-gradient(circle, rgba(75,123,255,0.22) 0%, rgba(75,123,255,0.08) 35%, transparent 70%)',
-            filter: 'blur(22px)',
-            transition: 'left 160ms ease-out, top 160ms ease-out',
-          }}
-        />
-
         {/* Layer 4: Star Field */}
         <div className="absolute inset-0 z-[4] pointer-events-none opacity-[0.12]" style={{ backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
 
