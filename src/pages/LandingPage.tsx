@@ -245,7 +245,7 @@ export default function LandingPage() {
 
             {/* Subheading */}
             <p className="mt-4 text-[15px] md:text-[18px] text-white/60 leading-[1.7] max-w-xl mx-auto">
-              Intore helps Rwandan companies screen, rank, and shortlist top candidates — so your team spends time on people, not paperwork.
+              Intore helps Rwandan companies screen, rank, and shortlist top candidates so your team spends time on people, not paperwork.
             </p>
           </div>
 
@@ -387,7 +387,7 @@ export default function LandingPage() {
                 <span className="text-[10px] text-white/80 font-medium">Best Match Found</span>
               </div>
               <div className="mt-2 text-[8px] text-white/40 uppercase tracking-wide">Last Update</div>
-              <div className="mt-1 text-[16px] font-bold text-white leading-tight">Amara Uwimana</div>
+              <div className="mt-1 text-[16px] font-bold text-white leading-tight">Belyse Bugingo</div>
               <div className="mt-0.5 text-[10px] text-white/55">Senior Software Engineer</div>
               <div className="mt-2 flex items-baseline">
                 <span className="text-[28px] font-bold text-white">94%</span>
