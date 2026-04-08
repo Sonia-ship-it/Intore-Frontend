@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import { apiUpload } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 import {
   candidatesFromRows,
   parseCsvFile,
@@ -192,7 +193,7 @@ export default function BulkUpload() {
     return res.ok;
   };
 
-  const confirmUmurava = () => {
+  const confirmUmurava = async () => {
     if (!ensureJob()) return;
     if (!umuravaSchema || !umuravaProfiles) {
       toast({ title: 'Missing files', description: 'Upload both schema.json and profiles.json', variant: 'destructive' });
@@ -203,8 +204,25 @@ export default function BulkUpload() {
       toast({ title: 'Schema validation failed', description: 'Profiles do not match the Umurava schema.', variant: 'destructive' });
       return;
     }
-    setUmuravaPayload(jobId!, umuravaSchema, umuravaProfiles);
-    toast({ title: 'Umurava data saved', description: 'Schema + profiles stored for this job.' });
+    try {
+      const payloadProfiles = Array.isArray(umuravaProfiles) ? umuravaProfiles : [];
+      const resp = await apiFetch<{ acceptedRows?: number; rejectedRows?: number }>('/ingestion/umurava', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId, profiles: payloadProfiles }),
+      });
+      setUmuravaPayload(jobId!, umuravaSchema, umuravaProfiles);
+      toast({
+        title: 'Umurava data ingested',
+        description: `Accepted ${resp.acceptedRows ?? 0}, rejected ${resp.rejectedRows ?? 0}.`,
+      });
+    } catch (err) {
+      toast({
+        title: 'Umurava ingestion failed',
+        description: err instanceof Error ? err.message : 'Unable to ingest Umurava profiles',
+        variant: 'destructive',
+      });
+    }
   };
 
   const readJsonFile = async (file: File): Promise<unknown> => {
@@ -232,9 +250,10 @@ export default function BulkUpload() {
               accept=".csv,.xlsx,.xls"
               className="hidden"
               onChange={async (e) => {
-                const f = e.target.files?.[0];
+                const input = e.currentTarget;
+                const f = input.files?.[0];
                 if (f) await handleSheetFile(f);
-                e.currentTarget.value = '';
+                input.value = '';
               }}
             />
 
@@ -413,6 +432,7 @@ export default function BulkUpload() {
               accept="application/json,.json"
               className="hidden"
               onChange={async (e) => {
+                const input = e.currentTarget;
                 const f = e.target.files?.[0];
                 if (!f) return;
                 try {
@@ -423,7 +443,7 @@ export default function BulkUpload() {
                 } catch (err) {
                   toast({ title: 'Invalid JSON', description: 'Schema file is not valid JSON.', variant: 'destructive' });
                 } finally {
-                  e.currentTarget.value = '';
+                  input.value = '';
                 }
               }}
             />
@@ -433,6 +453,7 @@ export default function BulkUpload() {
               accept="application/json,.json"
               className="hidden"
               onChange={async (e) => {
+                const input = e.currentTarget;
                 const f = e.target.files?.[0];
                 if (!f) return;
                 try {
@@ -443,7 +464,7 @@ export default function BulkUpload() {
                 } catch (err) {
                   toast({ title: 'Invalid JSON', description: 'Profiles file is not valid JSON.', variant: 'destructive' });
                 } finally {
-                  e.currentTarget.value = '';
+                  input.value = '';
                 }
               }}
             />

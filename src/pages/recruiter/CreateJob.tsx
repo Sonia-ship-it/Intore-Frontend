@@ -4,14 +4,18 @@ import { AppHeader } from '@/components/layout/AppHeader';
 import { TagInput } from '@/components/intore/TagInput';
 import { StatusBadge, TypeBadge } from '@/components/intore/Badges';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+import { apiFetch } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 const jobTypes = ['Remote', 'Hybrid', 'Onsite'] as const;
 const employmentTypes = ['Full-time', 'Part-time', 'Contract'] as const;
 const educationLevels = ['Any', 'High School', "Bachelor's", "Master's", 'PhD'];
+type CreatedJobResponse = { id?: string; _id?: string };
 
 export default function CreateJob() {
   const router = useRouter();
+  const { toast } = useToast();
   const [form, setForm] = useState({
     title: '', department: '', location: '', type: 'Remote' as string,
     employmentType: 'Full-time' as string, description: '',
@@ -20,10 +24,74 @@ export default function CreateJob() {
     weights: { skills: 40, experience: 30, education: 15, portfolio: 15 },
   });
   const [showWeights, setShowWeights] = useState(false);
+  const [saving, setSaving] = useState<'draft' | 'publish' | null>(null);
 
   const weightTotal = Object.values(form.weights).reduce((a, b) => a + b, 0);
   const update = (key: string, value: string | number | string[]) => setForm((f) => ({ ...f, [key]: value }));
   const updateWeight = (key: string, value: number) => setForm((f) => ({ ...f, weights: { ...f.weights, [key]: value } }));
+
+  const submitJob = async (mode: 'draft' | 'publish') => {
+    if (!form.title.trim() || !form.description.trim()) {
+      toast({
+        title: 'Missing required fields',
+        description: 'Please provide at least a job title and description.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setSaving(mode);
+    try {
+      const created = await apiFetch<CreatedJobResponse>('/jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: form.title.trim(),
+          description: form.description.trim(),
+          requiredSkills: form.requiredSkills,
+          niceToHaveSkills: form.niceToHaveSkills,
+          minYearsExperience: form.minExperience > 0 ? form.minExperience : undefined,
+          requiresDegree: form.educationLevel !== 'Any',
+          degreeDetails: form.educationLevel !== 'Any' ? form.educationLevel : undefined,
+          location: form.location || undefined,
+          isRemote: form.type === 'Remote',
+          employmentType: form.employmentType,
+          requirements: [form.department, ...form.requiredSkills].filter(Boolean).join(', ') || undefined,
+          screeningBatchSize: 20,
+          aiAssisted: true,
+          status: 'draft',
+        }),
+      });
+
+      const jobId = created?.id || created?._id;
+      if (mode === 'publish' && jobId) {
+        try {
+          await apiFetch(`/jobs/${jobId}/activate`, { method: 'POST' });
+        } catch {
+          // Keep created draft if activate fails, but inform user.
+          toast({
+            title: 'Job saved as draft',
+            description: 'Publishing failed, but your draft was created successfully.',
+          });
+          router.push('/recruiter/jobs');
+          return;
+        }
+      }
+
+      toast({
+        title: mode === 'publish' ? 'Job posted' : 'Draft saved',
+        description: mode === 'publish' ? 'Your job is now active.' : 'Your job draft has been saved.',
+      });
+      router.push('/recruiter/jobs');
+    } catch (err) {
+      toast({
+        title: 'Could not create job',
+        description: err instanceof Error ? err.message : 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSaving(null);
+    }
+  };
 
   return (
     <>
@@ -139,8 +207,12 @@ export default function CreateJob() {
               {form.educationLevel !== 'Any' && <p className="text-sm text-muted-foreground">{form.educationLevel} required</p>}
 
               <div className="flex gap-3 pt-4 border-t">
-                <Button variant="outline" className="flex-1" onClick={() => router.push('/recruiter/jobs')}>Save as Draft</Button>
-                <Button className="flex-1" onClick={() => router.push('/recruiter/jobs')}>Post Job</Button>
+                <Button variant="outline" className="flex-1" onClick={() => submitJob('draft')} disabled={saving !== null}>
+                  {saving === 'draft' ? 'Saving...' : 'Save as Draft'}
+                </Button>
+                <Button className="flex-1" onClick={() => submitJob('publish')} disabled={saving !== null}>
+                  {saving === 'publish' ? 'Posting...' : 'Post Job'}
+                </Button>
               </div>
             </div>
           </div>

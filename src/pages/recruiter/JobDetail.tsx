@@ -18,6 +18,8 @@ import { useScreeningStore } from '@/stores/screeningStore';
 import { useIngestionStore } from '@/stores/ingestionStore';
 import { runScreeningAndWait, type ApiScreeningResult } from '@/lib/screeningApi';
 import { cn } from '@/lib/utils';
+import { apiFetch } from '@/lib/api';
+type JobDto = { id?: string; _id?: string; title?: string; department?: string; employmentType?: string; location?: string; publishedAt?: string };
 
 const suggestions = ['Compare top 3', 'Show biggest gaps', 'Who almost qualified?', 'Summarize shortlist'];
 
@@ -26,14 +28,14 @@ export default function JobDetail() {
   const { toast } = useToast();
   const id = typeof router.query.id === 'string' ? router.query.id : undefined;
   const ingestion = useIngestionStore((s) => (id ? s.byJobId[id] : undefined));
-  const job = {
+  const [job, setJob] = useState({
     id: id || 'unknown',
     title: 'Job',
     department: 'Department',
     location: 'Location',
     postedDate: '—',
     applicantCount: ingestion?.candidates?.length || 0,
-  };
+  });
   type UiResult = ScreeningResult & { _raw?: ApiScreeningResult };
   const [results, setResults] = useState<UiResult[]>([]);
   const [shortlistSize, setShortlistSize] = useState<10 | 20>(10);
@@ -44,9 +46,29 @@ export default function JobDetail() {
 
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { resetScreening(); }, [id, resetScreening]);
+  useEffect(() => {
+    const loadJob = async () => {
+      if (!id) return;
+      try {
+        const j = await apiFetch<JobDto>(`/jobs/${id}`);
+        setJob({
+          id: j.id || j._id || id,
+          title: j.title || 'Job',
+          department: j.department || j.employmentType || 'Department',
+          location: j.location || 'Location',
+          postedDate: j.publishedAt ? new Date(j.publishedAt).toLocaleDateString() : '—',
+          applicantCount: ingestion?.candidates?.length || 0,
+        });
+      } catch {
+        setJob((prev) => ({ ...prev, id }));
+      }
+    };
+    loadJob();
+  }, [id, ingestion?.candidates?.length]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -55,19 +77,18 @@ export default function JobDetail() {
   const toUiResults = (apiResults: ApiScreeningResult[]): UiResult[] => {
     return apiResults
       .slice(0, shortlistSize)
-      .map((r, idx) => ({
-        // Use application id as the stable row key for now (backend does not populate applicant/user details yet).
-        candidateId: r.application,
+      .map((r) => ({
+        candidateId: r.applicationId || `candidate_${r.rank}`,
         jobId: job.id,
-        rank: r.rankPosition ?? idx + 1,
-        matchScore: Math.round(r.fitScore),
-        confidence: (r.confidenceLevel === 'high' ? 'High' : r.confidenceLevel === 'low' ? 'Low' : 'Medium') as UiResult['confidence'],
+        rank: r.rank,
+        matchScore: Math.round(r.score),
+        confidence: (r.score >= 75 ? 'High' : r.score >= 50 ? 'Medium' : 'Low') as UiResult['confidence'],
         topStrength: r.strengths?.[0] || '—',
         keyGap: r.gaps?.[0] || '—',
         strengths: r.strengths || [],
         gaps: r.gaps || [],
-        reasoning: r.aiReasoning || '',
-        recommendation: (r.fitScore ?? 0) >= 70 ? 'Strongly recommended for interview' : (r.fitScore ?? 0) >= 50 ? 'Consider for interview with reservations' : 'Does not meet minimum requirements',
+        reasoning: r.reason || '',
+        recommendation: r.recommendation || 'No recommendation',
         _raw: r,
       }));
   };
@@ -115,18 +136,33 @@ export default function JobDetail() {
     }
   };
 
-  const sendMessage = (text: string) => {
+  const sendMessage = async (text: string) => {
     if (!text.trim()) return;
     addChatMessage({ id: `u${Date.now()}`, role: 'user', content: text, timestamp: new Date().toISOString() });
     setChatInput('');
-    setTimeout(() => {
+    setChatLoading(true);
+    try {
+      const resp = await apiFetch<{ answer: string }>('/screening/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId: job.id, question: text }),
+      });
       addChatMessage({
         id: `a${Date.now()}`,
         role: 'ai',
-        content: "Based on my analysis, I'd recommend focusing on candidates who demonstrate strong practical experience. The top performers share a common trait: consistent contributions to real-world projects alongside their technical skills.",
+        content: resp.answer || 'I could not find enough context to answer that. Try rephrasing your question.',
         timestamp: new Date().toISOString(),
       });
-    }, 1000);
+    } catch (err) {
+      addChatMessage({
+        id: `a${Date.now()}`,
+        role: 'ai',
+        content: err instanceof Error ? err.message : 'Unable to answer right now.',
+        timestamp: new Date().toISOString(),
+      });
+    } finally {
+      setChatLoading(false);
+    }
   };
 
   const completedCount = Math.round((progress / 100) * job.applicantCount);
@@ -229,7 +265,7 @@ export default function JobDetail() {
                     </thead>
                     <tbody>
                       {results.map((r, i) => {
-                        const displayName = `Application ${String(r.candidateId).slice(-6)}`;
+                        const displayName = r._raw?.name || `Application ${String(r.candidateId).slice(-6)}`;
                         const displayRole = 'Applicant';
                         const isExpanded = expandedRow === r.candidateId;
                         return (
@@ -322,10 +358,11 @@ export default function JobDetail() {
                         rows={1}
                         className="flex-1 rounded-lg border bg-background px-3 py-2 text-sm outline-none resize-none focus:ring-2 focus:ring-ring"
                       />
-                      <Button size="icon" onClick={() => sendMessage(chatInput)} disabled={!chatInput.trim()}>
+                      <Button size="icon" onClick={() => sendMessage(chatInput)} disabled={!chatInput.trim() || chatLoading}>
                         <Send className="h-4 w-4" />
                       </Button>
                     </div>
+                    {chatLoading && <p className="text-xs text-muted-foreground text-center">AI is thinking...</p>}
                     <p className="text-xs text-muted-foreground text-center">Powered by Gemini</p>
                   </div>
                 </div>

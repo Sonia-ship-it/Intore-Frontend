@@ -104,6 +104,11 @@ export type UmuravaValidationResult =
 
 export function validateAgainstJsonSchema(schema: unknown, data: unknown): UmuravaValidationResult {
   const ajv = new Ajv({ allErrors: true });
+  // Some partner schemas include custom annotation keywords such as `role`.
+  // Register them as no-op keywords so strict schema compilation does not fail.
+  if (!ajv.getKeyword('role')) {
+    ajv.addKeyword('role');
+  }
   const validate = ajv.compile(schema as object);
   const ok = validate(data);
   if (ok) return { ok: true };
