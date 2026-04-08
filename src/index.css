@@ -144,28 +144,16 @@
   background-color: #0A0E2E;
 }
 
-/* Cards in dark mode */
-.dark .bg-white,
+/* Cards in dark mode
+   NOTE: keep this narrow — do NOT force all text to white (it breaks forms + UI). */
+.dark .bg-white {
+  background-color: hsl(var(--card)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
 .dark [class*="bg-card"] {
-  background-color: rgba(255,255,255,0.05) !important;
-  border-color: rgba(255,255,255,0.08) !important;
-}
-
-/* All text inside dark cards */
-.dark .bg-white p,
-.dark .bg-white span,
-.dark [class*="bg-card"] p,
-.dark [class*="bg-card"] span {
-  color: rgba(255,255,255,0.92);
-}
-
-.dark .bg-white .text-slate-500,
-.dark .bg-white .text-slate-400,
-.dark .bg-white .text-muted-foreground,
-.dark [class*="bg-card"] .text-slate-500,
-.dark [class*="bg-card"] .text-slate-400,
-.dark [class*="bg-card"] .text-muted-foreground {
-  color: rgba(255,255,255,0.55) !important;
+  background-color: hsl(var(--card)) !important;
+  border-color: hsl(var(--border)) !important;
 }
 
 /* Table rows */
@@ -206,8 +194,17 @@
 .dark input:focus,
 .dark select:focus,
 .dark textarea:focus {
-  border-color: rgba(75,123,255,0.6);
+  border-color: rgba(75,123,255,0.65);
+  box-shadow: 0 0 0 3px rgba(75,123,255,0.18);
 }
+
+/* Common light utility backgrounds in dark mode */
+.dark .bg-slate-50 { background-color: rgba(255,255,255,0.04) !important; }
+.dark .bg-slate-100 { background-color: rgba(255,255,255,0.06) !important; }
+.dark .border-slate-100 { border-color: rgba(255,255,255,0.08) !important; }
+.dark .border-slate-200 { border-color: rgba(255,255,255,0.10) !important; }
+.dark .text-slate-600 { color: rgba(255,255,255,0.70) !important; }
+.dark .text-slate-700 { color: rgba(255,255,255,0.82) !important; }
 
 /* Headings */
 .dark h1, .dark h2, .dark h3, .dark h4 {
@@ -228,13 +225,10 @@
 .dark .text-teal-600 { color: #4ADE80; }
 .dark .text-red-500 { color: #F87171; }
 
-/* Status badges in dark mode */
-.dark .bg-slate-100 {
-  background-color: rgba(34,197,94,0.15) !important;
-}
+/* Status-ish pills: keep them neutral/brand (avoid random green in dark mode) */
 .dark .bg-slate-100.text-slate-900 {
-  color: rgba(74,222,128,1) !important;
-  border-color: rgba(34,197,94,0.3) !important;
+  color: rgba(255,255,255,0.88) !important;
+  border-color: rgba(255,255,255,0.14) !important;
 }
 
 /* "View all →" and action links */

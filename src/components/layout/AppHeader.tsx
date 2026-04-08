@@ -53,28 +53,25 @@ export function AppHeader({ title }: { title: string }) {
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-52 rounded-xl shadow-lg border py-1.5 animate-fade-in bg-white/95 backdrop-blur-md">
+            <div className="absolute right-0 mt-2 w-52 rounded-xl shadow-lg border py-1.5 animate-fade-in bg-white/95 backdrop-blur-md dark:bg-[#0A0E2E]/95 dark:border-white/10">
               <button
                 onClick={() => { setDropdownOpen(false); router.push('/recruiter/settings'); }}
-                className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors rounded-md hover:bg-slate-100"
-                style={{ color: '#0f172a' }}
+                className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors rounded-md hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-white"
               >
-                <User className="h-4 w-4" style={{ color: '#334155' }} /> Profile
+                <User className="h-4 w-4 text-slate-600 dark:text-white/70" /> Profile
               </button>
               <button
                 onClick={() => { setDropdownOpen(false); router.push('/recruiter/settings'); }}
-                className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors rounded-md hover:bg-slate-100"
-                style={{ color: '#0f172a' }}
+                className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors rounded-md hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-white"
               >
-                <Settings className="h-4 w-4" style={{ color: '#334155' }} /> Settings
+                <Settings className="h-4 w-4 text-slate-600 dark:text-white/70" /> Settings
               </button>
-              <hr className="my-1 border-slate-200" />
+              <hr className="my-1 border-slate-200 dark:border-white/10" />
               <button
                 onClick={() => { logout(); router.push('/login'); }}
-                className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors rounded-md hover:bg-rose-50"
-                style={{ color: '#dc2626' }}
+                className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors rounded-md hover:bg-rose-50 dark:hover:bg-rose-500/10 text-rose-600 dark:text-rose-300"
               >
-                <LogOut className="h-4 w-4" style={{ color: '#dc2626' }} /> Logout
+                <LogOut className="h-4 w-4" /> Logout
               </button>
             </div>
           )}
