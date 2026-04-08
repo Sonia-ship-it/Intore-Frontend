@@ -3,18 +3,36 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Diamond, Briefcase, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 import { useAuthStore } from '@/stores/authStore';
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuthStore();
+  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    login(email || 'alex@intore.ai', password);
-    router.push('/recruiter/dashboard');
+    setIsLoading(true);
+    login(email, password)
+      .then(() => router.push('/recruiter/dashboard'))
+      .catch((err) => {
+        const msg = err instanceof Error ? err.message : 'Unable to login';
+        if (typeof msg === 'string' && msg.toLowerCase().includes('not verified')) {
+          router.push(`/verify?email=${encodeURIComponent(email)}`);
+          return;
+        }
+        toast({
+          title: 'Login failed',
+          description: msg,
+          variant: 'destructive',
+        });
+      })
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -29,7 +47,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block text-sm font-medium">Email
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="you@example.com" />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="you@gmail.com" />
           </label>
           <label className="block text-sm font-medium">Password
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="••••••••" />
@@ -38,7 +56,9 @@ export default function LoginPage() {
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="rounded" /> Remember me</label>
             <a href="#" className="text-sm text-primary hover:underline">Forgot password?</a>
           </div>
-          <Button type="submit" className="w-full">Sign In</Button>
+          <Button type="submit" className="w-full" disabled={isLoading || !email || !password}>
+            {isLoading ? 'Signing in...' : 'Sign In'}
+          </Button>
         </form>
 
         <div className="flex items-center gap-3 my-6">

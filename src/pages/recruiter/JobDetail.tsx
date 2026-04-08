@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { Sparkles, Lock, Send, MapPin, Calendar, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { Sparkles, Lock, Send, MapPin, Calendar, Users, ChevronDown, ChevronUp, Upload } from 'lucide-react';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { ScoreBar } from '@/components/intore/ScoreBar';
 import { ConfidenceBadge } from '@/components/intore/ConfidenceBadge';
@@ -12,17 +12,24 @@ import { Avatar } from '@/components/intore/Avatar';
 import { Spinner } from '@/components/intore/Spinner';
 import { StatusBadge, TypeBadge } from '@/components/intore/Badges';
 import { Button } from '@/components/ui/button';
-import { mockJobs, mockCandidates, mockScreeningResults, mockChatMessages } from '@/data/mockData';
+import { useToast } from '@/components/ui/use-toast';
+import { mockJobs, mockCandidates, mockScreeningResults, mockChatMessages, type ScreeningResult } from '@/data/mockData';
 import { useScreeningStore } from '@/stores/screeningStore';
+import { useIngestionStore } from '@/stores/ingestionStore';
+import { runScreeningAndWait, type ApiScreeningResult } from '@/lib/screeningApi';
 import { cn } from '@/lib/utils';
 
 const suggestions = ['Compare top 3', 'Show biggest gaps', 'Who almost qualified?', 'Summarize shortlist'];
 
 export default function JobDetail() {
   const router = useRouter();
+  const { toast } = useToast();
   const id = typeof router.query.id === 'string' ? router.query.id : undefined;
   const job = mockJobs.find((j) => j.id === id) || mockJobs[0];
-  const results = mockScreeningResults;
+  type UiResult = ScreeningResult & { _raw?: ApiScreeningResult };
+  const [results, setResults] = useState<UiResult[]>(mockScreeningResults);
+  const [shortlistSize, setShortlistSize] = useState<10 | 20>(10);
+  const ingestion = useIngestionStore((s) => (id ? s.byJobId[id] : undefined));
 
   const { status, progress, biasWarningDismissed, chatMessages, isUnlocked,
     setStatus, setProgress, dismissBiasWarning, addChatMessage, setChatMessages,
@@ -32,31 +39,73 @@ export default function JobDetail() {
   const [chatInput, setChatInput] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { resetScreening(); }, [id]);
+  useEffect(() => { resetScreening(); }, [id, resetScreening]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
-  const runScreening = () => {
+  const toUiResults = (apiResults: ApiScreeningResult[]) => {
+    return apiResults
+      .slice(0, shortlistSize)
+      .map((r, idx) => ({
+        // Use application id as the stable row key for now (backend does not populate applicant/user details yet).
+        candidateId: r.application,
+        jobId: job.id,
+        rank: r.rankPosition ?? idx + 1,
+        matchScore: Math.round(r.fitScore),
+        confidence: r.confidenceLevel === 'high' ? 'High' : r.confidenceLevel === 'low' ? 'Low' : 'Medium',
+        topStrength: r.strengths?.[0] || '—',
+        keyGap: r.gaps?.[0] || '—',
+        strengths: r.strengths || [],
+        gaps: r.gaps || [],
+        reasoning: r.aiReasoning || '',
+        recommendation: (r.fitScore ?? 0) >= 70 ? 'Strongly recommended for interview' : (r.fitScore ?? 0) >= 50 ? 'Consider for interview with reservations' : 'Does not meet minimum requirements',
+        _raw: r,
+      }));
+  };
+
+  const runScreeningClick = async () => {
     setStatus('running');
-    setProgress(0);
-    let p = 0;
-    const interval = setInterval(() => {
-      p += Math.random() * 8 + 2;
-      if (p >= 100) {
-        p = 100;
-        clearInterval(interval);
-        setProgress(100);
-        setTimeout(() => {
-          setStatus('complete');
-          setIsUnlocked(true);
-          setChatMessages(mockChatMessages);
-        }, 500);
-      } else {
-        setProgress(Math.round(p));
-      }
-    }, 200);
+    setProgress(10);
+
+    const hasExternal = (ingestion?.candidates?.length || 0) > 0;
+    const hasUmurava = Boolean(ingestion?.umurava?.profiles);
+    if (!hasExternal && !hasUmurava) {
+      setStatus('idle');
+      setProgress(0);
+      toast({
+        title: 'No applicants uploaded',
+        description: 'Go to Upload and add candidates via CSV/Excel, PDF/links, or Umurava profiles.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      setProgress(25);
+      const { results: apiResults } = await runScreeningAndWait({
+        jobId: job.id,
+        topK: shortlistSize,
+      });
+      setProgress(100);
+      setResults(toUiResults(apiResults));
+      setStatus('complete');
+      setIsUnlocked(true);
+      setChatMessages(mockChatMessages);
+      toast({ title: 'Screening complete', description: `Top ${shortlistSize} ready.` });
+    } catch (e) {
+      // Fallback to mock results so the UI still works without a backend.
+      setResults(mockScreeningResults.slice(0, shortlistSize));
+      setProgress(100);
+      setStatus('complete');
+      setIsUnlocked(true);
+      setChatMessages(mockChatMessages);
+      toast({
+        title: 'Backend not reachable (using demo results)',
+        description: 'Start your API and set NEXT_PUBLIC_API_BASE_URL to enable real screening.',
+      });
+    }
   };
 
   const sendMessage = (text: string) => {
@@ -91,13 +140,41 @@ export default function JobDetail() {
                   <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{job.location}</span>
                   <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{job.postedDate}</span>
                 </div>
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 rounded-full border px-2 py-1">
+                    <Upload className="h-3.5 w-3.5" />
+                    {(ingestion?.candidates?.length || 0)} candidate(s) ingested
+                  </span>
+                  {ingestion?.umurava?.profiles && (
+                    <span className="inline-flex items-center gap-1 rounded-full border px-2 py-1">
+                      Umurava profiles loaded
+                    </span>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push(`/recruiter/jobs/${job.id}/upload`)}
+                    className="h-7 px-2"
+                  >
+                    Upload applicants
+                  </Button>
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-brand-50 text-sm font-medium text-brand-700 dark:bg-[rgba(75,123,255,0.1)] dark:text-[#4B7BFF]">
                   <Users className="h-4 w-4" /> {job.applicantCount} applicants
                 </span>
+                <select
+                  value={shortlistSize}
+                  onChange={(e) => setShortlistSize((Number(e.target.value) as 10 | 20) || 10)}
+                  className="bg-background rounded-lg border px-3 py-2 text-sm outline-none"
+                  title="Shortlist size"
+                >
+                  <option value={10}>Top 10</option>
+                  <option value={20}>Top 20</option>
+                </select>
                 <Button
-                  onClick={runScreening}
+                  onClick={runScreeningClick}
                   disabled={status === 'running'}
                   className={cn(status === 'running' && 'opacity-70')}
                 >
@@ -145,7 +222,9 @@ export default function JobDetail() {
                     </thead>
                     <tbody>
                       {results.map((r, i) => {
-                        const candidate = mockCandidates.find((c) => c.id === r.candidateId)!;
+                        const candidate = mockCandidates.find((c) => c.id === r.candidateId);
+                        const displayName = candidate?.name || `Application ${String(r.candidateId).slice(-6)}`;
+                        const displayRole = candidate?.currentRole || 'Applicant';
                         const isExpanded = expandedRow === r.candidateId;
                         return (
                           <React.Fragment key={r.candidateId}>
@@ -155,10 +234,10 @@ export default function JobDetail() {
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-2">
-                                  <Avatar name={candidate.name} color={candidate.avatarColor} size="sm" />
+                                  <Avatar name={displayName} color={candidate?.avatarColor || 'bg-[#0F1547]'} size="sm" />
                                   <div>
-                                    <p className="text-sm font-medium">{candidate.name}</p>
-                                    <p className="text-xs text-muted-foreground">{candidate.currentRole}</p>
+                                    <p className="text-sm font-medium">{displayName}</p>
+                                    <p className="text-xs text-muted-foreground">{displayRole}</p>
                                   </div>
                                 </div>
                               </td>

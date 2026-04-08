@@ -1,31 +1,120 @@
 import { create } from 'zustand';
+import { apiFetch } from '@/lib/api';
 
 type UserRole = 'recruiter' | 'applicant';
 
+type AuthUserDto = {
+  id: string;
+  email: string;
+  role: 'applicant' | 'recruiter' | 'admin';
+  fullName: string;
+};
+
+type LoginResponse = {
+  message?: string;
+  token: string;
+  user: AuthUserDto;
+};
+
+type RegisterResponse = {
+  message?: string;
+  verificationRequired: boolean;
+  email: string;
+  devCode?: string;
+  user: AuthUserDto;
+};
+
+type VerifyResponse = {
+  verified: boolean;
+  token: string;
+  user: AuthUserDto;
+};
+
+type ResendCodeResponse = {
+  ok: boolean;
+  devCode?: string;
+};
+
 interface AuthState {
-  user: { name: string; email: string; avatar?: string } | null;
+  token?: string;
+  user: { id: string; name: string; email: string; avatar?: string; role?: UserRole } | null;
   role: UserRole;
   isAuthenticated: boolean;
-  login: (email: string, password: string, role?: UserRole) => void;
-  register: (name: string, email: string, password: string, role: UserRole) => void;
+  login: (email: string, password: string) => Promise<void>;
+  register: (params: { name: string; email: string; password: string; role: UserRole; phoneNumber: string; companyName?: string }) => Promise<{ verificationRequired: boolean; devCode?: string }>;
+  verify: (email: string, code: string) => Promise<void>;
+  resendCode: (email: string, purpose: 'register' | 'reset_password') => Promise<{ devCode?: string }>;
   logout: () => void;
   setRole: (role: UserRole) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: { name: 'Claudine U.', email: 'claudine@intore.rw' },
+  token: typeof window !== 'undefined' ? window.localStorage.getItem('intore_token') || undefined : undefined,
+  user: null,
   role: 'recruiter',
-  isAuthenticated: true,
-  login: (_email, _password, role) => set({
-    user: { name: 'Claudine U.', email: _email },
-    role: role || 'recruiter',
-    isAuthenticated: true,
-  }),
-  register: (name, email, _password, role) => set({
-    user: { name, email },
-    role,
-    isAuthenticated: true,
-  }),
-  logout: () => set({ user: null, isAuthenticated: false }),
+  isAuthenticated: typeof window !== 'undefined' ? Boolean(window.localStorage.getItem('intore_token')) : false,
+  login: async (email, password) => {
+    const resp = await apiFetch<LoginResponse>('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const token = resp?.token as string | undefined;
+    if (!token) throw new Error(resp?.message || 'Login failed');
+    if (typeof window !== 'undefined') window.localStorage.setItem('intore_token', token);
+    set({
+      token,
+      user: {
+        id: resp.user?.id || 'me',
+        name: resp.user?.fullName || resp.user?.name || 'User',
+        email: resp.user?.email || email,
+        role: resp.user?.role,
+      },
+      role: (resp.user?.role as UserRole) || 'recruiter',
+      isAuthenticated: true,
+    });
+  },
+  register: async ({ name, email, password, role, phoneNumber, companyName }) => {
+    const resp = await apiFetch<RegisterResponse>('/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, fullName: name, phoneNumber, role, companyName }),
+    });
+    // Backend returns verificationRequired; no token until verified.
+    return { verificationRequired: Boolean(resp?.verificationRequired), devCode: resp?.devCode };
+  },
+  verify: async (email, code) => {
+    const resp = await apiFetch<VerifyResponse>('/auth/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code }),
+    });
+    const token = resp?.token as string | undefined;
+    if (!token) throw new Error(resp?.message || 'Verification failed');
+    if (typeof window !== 'undefined') window.localStorage.setItem('intore_token', token);
+    set({
+      token,
+      user: {
+        id: resp.user?.id || 'me',
+        name: resp.user?.fullName || 'User',
+        email: resp.user?.email || email,
+        role: resp.user?.role,
+      },
+      role: (resp.user?.role as UserRole) || 'recruiter',
+      isAuthenticated: true,
+    });
+  },
+  resendCode: async (email, purpose) => {
+    const resp = await apiFetch<ResendCodeResponse>('/auth/resend-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, purpose }),
+    });
+    return { devCode: resp?.devCode };
+  },
+  logout: () => {
+    if (typeof window !== 'undefined') window.localStorage.removeItem('intore_token');
+    set({ token: undefined, user: null, isAuthenticated: false });
+  },
   setRole: (role) => set({ role }),
 }));

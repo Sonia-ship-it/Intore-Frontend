@@ -472,7 +472,7 @@ export default function LandingPage() {
           </p>
           
           <div className="mt-6 flex flex-wrap justify-center items-center gap-10">
-            {['Inyarwanda Ltd', 'Kigali Tech Hub', 'RwandAir', 'BK Capital', 'MTN Rwanda', 'Equity Bank Rwanda'].map(name => (
+            {['Umurava', 'RCA', 'Global Kwik Coders', 'BK Capital', 'MTN Rwanda', 'Equity Bank Rwanda'].map(name => (
               <span key={name} className="text-[18px] font-semibold text-slate-300 hover:text-slate-500 transition-colors cursor-default">
                 {name}
               </span>

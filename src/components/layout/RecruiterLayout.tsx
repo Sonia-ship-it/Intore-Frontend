@@ -11,7 +11,6 @@ export function RecruiterLayout({ children }: { children: ReactNode }) {
         <div className="flex-1">
           {children}
         </div>
-        <Footer />
       </main>
       <AIChatFAB />
     </div>
