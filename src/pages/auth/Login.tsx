@@ -30,7 +30,7 @@ export default function LoginPage() {
 
                 <div className="relative z-10 transition-transform">
                     <Link href="/" className="flex items-center gap-2.5 group">
-                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-[spin_10s_linear_infinite]" />
+                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-[spin_6s_linear_infinite]" />
                         <span className="text-xl font-bold tracking-tight">Intore</span>
                     </Link>
                 </div>
@@ -69,7 +69,7 @@ export default function LoginPage() {
             <div className="flex-1 flex items-center justify-center p-8">
                 <div className="w-full max-w-md">
                     <div className="lg:hidden flex items-center gap-2.5 mb-12">
-                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-[spin_10s_linear_infinite]" />
+                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-[spin_6s_linear_infinite]" />
                         <span className="text-xl font-bold tracking-tight text-slate-900">Intore</span>
                     </div>
 

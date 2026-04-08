@@ -36,12 +36,7 @@ function StatusBadge({ status }: { status: ApplicationStatus }) {
   const cfg = statusConfig[status];
   const Icon = cfg.icon;
   return (
-    <span className={cn('inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full border', 
-      cfg.color, 
-      cfg.bg, 
-      cfg.border,
-      'dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-300' // Generic dark override for badges
-    )}>
+    <span className={cn('inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full border', cfg.color, cfg.bg, cfg.border)}>
       <Icon className="h-3 w-3" />
       {status}
     </span>
@@ -60,12 +55,12 @@ function ProgressTracker({ current }: { current: ApplicationStatus }) {
           <div key={step} className="flex items-center flex-1 last:flex-none">
             <div className={cn(
               'w-2.5 h-2.5 rounded-full shrink-0 transition-colors',
-              done ? 'bg-[#4B7BFF]' : 'bg-slate-200 dark:bg-slate-700'
+              done ? 'bg-[#4B7BFF]' : 'bg-slate-200'
             )} />
             {i < steps.length - 1 && (
               <div className={cn(
                 'h-[2px] flex-1 transition-colors',
-                i < currentIdx ? 'bg-[#4B7BFF]' : 'bg-slate-200 dark:bg-slate-700'
+                i < currentIdx ? 'bg-[#4B7BFF]' : 'bg-slate-200'
               )} />
             )}
           </div>
@@ -88,53 +83,53 @@ export default function ApplicantDashboardPage() {
     <div className="max-w-5xl mx-auto px-6 py-10">
       {/* Greeting */}
       <div className="mb-8">
-        <h1 className="text-[24px] font-bold text-slate-900 dark:text-white">
+        <h1 className="text-[24px] font-bold text-slate-900">
           Welcome back, {user?.name?.split(' ')[0] || 'Applicant'} 👋
         </h1>
-        <p className="text-[14px] text-slate-500 dark:text-slate-400 mt-1">Track your job applications across Rwanda.</p>
+        <p className="text-[14px] text-slate-500 mt-1">Track your job applications across Rwanda.</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
-          <p className="text-[12px] text-slate-400 dark:text-slate-500 font-medium">Total Applications</p>
-          <p className="text-[28px] font-bold text-slate-900 dark:text-white mt-1">{stats.total}</p>
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+          <p className="text-[12px] text-slate-400 font-medium">Total Applications</p>
+          <p className="text-[28px] font-bold text-slate-900 mt-1">{stats.total}</p>
         </div>
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
-          <p className="text-[12px] text-slate-400 dark:text-slate-500 font-medium">Active</p>
-          <p className="text-[28px] font-bold text-emerald-600 dark:text-emerald-500 mt-1">{stats.active}</p>
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+          <p className="text-[12px] text-slate-400 font-medium">Active</p>
+          <p className="text-[28px] font-bold text-emerald-600 mt-1">{stats.active}</p>
         </div>
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
-          <p className="text-[12px] text-slate-400 dark:text-slate-500 font-medium">Interviews Scheduled</p>
-          <p className="text-[28px] font-bold text-[#4B7BFF] mt-1">{stats.interviews}</p>
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+          <p className="text-[12px] text-slate-400 font-medium">Interviews Scheduled</p>
+          <p className="text-[28px] font-bold text-brand-600 mt-1">{stats.interviews}</p>
         </div>
       </div>
 
       {/* Applications List */}
-      <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold text-slate-900 dark:text-white">My Applications</h2>
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="text-[15px] font-semibold text-slate-900">My Applications</h2>
           <Link href="/jobs" className="text-[13px] text-[#4B7BFF] hover:text-[#2D3DB5] font-medium transition-colors">
             Browse more jobs →
           </Link>
         </div>
 
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+        <div className="divide-y divide-slate-100">
           {mockApplications.map((app) => (
-            <div key={app.id} className="px-5 py-5 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+            <div key={app.id} className="px-5 py-5 hover:bg-slate-50/50 transition-colors">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blend-soft-light bg-brand-50 dark:bg-[#4B7BFF]/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center shrink-0 mt-0.5">
                     <Briefcase className="h-5 w-5 text-[#4B7BFF]" />
                   </div>
                   <div>
-                    <h3 className="text-[14px] font-semibold text-slate-900 dark:text-white">{app.jobTitle}</h3>
-                    <p className="text-[13px] text-slate-500 dark:text-slate-400">{app.company}</p>
+                    <h3 className="text-[14px] font-semibold text-slate-900">{app.jobTitle}</h3>
+                    <p className="text-[13px] text-slate-500">{app.company}</p>
                     <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                      <span className="text-[11px] text-slate-400 flex items-center gap-1">
                         <MapPin className="h-3 w-3" /> {app.location}
                       </span>
-                      <span className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                      <span className="text-[11px] text-slate-400 flex items-center gap-1">
                         <Clock className="h-3 w-3" /> Applied {new Date(app.appliedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                       </span>
                     </div>

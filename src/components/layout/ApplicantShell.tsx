@@ -110,9 +110,7 @@ export function ApplicantShell({ children }: { children: ReactNode }) {
       </header>
 
       {/* Page Content */}
-      <main className="pt-16 min-h-screen bg-slate-50 dark:bg-[#05071A] text-slate-900 dark:text-slate-100 transition-colors duration-300">
-        {children}
-      </main>
+      <main className="pt-16 min-h-screen">{children}</main>
 
       {/* Footer */}
       <Footer />

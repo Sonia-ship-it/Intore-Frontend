@@ -28,7 +28,7 @@ export default function RegisterPage() {
 
                 <div className="relative z-10 transition-transform">
                     <Link href="/" className="flex items-center gap-2.5 group">
-                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-[spin_10s_linear_infinite]" />
+                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-[spin_6s_linear_infinite]" />
                         <span className="text-xl font-bold tracking-tight">Intore</span>
                     </Link>
                 </div>
@@ -55,7 +55,7 @@ export default function RegisterPage() {
             <div className="flex-1 flex items-center justify-center p-8">
                 <div className="w-full max-w-md">
                     <div className="lg:hidden flex items-center gap-2.5 mb-12">
-                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-[spin_10s_linear_infinite]" />
+                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-[spin_6s_linear_infinite]" />
                         <span className="text-xl font-bold tracking-tight text-slate-900">Intore</span>
                     </div>
 
@@ -64,6 +64,7 @@ export default function RegisterPage() {
                             <h2 className="text-3xl font-black tracking-tight text-slate-900">Create an account</h2>
                             <p className="mt-2 text-sm text-slate-500 font-medium">Get started with Intore in seconds</p>
                         </RevealChild>
+
                         <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
                             <RevealChild preset="fadeUp">
                                 <div className="grid grid-cols-2 gap-4">

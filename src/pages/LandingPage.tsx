@@ -7,12 +7,21 @@ import {
 } from 'lucide-react';
 import { Footer } from '@/components/layout/Footer';
 import { cn } from '@/lib/utils';
-import { RevealOnScroll, RevealChild, AnimatedCounter, useParallaxCursor, CursorGlow } from '@/components/animations/RevealOnScroll';
+import { RevealOnScroll, RevealChild, AnimatedCounter, useParallaxCursor } from '@/components/animations/RevealOnScroll';
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [cursor, setCursor] = useState({ x: 0, y: 0 });
   const parallaxRef1 = useParallaxCursor(12);
   const parallaxRef2 = useParallaxCursor(-8);
+
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      setCursor({ x: event.clientX, y: event.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const scrollToSection = (e: ReactMouseEvent, id: string) => {
     e.preventDefault();
@@ -32,7 +41,17 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
-      <CursorGlow />
+      <div
+        className="pointer-events-none fixed hidden md:block z-[6] w-[520px] h-[520px] rounded-full"
+        style={{
+          left: cursor.x,
+          top: cursor.y,
+          transform: 'translate(-50%, -50%)',
+          background: 'radial-gradient(circle, rgba(75,123,255,0.24) 0%, rgba(75,123,255,0.12) 30%, rgba(75,123,255,0.04) 52%, transparent 72%)',
+          filter: 'blur(26px)',
+          transition: 'left 120ms ease-out, top 120ms ease-out',
+        }}
+      />
       {/* GLOBAL LANDING STYLES */}
       <style dangerouslySetInnerHTML={{__html: `
         :root {
@@ -97,7 +116,7 @@ export default function LandingPage() {
         <div className="pill-navbar">
           {/* LEFT — Logo */}
           <Link href="/" className="flex items-center gap-2" style={{ paddingRight: 32 }}>
-            <Diamond className="w-4 h-4 text-[#4B7BFF] fill-[#4B7BFF] animate-[spin_10s_linear_infinite]" />
+            <Diamond className="w-4 h-4 text-[#4B7BFF] fill-[#4B7BFF]" />
             <span className="font-semibold text-[16px] text-white">Intore</span>
           </Link>
 
@@ -235,8 +254,8 @@ export default function LandingPage() {
         <div className="relative w-full h-full pointer-events-auto">
           
           {/* LEFT CARD */}
-          <div ref={parallaxRef1} className="hidden md:block absolute left-0 top-[40px] w-[220px] h-[240px] rounded-[20px] p-5 text-white z-[15]" 
-               style={{ background: 'rgba(15,21,71,0.9)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', willChange: 'transform' }}>
+          <div ref={parallaxRef1} className="hidden md:block absolute left-0 top-[40px] w-[220px] h-[240px] rounded-[16px] p-4 text-white z-[15]" 
+               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5s ease-in-out infinite', ...({ '--card-rot': '-2deg' } as CSSProperties) }}>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse"></div>
               <span className="text-[11px] font-medium text-white/80">Live Screening</span>
@@ -252,31 +271,31 @@ export default function LandingPage() {
               <div className="w-[8px] h-[100%] bg-brand-500 rounded-t-sm"></div>
               <div className="w-[8px] h-[70%] bg-brand-200 rounded-t-sm"></div>
             </div>
-            <div className="mt-3 text-[10px] text-white/40">Last 5 days</div>
+            <div className="mt-2 text-[10px] text-white/40">Last 5 days</div>
           </div>
 
           {/* CENTER CARD (Largest - Straddling Boundary) */}
-          <RevealOnScroll preset="scaleUp" delay={0.6} duration={1.0} className="relative md:absolute md:left-[50%] md:-translate-x-1/2 md:-top-[20px] w-full md:w-[85vw] lg:w-[min(640px,85vw)] bg-white rounded-[24px] flex flex-col md:flex-row overflow-hidden mx-auto md:mx-0 z-[20]" 
-               style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.02), 0 20px 60px rgba(0,0,0,0.12), 0 40px 80px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.06)', maxHeight: '340px' }}>
+          <RevealOnScroll preset="scaleUp" delay={0.6} duration={1.0} className="relative md:absolute md:left-[50%] md:-translate-x-1/2 md:top-0 w-full md:w-[85vw] lg:w-[min(620px,80vw)] bg-white rounded-[20px] flex flex-col md:flex-row overflow-hidden mx-auto md:mx-0 z-[20]" 
+               style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.05), 0 20px 60px rgba(0,0,0,0.15), 0 40px 80px rgba(0,0,0,0.08)', border: '1px solid rgba(0,0,0,0.08)', maxHeight: '320px' }}>
             
             {/* Col A (hidden on mobile) */}
-            <div className="hidden md:block flex-[0_0_180px] p-6 border-r border-[#F1F5F9] bg-white">
+            <div className="hidden md:block flex-[0_0_160px] p-4 border-r border-[#F1F5F9] bg-white">
               <div className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse"></div>
-                <span className="text-[11px] text-slate-500 font-semibold tracking-wide">Live Screening</span>
+                <span className="text-[10px] text-slate-500 font-medium">Live Screening</span>
               </div>
-              <div className="mt-5">
-                <div className="text-[38px] font-black text-slate-900 leading-none">247</div>
-                <div className="text-[11px] text-slate-400 mt-1 font-medium">candidates screened today</div>
+              <div className="mt-3">
+                <div className="text-[32px] font-bold text-slate-900 leading-none">247</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">candidates screened today</div>
               </div>
-              <div className="mt-8 flex items-end gap-1.5 h-[40px]">
-                <div className="w-[8px] h-[60%] bg-brand-100 rounded-t-sm"></div>
-                <div className="w-[8px] h-[80%] bg-brand-100 rounded-t-sm"></div>
-                <div className="w-[8px] h-[45%] bg-brand-100 rounded-t-sm"></div>
-                <div className="w-[8px] h-[100%] bg-brand-500 rounded-t-sm"></div>
-                <div className="w-[8px] h-[70%] bg-brand-100 rounded-t-sm"></div>
+              <div className="mt-4 flex items-end gap-1 h-[32px]">
+                <div className="w-[6px] h-[60%] bg-brand-200 rounded-t-sm"></div>
+                <div className="w-[6px] h-[80%] bg-brand-200 rounded-t-sm"></div>
+                <div className="w-[6px] h-[45%] bg-brand-200 rounded-t-sm"></div>
+                <div className="w-[6px] h-[100%] bg-brand-500 rounded-t-sm"></div>
+                <div className="w-[6px] h-[70%] bg-brand-200 rounded-t-sm"></div>
               </div>
-              <div className="mt-3 text-[10px] text-slate-400 font-medium tracking-wide">Last 5 days</div>
+              <div className="mt-2 text-[9px] text-slate-400">Last 5 days</div>
             </div>
 
             {/* Col B */}
@@ -374,8 +393,8 @@ export default function LandingPage() {
           </RevealOnScroll>
 
           {/* RIGHT CARD */}
-          <div ref={parallaxRef2} className="hidden md:block absolute right-0 top-[60px] w-[200px] h-[200px] rounded-[20px] p-5 text-white z-[15]"
-               style={{ background: 'rgba(15,21,71,0.9)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', willChange: 'transform' }}>
+          <div ref={parallaxRef2} className="hidden md:block absolute right-0 top-[60px] w-[200px] h-[200px] rounded-[16px] p-4 text-white z-[15]"
+               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 4.5s ease-in-out infinite 0.5s', ...({ '--card-rot': '2deg' } as CSSProperties) }}>
             <div className="text-[32px] font-bold text-white leading-none">2.4×</div>
             <div className="text-[12px] text-white/60 mt-1">Faster hiring</div>
             <div className="text-[11px] text-white/40 mt-0.5">vs. manual screening</div>

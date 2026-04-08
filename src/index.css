@@ -102,24 +102,12 @@
     --sidebar-accent-foreground: 210 40% 96%;
     --sidebar-border: 233 40% 12%;
     --sidebar-ring: 224 100% 58%;
-
-    --brand-50: 226 100% 97%;
-    --brand-100: 226 100% 94%;
-    --brand-200: 226 100% 88%;
-    --brand-300: 226 100% 80%;
-    --brand-400: 226 100% 70%;
-    --brand-500: 226 100% 65%; /* #4B7BFF */
-    --brand-600: 226 100% 55%;
-    --brand-700: 226 100% 45%;
-    --brand-800: 226 100% 35%;
-    --brand-900: 226 100% 25%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
-    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
@@ -127,28 +115,22 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+}
+
 @layer utilities {
-  .footer-gradient {
-    position: relative;
-    background:
-      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(45,61,181,0.5) 0%, transparent 70%),
-      radial-gradient(ellipse 60% 40% at 20% 100%, rgba(75,123,255,0.2) 0%, transparent 60%),
-      linear-gradient(180deg, #0A0E2E 0%, #0F1547 50%, #05071A 100%);
-    padding-bottom: 0;
-    overflow: hidden;
+  .scrollbar-thin {
+    scrollbar-width: thin;
   }
-
-  .dark .bg-white {
-    background-color: theme('colors.slate.900 / 0.4') !important;
-    border-color: theme('colors.slate.800') !important;
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
   }
-  
-  .dark .text-slate-900 {
-    color: theme('colors.slate.100') !important;
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
   }
-
-  .dark .text-slate-600, .dark .text-slate-500 {
-    color: theme('colors.slate.400') !important;
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
   }
 }
 
@@ -288,6 +270,20 @@
 }
 .dark .app-header {
   background: linear-gradient(135deg, #0A0E2E 0%, #0F1547 60%, #1E2A8A 100%) !important;
+}
+
+/* ═══════════════════════════════════════════
+   CHANGE 3 — FOOTER WORDMARK
+   ═══════════════════════════════════════════ */
+
+.footer-gradient {
+  position: relative;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(45,61,181,0.5) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 20% 100%, rgba(75,123,255,0.2) 0%, transparent 60%),
+    linear-gradient(180deg, #0A0E2E 0%, #0F1547 50%, #05071A 100%);
+  padding-bottom: 0;
+  overflow: hidden;
 }
 
 .footer-gradient::before {

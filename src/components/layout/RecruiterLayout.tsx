@@ -5,16 +5,14 @@ import { Footer } from '@/components/layout/Footer';
 
 export function RecruiterLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-background overflow-hidden relative">
+    <div className="min-h-screen bg-background">
       <AppSidebar />
-      <div className="flex flex-col h-screen md:pl-16 lg:pl-60">
-        <main className="flex-1 overflow-y-auto custom-scrollbar pt-16 flex flex-col">
-          <div className="flex-1">
-            {children}
-          </div>
-          <Footer />
-        </main>
-      </div>
+      <main className="md:ml-16 lg:ml-60 pt-16 min-h-screen flex flex-col justify-between">
+        <div className="flex-1">
+          {children}
+        </div>
+        <Footer />
+      </main>
       <AIChatFAB />
     </div>
   );

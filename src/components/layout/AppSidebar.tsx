@@ -26,7 +26,7 @@ export function AppSidebar() {
       <div className="p-6">
         <Link href="/recruiter/dashboard" className="flex items-center gap-2">
           <div className="bg-[#0F1547] p-1 rounded-md flex items-center justify-center shadow-sm border border-[rgba(75,123,255,0.3)]">
-            <Diamond className="h-5 w-5 text-[#4B7BFF] fill-[#4B7BFF] animate-[spin_10s_linear_infinite]" />
+            <Diamond className="h-5 w-5 text-[#4B7BFF] fill-[#4B7BFF]" />
           </div>
           <span className="text-xl font-bold text-white">Intore</span>
         </Link>
@@ -89,7 +89,7 @@ export function AppSidebar() {
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:w-16 lg:w-60 bg-[#0A0E2E] border-r border-white/8 z-[60]">
+      <aside className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:w-16 lg:w-60 bg-[#0A0E2E] border-r border-white/8 z-40">
         {nav}
       </aside>
     </>

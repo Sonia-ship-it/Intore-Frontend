@@ -186,85 +186,20 @@ export function useParallaxCursor(strength: number = 20) {
     const el = ref.current;
     if (!el) return;
 
-    let x = 0;
-    let y = 0;
-    let targetX = 0;
-    let targetY = 0;
-    let frameId: number;
-
     const handleMove = (e: MouseEvent) => {
       const rect = el.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      targetX = ((e.clientX - centerX) / (window.innerWidth / 2)) * strength;
-      targetY = ((e.clientY - centerY) / (window.innerHeight / 2)) * strength;
-    };
-
-    const animate = () => {
-      // Direct interpolation for smoothness (0.1 coefficient for heavy inertia)
-      x += (targetX - x) * 0.08;
-      y += (targetY - y) * 0.08;
-      el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      frameId = requestAnimationFrame(animate);
+      const deltaX = ((e.clientX - centerX) / (window.innerWidth / 2)) * strength;
+      const deltaY = ((e.clientY - centerY) / (window.innerHeight / 2)) * strength;
+      el.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
     };
 
     window.addEventListener('mousemove', handleMove);
-    frameId = requestAnimationFrame(animate);
-    
-    return () => {
-      window.removeEventListener('mousemove', handleMove);
-      cancelAnimationFrame(frameId);
-    };
+    return () => window.removeEventListener('mousemove', handleMove);
   }, [strength]);
 
   return ref;
-}
-
-export function CursorGlow() {
-  const glowRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const glow = glowRef.current;
-    if (!glow) return;
-
-    let x = 0;
-    let y = 0;
-    let targetX = 0;
-    let targetY = 0;
-    let frameId: number;
-
-    const handleMove = (e: MouseEvent) => {
-      targetX = e.clientX;
-      targetY = e.clientY;
-    };
-
-    const animate = () => {
-      x += (targetX - x) * 0.12;
-      y += (targetY - y) * 0.12;
-      glow.style.transform = `translate3d(calc(${x}px - 50%), calc(${y}px - 50%), 0)`;
-      frameId = requestAnimationFrame(animate);
-    };
-
-    window.addEventListener('mousemove', handleMove);
-    frameId = requestAnimationFrame(animate);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMove);
-      cancelAnimationFrame(frameId);
-    };
-  }, []);
-
-  return (
-    <div
-      ref={glowRef}
-      className="pointer-events-none fixed top-0 left-0 w-[600px] h-[600px] rounded-full z-[1] select-none opacity-40 mix-blend-screen overflow-hidden"
-      style={{
-        background: 'radial-gradient(circle, rgba(75,123,255,0.15) 0%, rgba(75,123,255,0.05) 40%, transparent 70%)',
-        filter: 'blur(50px)',
-        willChange: 'transform',
-      }}
-    />
-  );
 }
 
 /* ─── Magnetic button hook ─── */
