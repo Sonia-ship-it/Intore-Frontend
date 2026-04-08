@@ -23,7 +23,7 @@ export function AppHeader({ title }: { title: string }) {
   const initials = (user?.name || 'U').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <header className="app-header fixed top-0 right-0 left-0 md:left-16 lg:left-60 h-16 z-30 flex items-center justify-between px-6">
+    <header className="app-header fixed top-0 right-0 left-0 md:left-16 lg:left-60 h-16 z-50 flex items-center justify-between px-6">
       <h1 className="text-xl font-semibold ml-10 md:ml-0" style={{ color: 'white' }}>{title}</h1>
 
       <div className="flex items-center gap-4">
