@@ -275,13 +275,22 @@ export default function LandingPage() {
           </div>
 
           {/* CENTER CARD (Largest - Straddling Boundary) */}
-          <RevealOnScroll preset="scaleUp" delay={0.6} duration={1.0} className="relative md:absolute md:left-[50%] md:-translate-x-1/2 md:top-0 w-full md:w-[85vw] lg:w-[min(620px,80vw)] bg-white rounded-[20px] flex flex-col md:flex-row overflow-hidden mx-auto md:mx-0 z-[20]" 
-               style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.05), 0 20px 60px rgba(0,0,0,0.15), 0 40px 80px rgba(0,0,0,0.08)', border: '1px solid rgba(0,0,0,0.08)', maxHeight: '320px' }}>
+          <RevealOnScroll
+            preset="scaleUp"
+            delay={0.6}
+            duration={1.0}
+            className="relative w-full md:w-[85vw] lg:w-[min(720px,86vw)] bg-white rounded-[20px] flex flex-col md:flex-row overflow-hidden mx-auto z-[20]"
+            style={{
+              boxShadow: '0 4px 6px rgba(0,0,0,0.05), 0 20px 60px rgba(0,0,0,0.15), 0 40px 80px rgba(0,0,0,0.08)',
+              border: '1px solid rgba(0,0,0,0.08)',
+              maxHeight: '320px',
+            }}
+          >
             
-            {/* Col A (hidden on mobile) */}
+            
             <div className="hidden md:block flex-[0_0_160px] p-4 border-r border-[#F1F5F9] bg-white">
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse"></div>
+                <div className="w-2 h-2 rounded-full bg-[#4B7BFF] animate-pulse"></div>
                 <span className="text-[10px] text-slate-500 font-medium">Live Screening</span>
               </div>
               <div className="mt-3">
@@ -298,15 +307,15 @@ export default function LandingPage() {
               <div className="mt-2 text-[9px] text-slate-400">Last 5 days</div>
             </div>
 
-            {/* Col B */}
+            
             <div className="flex-1 p-4 bg-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-brand-500" />
                   <span className="text-[12px] text-slate-700 font-semibold">Intore AI</span>
                 </div>
-                <div className="bg-green-500/10 border border-green-500/30 text-[#16A34A] text-[9px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <div className="w-[4px] h-[4px] rounded-full bg-[#16A34A]"></div>
+                <div className="bg-[#4B7BFF]/10 border border-[#4B7BFF]/25 text-[#2D3DB5] text-[9px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <div className="w-[4px] h-[4px] rounded-full bg-[#4B7BFF]"></div>
                   Live
                 </div>
               </div>
@@ -340,9 +349,9 @@ export default function LandingPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-[36px] h-[4px] rounded-full bg-slate-100 overflow-hidden">
-                      <div className="h-full bg-[#22C55E] w-[94%]"></div>
+                      <div className="h-full bg-brand-500 w-[94%]"></div>
                     </div>
-                    <span className="text-[10px] font-semibold text-[#16A34A] w-[24px] text-right">94%</span>
+                    <span className="text-[10px] font-semibold text-brand-600 w-[24px] text-right">94%</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between py-1">
@@ -360,7 +369,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Col C */}
+        
             <div className="flex-[0_0_180px] p-4 text-white flex flex-col" style={{ background: 'linear-gradient(160deg, #0F1547 0%, #05071A 100%)' }}>
               <div className="flex items-center gap-1">
                 <span className="text-[13px] text-[#FBBF24]">★</span>

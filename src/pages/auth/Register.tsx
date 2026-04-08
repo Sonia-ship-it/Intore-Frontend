@@ -8,6 +8,11 @@ import { RevealOnScroll, RevealChild } from '@/components/animations/RevealOnScr
 export default function RegisterPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [password, setPassword] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -18,7 +23,7 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen flex bg-[#f7f9fc]">
+        <div className="min-h-screen flex bg-[#f7f9fc] animate-page-in">
             {/* Left Panel - Branding */}
             <div className="hidden lg:flex w-[45%] bg-[#05071A] text-white flex-col justify-between p-12 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#4B7BFF]/10 via-transparent to-[#1E2A8A]/10"></div>
@@ -28,7 +33,7 @@ export default function RegisterPage() {
 
                 <div className="relative z-10 transition-transform">
                     <Link href="/" className="flex items-center gap-2.5 group">
-                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-[spin_6s_linear_infinite]" />
+                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-brand-spin-once" />
                         <span className="text-xl font-bold tracking-tight">Intore</span>
                     </Link>
                 </div>
@@ -53,9 +58,9 @@ export default function RegisterPage() {
 
             {/* Right Panel - Form */}
             <div className="flex-1 flex items-center justify-center p-8">
-                <div className="w-full max-w-md">
+                <div className="w-full max-w-md animate-auth-panel-in">
                     <div className="lg:hidden flex items-center gap-2.5 mb-12">
-                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-[spin_6s_linear_infinite]" />
+                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-brand-spin-once" />
                         <span className="text-xl font-bold tracking-tight text-slate-900">Intore</span>
                     </div>
 
@@ -74,6 +79,8 @@ export default function RegisterPage() {
                                             type="text"
                                             required
                                             placeholder="Claudine"
+                                            value={firstName}
+                                            onChange={(e) => setFirstName(e.target.value)}
                                             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4B7BFF]/20 focus:border-[#4B7BFF] transition-all"
                                         />
                                     </div>
@@ -83,6 +90,8 @@ export default function RegisterPage() {
                                             type="text"
                                             required
                                             placeholder="Uwimana"
+                                            value={lastName}
+                                            onChange={(e) => setLastName(e.target.value)}
                                             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4B7BFF]/20 focus:border-[#4B7BFF] transition-all"
                                         />
                                     </div>
@@ -96,6 +105,8 @@ export default function RegisterPage() {
                                         type="email"
                                         required
                                         placeholder="claudine@example.com"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
                                         className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4B7BFF]/20 focus:border-[#4B7BFF] transition-all"
                                     />
                                 </div>
@@ -108,6 +119,8 @@ export default function RegisterPage() {
                                         type="tel"
                                         required
                                         placeholder="+250 788 123 456"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
                                         className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4B7BFF]/20 focus:border-[#4B7BFF] transition-all"
                                     />
                                 </div>
@@ -121,6 +134,8 @@ export default function RegisterPage() {
                                             type={showPassword ? 'text' : 'password'}
                                             required
                                             placeholder="••••••••"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
                                             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pr-12 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4B7BFF]/20 focus:border-[#4B7BFF] transition-all"
                                         />
                                         <button
@@ -158,7 +173,7 @@ export default function RegisterPage() {
                         <RevealChild preset="fadeIn">
                             <p className="mt-8 text-center text-sm text-slate-500 font-medium">
                                 Already have an account?{' '}
-                                <Link href="/login" className="font-bold text-[#4B7BFF] hover:text-[#3461DF] transition-colors">
+                                <Link href="/login" className="font-semibold text-[#2D3DB5] hover:text-[#1E2A8A] transition-colors">
                                     Sign in →
                                 </Link>
                             </p>

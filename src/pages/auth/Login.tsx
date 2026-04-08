@@ -20,7 +20,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex bg-[#f7f9fc]">
+        <div className="min-h-screen flex bg-[#f7f9fc] animate-page-in">
             {/* Left Panel - Branding */}
             <div className="hidden lg:flex w-[45%] bg-[#05071A] text-white flex-col justify-between p-12 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#4B7BFF]/10 via-transparent to-[#1E2A8A]/10"></div>
@@ -30,7 +30,7 @@ export default function LoginPage() {
 
                 <div className="relative z-10 transition-transform">
                     <Link href="/" className="flex items-center gap-2.5 group">
-                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-[spin_6s_linear_infinite]" />
+                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-brand-spin-once" />
                         <span className="text-xl font-bold tracking-tight">Intore</span>
                     </Link>
                 </div>
@@ -67,9 +67,9 @@ export default function LoginPage() {
 
             {/* Right Panel - Form */}
             <div className="flex-1 flex items-center justify-center p-8">
-                <div className="w-full max-w-md">
+                <div className="w-full max-w-md animate-auth-panel-in">
                     <div className="lg:hidden flex items-center gap-2.5 mb-12">
-                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-[spin_6s_linear_infinite]" />
+                        <Diamond className="w-8 h-8 text-[#4B7BFF] fill-[#4B7BFF] animate-brand-spin-once" />
                         <span className="text-xl font-bold tracking-tight text-slate-900">Intore</span>
                     </div>
 
@@ -182,7 +182,7 @@ export default function LoginPage() {
 
                             <p className="mt-8 text-center text-sm text-slate-500 font-medium">
                                 Don't have an account?{' '}
-                                <Link href="/register" className="font-bold text-[#4B7BFF] hover:text-[#3461DF] transition-colors">
+                                <Link href="/register" className="font-semibold text-[#2D3DB5] hover:text-[#1E2A8A] transition-colors">
                                     Register →
                                 </Link>
                             </p>

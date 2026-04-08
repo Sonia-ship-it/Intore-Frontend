@@ -25,7 +25,7 @@ export default function CandidatesList() {
   return (
     <>
       <AppHeader title="Candidates" />
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto">
         <div className="flex flex-wrap gap-3 mb-6">
           <select value={jobFilter} onChange={(e) => setJobFilter(e.target.value)} className="bg-card rounded-lg border px-3 py-2 text-sm outline-none">
             <option value="All">All Jobs</option>
