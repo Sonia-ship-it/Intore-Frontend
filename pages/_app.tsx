@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
+import { GlobalMouseMotion } from "@/components/animations/GlobalMouseMotion";
 import "@/index.css";
 
 const queryClient = new QueryClient();
@@ -26,12 +27,16 @@ export default function NextApp({ Component, pageProps }: AppProps) {
     });
 
     lenisRef.current = lenis;
+    (window as any).lenis = lenis;
 
     if ("scrollRestoration" in window.history) {
       window.history.scrollRestoration = "manual";
     }
 
     return () => {
+      if ((window as any).lenis === lenis) {
+        delete (window as any).lenis;
+      }
       lenis.destroy();
       lenisRef.current = null;
     };
@@ -79,6 +84,7 @@ export default function NextApp({ Component, pageProps }: AppProps) {
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <GlobalMouseMotion />
         {/* Simple CSS animation wrap, solves the complex Framer unmount scroll bug completely */}
         <div key={router.asPath} className="animate-page-in">
           <Component {...pageProps} />

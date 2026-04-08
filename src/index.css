@@ -134,11 +134,7 @@
   }
 }
 
-/* ═══════════════════════════════════════════
-   CHANGE 6 — DARK MODE: HERO PALETTE
-   ═══════════════════════════════════════════ */
 
-/* Body & content area */
 .dark body,
 .dark {
   background-color: #080C2E;
@@ -272,9 +268,7 @@
   background: linear-gradient(135deg, #0A0E2E 0%, #0F1547 60%, #1E2A8A 100%) !important;
 }
 
-/* ═══════════════════════════════════════════
-   CHANGE 3 — FOOTER WORDMARK
-   ═══════════════════════════════════════════ */
+
 
 .footer-gradient {
   position: relative;
@@ -603,8 +597,8 @@
 }
 
 @keyframes pageFadeIn {
-  from { opacity: 0; filter: blur(4px); }
-  to { opacity: 1; filter: blur(0px); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .animate-page-in {
@@ -628,3 +622,5 @@
 .animate-auth-panel-in {
   animation: authPanelIn 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+/* (reserved for future global cursor effects) */

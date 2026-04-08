@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type MouseEvent as ReactMouseEvent, type CSSProperties } from 'react';
+import { useState, type MouseEvent as ReactMouseEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
 import {
   Diamond, Menu, Sparkles, FileText, ShieldCheck,
@@ -8,27 +8,19 @@ import {
 import { Footer } from '@/components/layout/Footer';
 import { cn } from '@/lib/utils';
 import { RevealOnScroll, RevealChild, AnimatedCounter, useParallaxCursor } from '@/components/animations/RevealOnScroll';
+import { IntoreMark } from '@/components/branding/IntoreMark';
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [cursor, setCursor] = useState({ x: 0, y: 0 });
   const parallaxRef1 = useParallaxCursor(12);
   const parallaxRef2 = useParallaxCursor(-8);
-
-  useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      setCursor({ x: event.clientX, y: event.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   const scrollToSection = (e: ReactMouseEvent, id: string) => {
     e.preventDefault();
     const el = document.getElementById(id);
     if (el) {
       const lenis = (window as any).lenis;
-      if (lenis) {
+      if (lenis && typeof lenis.scrollTo === 'function') {
         lenis.scrollTo(el, { offset: -88, duration: 2.0 });
       } else {
         const navOffset = 88;
@@ -40,18 +32,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
-      <div
-        className="pointer-events-none fixed hidden md:block z-[6] w-[520px] h-[520px] rounded-full"
-        style={{
-          left: cursor.x,
-          top: cursor.y,
-          transform: 'translate(-50%, -50%)',
-          background: 'radial-gradient(circle, rgba(75,123,255,0.24) 0%, rgba(75,123,255,0.12) 30%, rgba(75,123,255,0.04) 52%, transparent 72%)',
-          filter: 'blur(26px)',
-          transition: 'left 120ms ease-out, top 120ms ease-out',
-        }}
-      />
+    <div className="min-h-screen bg-white overflow-x-hidden relative">
       {/* GLOBAL LANDING STYLES */}
       <style dangerouslySetInnerHTML={{__html: `
         :root {
@@ -116,7 +97,7 @@ export default function LandingPage() {
         <div className="pill-navbar">
           {/* LEFT — Logo */}
           <Link href="/" className="flex items-center gap-2" style={{ paddingRight: 32 }}>
-            <Diamond className="w-4 h-4 text-[#4B7BFF] fill-[#4B7BFF]" />
+            <IntoreMark className="w-4 h-4 text-[#4B7BFF] animate-brand-spin-once" />
             <span className="font-semibold text-[16px] text-white">Intore</span>
           </Link>
 
@@ -225,7 +206,7 @@ export default function LandingPage() {
 
             {/* Subheading */}
             <p className="mt-4 text-[15px] md:text-[18px] text-white/60 leading-[1.7] max-w-xl mx-auto">
-              Intore helps Rwandan companies screen, rank, and shortlist top candidates — so your team spends time on people, not paperwork.
+              Intore helps Rwandan companies screen, rank, and shortlist top candidates , so your team spends time on people, not paperwork.
             </p>
           </RevealOnScroll>
 

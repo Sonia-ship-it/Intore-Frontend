@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { LayoutDashboard, Briefcase, Users, Sparkles, Settings, Menu, X, Diamond } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Users, Sparkles, Settings, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/intore/Avatar';
 import { useAuthStore } from '@/stores/authStore';
+import { IntoreMark } from '@/components/branding/IntoreMark';
 
 const navItems = [
   { label: 'Dashboard', path: '/recruiter/dashboard', icon: LayoutDashboard },
@@ -26,7 +27,7 @@ export function AppSidebar() {
       <div className="p-6">
         <Link href="/recruiter/dashboard" className="flex items-center gap-2">
           <div className="bg-[#0F1547] p-1 rounded-md flex items-center justify-center shadow-sm border border-[rgba(75,123,255,0.3)]">
-            <Diamond className="h-5 w-5 text-[#4B7BFF] fill-[#4B7BFF]" />
+            <IntoreMark key={router.asPath} className="h-5 w-5 text-[#4B7BFF] animate-brand-spin-once" />
           </div>
           <span className="text-xl font-bold text-white">Intore</span>
         </Link>
