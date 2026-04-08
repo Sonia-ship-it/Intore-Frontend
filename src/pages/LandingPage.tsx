@@ -561,7 +561,7 @@ export default function LandingPage() {
                 AI Screening
               </div>
               <h4 className="text-[28px] font-bold text-slate-900 mt-3 leading-tight">
-                From 200 applicants to a ranked top 10 — in minutes.
+                From 200 applicants to a ranked top 10 shortlist in minutes.
               </h4>
               <p className="text-[16px] text-slate-600 mt-4 leading-[1.7]">
                 Intore analyses every candidate against your job requirements and produces a ranked shortlist with match scores, key strengths, and critical gaps — all explained in plain language.

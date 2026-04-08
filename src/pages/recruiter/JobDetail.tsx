@@ -13,7 +13,7 @@ import { Spinner } from '@/components/intore/Spinner';
 import { StatusBadge, TypeBadge } from '@/components/intore/Badges';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { mockJobs, mockCandidates, mockScreeningResults, mockChatMessages, type ScreeningResult } from '@/data/mockData';
+import type { ScreeningResult } from '@/data/mockData';
 import { useScreeningStore } from '@/stores/screeningStore';
 import { useIngestionStore } from '@/stores/ingestionStore';
 import { runScreeningAndWait, type ApiScreeningResult } from '@/lib/screeningApi';
@@ -25,11 +25,18 @@ export default function JobDetail() {
   const router = useRouter();
   const { toast } = useToast();
   const id = typeof router.query.id === 'string' ? router.query.id : undefined;
-  const job = mockJobs.find((j) => j.id === id) || mockJobs[0];
-  type UiResult = ScreeningResult & { _raw?: ApiScreeningResult };
-  const [results, setResults] = useState<UiResult[]>(mockScreeningResults);
-  const [shortlistSize, setShortlistSize] = useState<10 | 20>(10);
   const ingestion = useIngestionStore((s) => (id ? s.byJobId[id] : undefined));
+  const job = {
+    id: id || 'unknown',
+    title: 'Job',
+    department: 'Department',
+    location: 'Location',
+    postedDate: '—',
+    applicantCount: ingestion?.candidates?.length || 0,
+  };
+  type UiResult = ScreeningResult & { _raw?: ApiScreeningResult };
+  const [results, setResults] = useState<UiResult[]>([]);
+  const [shortlistSize, setShortlistSize] = useState<10 | 20>(10);
 
   const { status, progress, biasWarningDismissed, chatMessages, isUnlocked,
     setStatus, setProgress, dismissBiasWarning, addChatMessage, setChatMessages,
@@ -45,7 +52,7 @@ export default function JobDetail() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
-  const toUiResults = (apiResults: ApiScreeningResult[]) => {
+  const toUiResults = (apiResults: ApiScreeningResult[]): UiResult[] => {
     return apiResults
       .slice(0, shortlistSize)
       .map((r, idx) => ({
@@ -54,7 +61,7 @@ export default function JobDetail() {
         jobId: job.id,
         rank: r.rankPosition ?? idx + 1,
         matchScore: Math.round(r.fitScore),
-        confidence: r.confidenceLevel === 'high' ? 'High' : r.confidenceLevel === 'low' ? 'Low' : 'Medium',
+        confidence: (r.confidenceLevel === 'high' ? 'High' : r.confidenceLevel === 'low' ? 'Low' : 'Medium') as UiResult['confidence'],
         topStrength: r.strengths?.[0] || '—',
         keyGap: r.gaps?.[0] || '—',
         strengths: r.strengths || [],
@@ -92,18 +99,18 @@ export default function JobDetail() {
       setResults(toUiResults(apiResults));
       setStatus('complete');
       setIsUnlocked(true);
-      setChatMessages(mockChatMessages);
+      setChatMessages([]);
       toast({ title: 'Screening complete', description: `Top ${shortlistSize} ready.` });
     } catch (e) {
-      // Fallback to mock results so the UI still works without a backend.
-      setResults(mockScreeningResults.slice(0, shortlistSize));
-      setProgress(100);
-      setStatus('complete');
-      setIsUnlocked(true);
-      setChatMessages(mockChatMessages);
+      setResults([]);
+      setProgress(0);
+      setStatus('error');
+      setIsUnlocked(false);
+      setChatMessages([]);
       toast({
-        title: 'Backend not reachable (using demo results)',
-        description: 'Start your API and set NEXT_PUBLIC_API_BASE_URL to enable real screening.',
+        title: 'Screening failed',
+        description: 'No demo data is shown. Please verify backend/API availability and try again.',
+        variant: 'destructive',
       });
     }
   };
@@ -222,9 +229,8 @@ export default function JobDetail() {
                     </thead>
                     <tbody>
                       {results.map((r, i) => {
-                        const candidate = mockCandidates.find((c) => c.id === r.candidateId);
-                        const displayName = candidate?.name || `Application ${String(r.candidateId).slice(-6)}`;
-                        const displayRole = candidate?.currentRole || 'Applicant';
+                        const displayName = `Application ${String(r.candidateId).slice(-6)}`;
+                        const displayRole = 'Applicant';
                         const isExpanded = expandedRow === r.candidateId;
                         return (
                           <React.Fragment key={r.candidateId}>
@@ -234,7 +240,7 @@ export default function JobDetail() {
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-2">
-                                  <Avatar name={displayName} color={candidate?.avatarColor || 'bg-[#0F1547]'} size="sm" />
+                                  <Avatar name={displayName} color={'bg-[#0F1547]'} size="sm" />
                                   <div>
                                     <p className="text-sm font-medium">{displayName}</p>
                                     <p className="text-xs text-muted-foreground">{displayRole}</p>

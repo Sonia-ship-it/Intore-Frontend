@@ -32,9 +32,9 @@ export default function RegisterPage() {
     }
     setIsLoading(true);
     register({ name, email, password, role, phoneNumber, companyName: role === 'recruiter' ? companyName : undefined })
-      .then(({ verificationRequired, devCode }) => {
+      .then(({ verificationRequired }) => {
         if (verificationRequired) {
-          router.push(`/verify?email=${encodeURIComponent(email)}${devCode ? `&devCode=${encodeURIComponent(devCode)}` : ''}`);
+          router.push(`/verify?email=${encodeURIComponent(email)}`);
           return;
         }
         toast({ title: 'Registered', description: 'Account created.' });

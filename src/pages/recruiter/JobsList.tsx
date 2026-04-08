@@ -1,13 +1,9 @@
 import { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Plus, Search, Eye } from 'lucide-react';
+import { Plus, Search, Briefcase } from 'lucide-react';
 import { AppHeader } from '@/components/layout/AppHeader';
-import { StatusBadge, TypeBadge } from '@/components/intore/Badges';
 import { EmptyState } from '@/components/intore/EmptyState';
 import { Button } from '@/components/ui/button';
-import { mockJobs } from '@/data/mockData';
-import { Briefcase } from 'lucide-react';
 
 export default function JobsList() {
   const router = useRouter();
@@ -15,13 +11,8 @@ export default function JobsList() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [deptFilter, setDeptFilter] = useState('All');
 
-  const departments = ['All', ...new Set(mockJobs.map((j) => j.department))];
-  const filtered = mockJobs.filter((j) => {
-    if (search && !j.title.toLowerCase().includes(search.toLowerCase())) return false;
-    if (statusFilter !== 'All' && j.status !== statusFilter) return false;
-    if (deptFilter !== 'All' && j.department !== deptFilter) return false;
-    return true;
-  });
+  const departments = ['All'];
+  const filtered: never[] = [];
 
   return (
     <>
@@ -47,37 +38,7 @@ export default function JobsList() {
           </select>
         </div>
 
-        {filtered.length === 0 ? (
-          <EmptyState icon={Briefcase} title="No jobs found" description="No jobs match your filters. Create your first job posting." actionLabel="Post New Job" onAction={() => router.push('/recruiter/jobs/new')} />
-        ) : (
-          <div className="bg-card rounded-xl shadow-sm border overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b text-left">
-                  {['Job Title', 'Department', 'Location', 'Type', 'Applicants', 'Status', 'Posted', 'Actions'].map((h) => (
-                    <th key={h} className="px-5 py-3 text-xs font-medium text-muted-foreground uppercase">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((job) => (
-                  <tr key={job.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
-                    <td className="px-5 py-3"><Link href={`/recruiter/jobs/${job.id}`} className="text-sm font-medium text-primary hover:underline">{job.title}</Link></td>
-                    <td className="px-5 py-3 text-sm text-muted-foreground">{job.department}</td>
-                    <td className="px-5 py-3 text-sm text-muted-foreground">{job.location}</td>
-                    <td className="px-5 py-3"><TypeBadge type={job.type} /></td>
-                    <td className="px-5 py-3 text-sm">{job.applicantCount}</td>
-                    <td className="px-5 py-3"><StatusBadge status={job.status} /></td>
-                    <td className="px-5 py-3 text-sm text-muted-foreground">{job.postedDate}</td>
-                    <td className="px-5 py-3">
-                      <Link href={`/recruiter/jobs/${job.id}`} className="inline-flex items-center gap-1 text-sm text-primary hover:underline"><Eye className="h-4 w-4" /> View</Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <EmptyState icon={Briefcase} title="No jobs yet" description="Start fresh by creating your first job posting." actionLabel="Post New Job" onAction={() => router.push('/recruiter/jobs/new')} />
       </div>
     </>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Diamond } from 'lucide-react';
@@ -11,16 +11,10 @@ export default function VerifyPage() {
   const { toast } = useToast();
   const { verify, resendCode } = useAuthStore();
   const email = typeof router.query.email === 'string' ? router.query.email : '';
-  const devCode = typeof router.query.devCode === 'string' ? router.query.devCode : undefined;
 
   const [code, setCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
-
-  useEffect(() => {
-    if (devCode && !code) setCode(devCode);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [devCode]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,12 +38,11 @@ export default function VerifyPage() {
     if (!email) return;
     setIsResending(true);
     try {
-      const resp = await resendCode(email, 'register');
+      await resendCode(email, 'register');
       toast({
         title: 'Code resent',
-        description: resp.devCode ? `Dev code: ${resp.devCode}` : 'Check your email/SMS for the new code.',
+        description: 'Check your email/SMS for the new code.',
       });
-      if (resp.devCode) setCode(resp.devCode);
     } catch (err) {
       toast({ title: 'Resend failed', description: err instanceof Error ? err.message : 'Unable to resend', variant: 'destructive' });
     } finally {
