@@ -97,7 +97,7 @@ export default function LandingPage() {
         <div className="pill-navbar">
           {/* LEFT — Logo */}
           <Link href="/" className="flex items-center gap-2" style={{ paddingRight: 32 }}>
-            <IntoreMark className="w-4 h-4 text-[#4B7BFF] animate-brand-spin-once" />
+            <IntoreMark className="w-4 h-4 text-[#4B7BFF] animate-brand-spin" />
             <span className="font-semibold text-[16px] text-white">Intore</span>
           </Link>
 

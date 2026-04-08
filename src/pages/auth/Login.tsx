@@ -31,7 +31,7 @@ export default function LoginPage() {
 
                 <div className="relative z-10 transition-transform">
                     <Link href="/" className="flex items-center gap-2.5 group">
-                        <IntoreMark className="w-8 h-8 text-[#4B7BFF] animate-brand-spin-once" />
+                        <IntoreMark className="w-8 h-8 text-[#4B7BFF] animate-brand-spin" />
                         <span className="text-xl font-bold tracking-tight">Intore</span>
                     </Link>
                 </div>
@@ -70,7 +70,7 @@ export default function LoginPage() {
             <div className="flex-1 flex items-center justify-center p-8">
                 <div className="w-full max-w-md animate-auth-panel-in">
                     <div className="lg:hidden flex items-center gap-2.5 mb-12">
-                        <IntoreMark className="w-8 h-8 text-[#4B7BFF] animate-brand-spin-once" />
+                        <IntoreMark className="w-8 h-8 text-[#4B7BFF] animate-brand-spin" />
                         <span className="text-xl font-bold tracking-tight text-slate-900">Intore</span>
                     </div>
 

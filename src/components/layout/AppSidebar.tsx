@@ -27,7 +27,7 @@ export function AppSidebar() {
       <div className="p-6">
         <Link href="/recruiter/dashboard" className="flex items-center gap-2">
           <div className="bg-[#0F1547] p-1 rounded-md flex items-center justify-center shadow-sm border border-[rgba(75,123,255,0.3)]">
-            <IntoreMark key={router.asPath} className="h-5 w-5 text-[#4B7BFF] animate-brand-spin-once" />
+            <IntoreMark className="h-5 w-5 text-[#4B7BFF] animate-brand-spin" />
           </div>
           <span className="text-xl font-bold text-white">Intore</span>
         </Link>

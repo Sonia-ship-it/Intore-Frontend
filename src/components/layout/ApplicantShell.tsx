@@ -30,7 +30,7 @@ export function ApplicantShell({ children }: { children: ReactNode }) {
           {/* Logo */}
           <Link href="/jobs" className="flex items-center gap-2.5">
             <div className="bg-[#0F1547] p-1 rounded-md flex items-center justify-center border border-[rgba(75,123,255,0.3)]">
-              <IntoreMark key={router.asPath} className="h-4 w-4 text-white animate-brand-spin-once" />
+              <IntoreMark className="h-4 w-4 text-white animate-brand-spin" />
             </div>
             <span className="text-lg font-bold text-white">Intore</span>
             <span className="text-[10px] text-white/40 font-medium border border-white/15 rounded px-1.5 py-0.5 ml-1">JOBS</span>

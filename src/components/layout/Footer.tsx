@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Diamond } from 'lucide-react';
+import { IntoreMark } from '@/components/branding/IntoreMark';
 
 export function Footer() {
   return (
@@ -9,7 +9,7 @@ export function Footer() {
           
           <div className="md:col-span-2 space-y-2">
             <Link href="/" className="flex items-center gap-2">
-              <Diamond className="w-5 h-5 text-[#4B7BFF] fill-[#4B7BFF]" />
+              <IntoreMark className="w-5 h-5 text-[#4B7BFF] animate-brand-spin" />
               <span className="font-semibold text-[18px] text-white">Intore</span>
             </Link>
             <p className="text-[14px] text-white/40 leading-relaxed max-w-xs">Built for Rwanda. Powered by AI.</p>
