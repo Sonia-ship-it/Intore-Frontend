@@ -210,27 +210,27 @@ export default function LandingPage() {
         <div className="relative z-10 w-full flex-1 flex flex-col justify-start pt-10 pb-0">
           
           {/* Top text block */}
-          <div className="max-w-3xl mx-auto px-6 text-center">
+          <RevealOnScroll preset="fadeIn" delay={0.1} duration={0.8} once={true} className="max-w-3xl mx-auto px-6 text-center">
             {/* Eyebrow */}
-            <div className="hero-reveal inline-flex items-center gap-2 bg-[#4B7BFF]/15 border border-[#4B7BFF]/40 backdrop-blur-[8px] rounded-full px-4 py-1.5 mx-auto mt-4" style={{ ['--hero-delay' as string]: '120ms' }}>
+            <div className="inline-flex items-center gap-2 bg-[#4B7BFF]/15 border border-[#4B7BFF]/40 backdrop-blur-[8px] rounded-full px-4 py-1.5 mx-auto mt-4">
               <Sparkles className="w-3 h-3 text-brand-300" />
               <span className="text-[12px] text-white/90 font-medium">Built for Rwanda's Growing Workforce</span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#4B7BFF] animate-pulse"></span>
             </div>
 
             {/* Headline */}
-            <h1 className="hero-reveal text-[32px] md:text-[46px] font-[800] text-white leading-[1.1] mt-4" style={{ ['--hero-delay' as string]: '340ms' }}>
+            <h1 className="text-[32px] md:text-[46px] font-[800] text-white leading-[1.1] mt-4">
               Hire Rwanda's Best Talent,<br />Faster Than Ever Before.
             </h1>
 
             {/* Subheading */}
-            <p className="hero-reveal mt-4 text-[15px] md:text-[18px] text-white/60 leading-[1.7] max-w-xl mx-auto" style={{ ['--hero-delay' as string]: '540ms' }}>
+            <p className="mt-4 text-[15px] md:text-[18px] text-white/60 leading-[1.7] max-w-xl mx-auto">
               Intore helps Rwandan companies screen, rank, and shortlist top candidates — so your team spends time on people, not paperwork.
             </p>
-          </div>
+          </RevealOnScroll>
 
           {/* CTA Zone (vertical mid-hero) */}
-          <div className="hero-reveal mt-6 text-center px-6" style={{ ['--hero-delay' as string]: '760ms' }}>
+          <RevealOnScroll preset="fadeUp" delay={0.4} duration={0.8} once={true} className="mt-6 text-center px-6">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/register" className="pulse-btn bg-[#4B7BFF] text-white px-7 py-3.5 rounded-xl font-semibold text-[15px] hover:brightness-110 transition-all">
                 Start hiring smarter
@@ -243,7 +243,7 @@ export default function LandingPage() {
             <p className="mt-3 text-[12px] text-white/35 relative z-10 mb-0">
               Free for 14 days · No credit card · Cancel anytime
             </p>
-          </div>
+          </RevealOnScroll>
         </div>
       </section>
 
@@ -275,7 +275,7 @@ export default function LandingPage() {
           </div>
 
           {/* CENTER CARD (Largest - Straddling Boundary) */}
-          <div className="relative md:absolute md:left-[50%] md:-translate-x-1/2 md:top-0 w-full md:w-[85vw] lg:w-[min(620px,80vw)] bg-white rounded-[20px] flex flex-col md:flex-row overflow-hidden mx-auto md:mx-0 z-[20]" 
+          <RevealOnScroll preset="scaleUp" delay={0.6} duration={1.0} className="relative md:absolute md:left-[50%] md:-translate-x-1/2 md:top-0 w-full md:w-[85vw] lg:w-[min(620px,80vw)] bg-white rounded-[20px] flex flex-col md:flex-row overflow-hidden mx-auto md:mx-0 z-[20]" 
                style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.05), 0 20px 60px rgba(0,0,0,0.15), 0 40px 80px rgba(0,0,0,0.08)', border: '1px solid rgba(0,0,0,0.08)', maxHeight: '320px' }}>
             
             {/* Col A (hidden on mobile) */}
@@ -390,7 +390,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </RevealOnScroll>
 
           {/* RIGHT CARD */}
           <div ref={parallaxRef2} className="hidden md:block absolute right-0 top-[60px] w-[200px] h-[200px] rounded-[16px] p-4 text-white z-[15]"

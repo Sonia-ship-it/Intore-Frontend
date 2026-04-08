@@ -1,7 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { motion, useInView, useAnimation, type Variant } from 'framer-motion';
 
-/* ─── ANIMATION VARIANT PRESETS ─── */
 
 type AnimationPreset =
   | 'fadeUp'
@@ -73,7 +72,7 @@ const presets: Record<AnimationPreset, { hidden: Variant; visible: Variant }> = 
   },
 };
 
-/* ─── RevealOnScroll Component ─── */
+
 
 interface RevealOnScrollProps {
   children: ReactNode;
@@ -81,6 +80,7 @@ interface RevealOnScrollProps {
   delay?: number;
   duration?: number;
   className?: string;
+  style?: React.CSSProperties;
   once?: boolean;
   threshold?: number;
   staggerChildren?: number;
@@ -93,6 +93,7 @@ export function RevealOnScroll({
   delay = 0,
   duration = 0.7,
   className = '',
+  style = {},
   once = true,
   threshold = 0.15,
   staggerChildren,
@@ -128,6 +129,7 @@ export function RevealOnScroll({
     <MotionComponent
       ref={ref}
       className={className}
+      style={style}
       initial="hidden"
       animate={controls}
       variants={containerVariants || variants}
@@ -146,7 +148,7 @@ export function RevealOnScroll({
   );
 }
 
-/* ─── RevealChild (for staggered items) ─── */
+
 
 interface RevealChildProps {
   children: ReactNode;
