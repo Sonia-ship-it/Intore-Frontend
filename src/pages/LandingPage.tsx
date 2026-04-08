@@ -7,12 +7,13 @@ import {
 } from 'lucide-react';
 import { Footer } from '@/components/layout/Footer';
 import { cn } from '@/lib/utils';
+import { RevealOnScroll, RevealChild, AnimatedCounter, useParallaxCursor } from '@/components/animations/RevealOnScroll';
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [featuresVisible, setFeaturesVisible] = useState(false);
   const [cursor, setCursor] = useState({ x: 0, y: 0 });
-  const featuresRef = useRef<HTMLElement | null>(null);
+  const parallaxRef1 = useParallaxCursor(12);
+  const parallaxRef2 = useParallaxCursor(-8);
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -22,45 +23,18 @@ export default function LandingPage() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  useEffect(() => {
-    const target = featuresRef.current;
-    if (!target) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setFeaturesVisible(true);
-      },
-      { threshold: 0.2 }
-    );
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, []);
-
-  const smoothScrollTo = (targetY: number, duration = 1850) => {
-    const startY = window.scrollY;
-    const deltaY = targetY - startY;
-    const startTime = performance.now();
-
-    const easeInOutQuint = (t: number) =>
-      t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2;
-
-    const step = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = easeInOutQuint(progress);
-      window.scrollTo(0, startY + deltaY * eased);
-      if (progress < 1) requestAnimationFrame(step);
-    };
-
-    requestAnimationFrame(step);
-  };
-
   const scrollToSection = (e: ReactMouseEvent, id: string) => {
     e.preventDefault();
     const el = document.getElementById(id);
     if (el) {
-      const navOffset = 88;
-      const targetY = el.getBoundingClientRect().top + window.scrollY - navOffset;
-      smoothScrollTo(targetY);
+      const lenis = (window as any).lenis;
+      if (lenis) {
+        lenis.scrollTo(el, { offset: -88, duration: 2.0 });
+      } else {
+        const navOffset = 88;
+        const targetY = el.getBoundingClientRect().top + window.scrollY - navOffset;
+        window.scrollTo({ top: targetY, behavior: 'smooth' });
+      }
       setMobileMenuOpen(false);
     }
   };
@@ -95,7 +69,6 @@ export default function LandingPage() {
           --accent: #4B7BFF;
         }
         
-        /* Background panels handled inline */
         @keyframes fadeUpFloat {
           from { opacity: 0; transform: translateY(24px) rotate(var(--card-rot)); }
           to   { opacity: 1; transform: translateY(0px)  rotate(var(--card-rot)); }
@@ -120,19 +93,21 @@ export default function LandingPage() {
           animation: heroPulse 3s infinite ease-in-out;
         }
 
-        @keyframes revealUp {
-          from { opacity: 0; transform: translateY(26px) scale(0.985); }
-          to { opacity: 1; transform: translateY(0px) scale(1); }
+        @keyframes heroReveal {
+          from { opacity: 0; transform: translateY(20px); filter: blur(4px); }
+          to { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
 
-        .feature-reveal {
+        .hero-reveal {
           opacity: 0;
-          transform: translateY(26px);
+          animation: heroReveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          animation-delay: var(--hero-delay, 0ms);
         }
 
-        .feature-reveal.is-visible {
-          animation: revealUp 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-          animation-delay: var(--feature-delay, 0ms);
+        /* Cursor-controlled tilt for hero cards */
+        .parallax-tilt {
+          transition: transform 0.2s ease-out;
+          will-change: transform;
         }
       `}} />
 
@@ -237,25 +212,25 @@ export default function LandingPage() {
           {/* Top text block */}
           <div className="max-w-3xl mx-auto px-6 text-center">
             {/* Eyebrow */}
-            <div className="inline-flex items-center gap-2 bg-[#4B7BFF]/15 border border-[#4B7BFF]/40 backdrop-blur-[8px] rounded-full px-4 py-1.5 mx-auto mt-4">
+            <div className="hero-reveal inline-flex items-center gap-2 bg-[#4B7BFF]/15 border border-[#4B7BFF]/40 backdrop-blur-[8px] rounded-full px-4 py-1.5 mx-auto mt-4" style={{ ['--hero-delay' as string]: '120ms' }}>
               <Sparkles className="w-3 h-3 text-brand-300" />
               <span className="text-[12px] text-white/90 font-medium">Built for Rwanda's Growing Workforce</span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#4B7BFF] animate-pulse"></span>
             </div>
 
             {/* Headline */}
-            <h1 className="text-[32px] md:text-[46px] font-[800] text-white leading-[1.1] mt-4">
+            <h1 className="hero-reveal text-[32px] md:text-[46px] font-[800] text-white leading-[1.1] mt-4" style={{ ['--hero-delay' as string]: '340ms' }}>
               Hire Rwanda's Best Talent,<br />Faster Than Ever Before.
             </h1>
 
             {/* Subheading */}
-            <p className="mt-4 text-[15px] md:text-[18px] text-white/60 leading-[1.7] max-w-xl mx-auto">
+            <p className="hero-reveal mt-4 text-[15px] md:text-[18px] text-white/60 leading-[1.7] max-w-xl mx-auto" style={{ ['--hero-delay' as string]: '540ms' }}>
               Intore helps Rwandan companies screen, rank, and shortlist top candidates — so your team spends time on people, not paperwork.
             </p>
           </div>
 
           {/* CTA Zone (vertical mid-hero) */}
-          <div className="mt-6 text-center px-6">
+          <div className="hero-reveal mt-6 text-center px-6" style={{ ['--hero-delay' as string]: '760ms' }}>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/register" className="pulse-btn bg-[#4B7BFF] text-white px-7 py-3.5 rounded-xl font-semibold text-[15px] hover:brightness-110 transition-all">
                 Start hiring smarter
@@ -279,7 +254,7 @@ export default function LandingPage() {
         <div className="relative w-full h-full pointer-events-auto">
           
           {/* LEFT CARD */}
-          <div className="hidden md:block absolute left-0 top-[40px] w-[220px] h-[240px] rounded-[16px] p-4 text-white z-[15]" 
+          <div ref={parallaxRef1} className="hidden md:block absolute left-0 top-[40px] w-[220px] h-[240px] rounded-[16px] p-4 text-white z-[15]" 
                style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5s ease-in-out infinite', ...({ '--card-rot': '-2deg' } as CSSProperties) }}>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse"></div>
@@ -418,7 +393,7 @@ export default function LandingPage() {
           </div>
 
           {/* RIGHT CARD */}
-          <div className="hidden md:block absolute right-0 top-[60px] w-[200px] h-[200px] rounded-[16px] p-4 text-white z-[15]"
+          <div ref={parallaxRef2} className="hidden md:block absolute right-0 top-[60px] w-[200px] h-[200px] rounded-[16px] p-4 text-white z-[15]"
                style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 4.5s ease-in-out infinite 0.5s', ...({ '--card-rot': '2deg' } as CSSProperties) }}>
             <div className="text-[32px] font-bold text-white leading-none">2.4×</div>
             <div className="text-[12px] text-white/60 mt-1">Faster hiring</div>
@@ -472,41 +447,45 @@ export default function LandingPage() {
       {/* SECTION 3 — SOCIAL PROOF / LOGOS BAR */}
       <section className="bg-white pt-[40px] pb-14 px-6 border-b border-slate-100 relative z-[10]">
         <div className="max-w-[1120px] mx-auto">
-          <p className="text-[13px] text-slate-400 font-medium uppercase tracking-wide text-center">
-            TRUSTED BY HIRING TEAMS ACROSS RWANDA
-          </p>
+          <RevealOnScroll preset="fadeIn" delay={0.1}>
+            <p className="text-[13px] text-slate-400 font-medium uppercase tracking-wide text-center">
+              TRUSTED BY HIRING TEAMS ACROSS RWANDA
+            </p>
+          </RevealOnScroll>
           
-          <div className="mt-6 flex flex-wrap justify-center items-center gap-10">
+          <RevealOnScroll preset="fadeUp" className="mt-6 flex flex-wrap justify-center items-center gap-10" staggerChildren={0.08}>
             {['Inyarwanda Ltd', 'Kigali Tech Hub', 'RwandAir', 'BK Capital', 'MTN Rwanda', 'Equity Bank Rwanda'].map(name => (
-              <span key={name} className="text-[18px] font-semibold text-slate-300 hover:text-slate-500 transition-colors cursor-default">
-                {name}
-              </span>
+              <RevealChild key={name} preset="blurIn" as="span">
+                <span className="text-[18px] font-semibold text-slate-300 hover:text-slate-500 transition-colors cursor-default">
+                  {name}
+                </span>
+              </RevealChild>
             ))}
-          </div>
+          </RevealOnScroll>
           
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-[48px] pt-10">
+          <RevealOnScroll preset="fadeUp" delay={0.2} className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-[48px] pt-10">
             <div className="text-center">
-              <div className="text-[32px] font-bold text-brand-600 leading-none">18 min</div>
+              <div className="text-[32px] font-bold text-brand-600 leading-none"><AnimatedCounter target={18} suffix=" min" className="text-[32px] font-bold text-brand-600 leading-none" /></div>
               <div className="text-[13px] text-slate-500 mt-1">Average time to shortlist</div>
             </div>
             <div className="hidden md:block w-[1px] h-10 bg-slate-200"></div>
             <div className="text-center">
-              <div className="text-[32px] font-bold text-brand-600 leading-none">94%</div>
+              <div className="text-[32px] font-bold text-brand-600 leading-none"><AnimatedCounter target={94} suffix="%" className="text-[32px] font-bold text-brand-600 leading-none" /></div>
               <div className="text-[13px] text-slate-500 mt-1">Recruiter satisfaction</div>
             </div>
             <div className="hidden md:block w-[1px] h-10 bg-slate-200"></div>
             <div className="text-center">
-              <div className="text-[32px] font-bold text-brand-600 leading-none">3.2×</div>
+              <div className="text-[32px] font-bold text-brand-600 leading-none"><AnimatedCounter target={3.2} suffix="×" className="text-[32px] font-bold text-brand-600 leading-none" /></div>
               <div className="text-[13px] text-slate-500 mt-1">Faster than manual review</div>
             </div>
-          </div>
+          </RevealOnScroll>
         </div>
       </section>
 
       {/* SECTION 4 — FEATURES */}
-      <section ref={featuresRef} id="features" className="bg-[#F8FAFF] py-24 px-6">
+      <section id="features" className="bg-[#F8FAFF] py-24 px-6">
         <div className="max-w-[1120px] mx-auto">
-          <div className={cn("text-center feature-reveal", featuresVisible && "is-visible")} style={{ ['--feature-delay' as string]: '40ms' }}>
+          <RevealOnScroll preset="fadeUp" className="text-center">
             <h2 className="text-[12px] text-[#4B7BFF] font-semibold uppercase tracking-widest">
               Features
             </h2>
@@ -516,10 +495,10 @@ export default function LandingPage() {
             <p className="mt-3 text-[16px] text-slate-500 max-w-lg mx-auto">
               Intore handles the analysis. You make the decisions.
             </p>
-          </div>
+          </RevealOnScroll>
 
           {/* LARGE FEATURE BLOCK 1 */}
-          <div className={cn("mt-14 grid grid-cols-1 md:grid-cols-12 gap-12 items-center feature-reveal", featuresVisible && "is-visible")} style={{ ['--feature-delay' as string]: '140ms' }}>
+          <RevealOnScroll preset="slideLeft" delay={0.15} className="mt-14 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
             <div className="md:col-span-5 order-2 md:order-1">
               {/* Product Mockup Image built in HTML/CSS */}
               <div className="bg-brand-50 rounded-3xl p-8 flex items-center justify-center">
@@ -587,10 +566,10 @@ export default function LandingPage() {
                 See how screening works →
               </Link>
             </div>
-          </div>
+          </RevealOnScroll>
 
           {/* LARGE FEATURE BLOCK 2 */}
-          <div className={cn("mt-20 grid grid-cols-1 md:grid-cols-12 gap-12 items-center feature-reveal", featuresVisible && "is-visible")} style={{ ['--feature-delay' as string]: '240ms' }}>
+          <RevealOnScroll preset="slideRight" delay={0.15} className="mt-20 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
             <div className="md:col-span-7 md:pr-6">
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-brand-100 text-brand-600 text-[11px] font-medium">
                 AI Chat Assistant
@@ -656,79 +635,91 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </RevealOnScroll>
 
           {/* Feature Grid */}
-          <div className={cn("mt-20 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 feature-reveal", featuresVisible && "is-visible")} style={{ ['--feature-delay' as string]: '320ms' }}>
+          <RevealOnScroll preset="scaleUp" delay={0.1} className="mt-20 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" staggerChildren={0.1}>
             
-            <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
-              <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
-                <Users className="w-[20px] h-[20px] text-[#4B7BFF]" />
+            <RevealChild preset="fadeUp">
+              <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
+                <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
+                  <Users className="w-[20px] h-[20px] text-[#4B7BFF]" />
+                </div>
+                <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Structured profiles</h4>
+                <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
+                  Native support for Umurava platform profiles and external resumes — both handled automatically.
+                </p>
               </div>
-              <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Structured profiles</h4>
-              <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
-                Native support for Umurava platform profiles and external resumes — both handled automatically.
-              </p>
-            </div>
+            </RevealChild>
 
-            <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
-              <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
-                <ShieldCheck className="w-[20px] h-[20px] text-[#4B7BFF]" />
+            <RevealChild preset="fadeUp">
+              <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
+                <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
+                  <ShieldCheck className="w-[20px] h-[20px] text-[#4B7BFF]" />
+                </div>
+                <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Bias detection</h4>
+                <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
+                  Automatic alerts when rankings skew toward credentials over demonstrated skills.
+                </p>
               </div>
-              <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Bias detection</h4>
-              <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
-                Automatic alerts when rankings skew toward credentials over demonstrated skills.
-              </p>
-            </div>
+            </RevealChild>
 
-            <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
-              <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
-                <FileText className="w-[20px] h-[20px] text-[#4B7BFF]" />
+            <RevealChild preset="fadeUp">
+              <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
+                <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
+                  <FileText className="w-[20px] h-[20px] text-[#4B7BFF]" />
+                </div>
+                <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Explainable scores</h4>
+                <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
+                  Every ranking comes with full AI reasoning — no black boxes, no guesswork.
+                </p>
               </div>
-              <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Explainable scores</h4>
-              <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
-                Every ranking comes with full AI reasoning — no black boxes, no guesswork.
-              </p>
-            </div>
+            </RevealChild>
 
-            <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
-              <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
-                <Upload className="w-[20px] h-[20px] text-[#4B7BFF]" />
+            <RevealChild preset="fadeUp">
+              <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
+                <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
+                  <Upload className="w-[20px] h-[20px] text-[#4B7BFF]" />
+                </div>
+                <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Bulk import</h4>
+                <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
+                  Drag in a CSV or a folder of PDFs. Intore parses and normalises everything.
+                </p>
               </div>
-              <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Bulk import</h4>
-              <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
-                Drag in a CSV or a folder of PDFs. Intore parses and normalises everything.
-              </p>
-            </div>
+            </RevealChild>
 
-            <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
-              <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
-                <Scale className="w-[20px] h-[20px] text-[#4B7BFF]" />
+            <RevealChild preset="fadeUp">
+              <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
+                <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
+                  <Scale className="w-[20px] h-[20px] text-[#4B7BFF]" />
+                </div>
+                <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Compliance ready</h4>
+                <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
+                  Built with Colorado AI Act, GDPR, and California ADS regulations in mind from day one.
+                </p>
               </div>
-              <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Compliance ready</h4>
-              <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
-                Built with Colorado AI Act, GDPR, and California ADS regulations in mind from day one.
-              </p>
-            </div>
+            </RevealChild>
 
-            <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
-              <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
-                <MessageSquare className="w-[20px] h-[20px] text-[#4B7BFF]" />
+            <RevealChild preset="fadeUp">
+              <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
+                <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
+                  <MessageSquare className="w-[20px] h-[20px] text-[#4B7BFF]" />
+                </div>
+                <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Chat assistant</h4>
+                <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
+                  Ask natural-language follow-up questions about your shortlist after every screening run.
+                </p>
               </div>
-              <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Chat assistant</h4>
-              <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
-                Ask natural-language follow-up questions about your shortlist after every screening run.
-              </p>
-            </div>
+            </RevealChild>
 
-          </div>
+          </RevealOnScroll>
         </div>
       </section>
 
       {/* SECTION 5 — TESTIMONIALS */}
       <section id="testimonials" className="bg-white py-24 px-6 border-b border-slate-100">
         <div className="max-w-[1120px] mx-auto">
-          <div className="text-center">
+          <RevealOnScroll preset="fadeUp" className="text-center">
             <h2 className="text-[12px] text-[#4B7BFF] font-semibold uppercase tracking-widest">
               Testimonials
             </h2>
@@ -738,9 +729,9 @@ export default function LandingPage() {
             <p className="mt-3 text-[16px] text-slate-500">
               Real teams. Real results. Real hiring decisions.
             </p>
-          </div>
+          </RevealOnScroll>
 
-          <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <RevealOnScroll preset="fadeUp" delay={0.1} className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6" staggerChildren={0.15}>
             
             <div className="bg-white border-[1.5px] border-slate-200 rounded-2xl p-8 hover:border-brand-200 hover:shadow-md transition-all group">
               <div className="flex gap-1">
@@ -805,9 +796,9 @@ export default function LandingPage() {
               </div>
             </div>
 
-          </div>
+          </RevealOnScroll>
 
-          <div className="mt-16 bg-brand-50 border-[1.5px] border-brand-100 rounded-2xl py-12 px-8 text-center max-w-4xl mx-auto shadow-sm">
+          <RevealOnScroll preset="scaleUp" delay={0.15} className="mt-16 bg-brand-50 border-[1.5px] border-brand-100 rounded-2xl py-12 px-8 text-center max-w-4xl mx-auto shadow-sm">
             <h3 className="text-[28px] font-bold text-slate-900">Ready to hire smarter across Rwanda?</h3>
             <p className="mt-2 text-[15px] text-slate-500">Join leading Rwandan companies already using Intore to find and hire top local talent.</p>
             <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -819,7 +810,7 @@ export default function LandingPage() {
               </button>
             </div>
             <p className="text-[12px] text-slate-400 mt-3">No credit card · 14-day trial · Cancel anytime</p>
-          </div>
+          </RevealOnScroll>
         </div>
       </section>
 
