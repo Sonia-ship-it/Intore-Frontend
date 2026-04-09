@@ -23,11 +23,11 @@ const mockApplications: MockApplication[] = [
 ];
 
 const statusConfig: Record<ApplicationStatus, { color: string; bg: string; border: string; icon: typeof CheckCircle }> = {
-  'Applied': { color: 'text-slate-600', bg: 'bg-slate-50', border: 'border-slate-200', icon: FileText },
-  'Under Review': { color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', icon: Clock },
-  'Shortlisted': { color: 'text-brand-600', bg: 'bg-brand-50', border: 'border-brand-200', icon: CheckCircle },
-  'Interview': { color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', icon: CheckCircle },
-  'Rejected': { color: 'text-red-500', bg: 'bg-red-50', border: 'border-red-200', icon: AlertCircle },
+  'Applied': { color: 'text-slate-600 dark:text-white/70', bg: 'bg-slate-50 dark:bg-white/[0.06]', border: 'border-slate-200 dark:border-white/10', icon: FileText },
+  'Under Review': { color: 'text-amber-700 dark:text-amber-200', bg: 'bg-amber-50 dark:bg-amber-500/10', border: 'border-amber-200 dark:border-amber-500/20', icon: Clock },
+  'Shortlisted': { color: 'text-brand-600 dark:text-white/80', bg: 'bg-brand-50 dark:bg-white/[0.06]', border: 'border-brand-200 dark:border-white/10', icon: CheckCircle },
+  'Interview': { color: 'text-emerald-700 dark:text-emerald-200', bg: 'bg-emerald-50 dark:bg-emerald-500/10', border: 'border-emerald-200 dark:border-emerald-500/20', icon: CheckCircle },
+  'Rejected': { color: 'text-red-600 dark:text-rose-300', bg: 'bg-red-50 dark:bg-rose-500/10', border: 'border-red-200 dark:border-rose-500/20', icon: AlertCircle },
 };
 
 const steps: ApplicationStatus[] = ['Applied', 'Under Review', 'Shortlisted', 'Interview'];
@@ -83,53 +83,53 @@ export default function ApplicantDashboardPage() {
     <div className="max-w-5xl mx-auto px-6 py-10">
       {/* Greeting */}
       <div className="mb-8">
-        <h1 className="text-[24px] font-bold text-slate-900">
+        <h1 className="text-[24px] font-bold text-slate-900 dark:text-white">
           Welcome back, {user?.name?.split(' ')[0] || 'Applicant'} 👋
         </h1>
-        <p className="text-[14px] text-slate-500 mt-1">Track your job applications across Rwanda.</p>
+        <p className="text-[14px] text-slate-500 dark:text-white/55 mt-1">Track your job applications across Rwanda.</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-          <p className="text-[12px] text-slate-400 font-medium">Total Applications</p>
-          <p className="text-[28px] font-bold text-slate-900 mt-1">{stats.total}</p>
+        <div className="bg-white dark:bg-white/[0.05] rounded-xl border border-slate-200 dark:border-white/10 p-5 shadow-sm">
+          <p className="text-[12px] text-slate-400 dark:text-white/45 font-medium">Total Applications</p>
+          <p className="text-[28px] font-bold text-slate-900 dark:text-white mt-1">{stats.total}</p>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-          <p className="text-[12px] text-slate-400 font-medium">Active</p>
-          <p className="text-[28px] font-bold text-emerald-600 mt-1">{stats.active}</p>
+        <div className="bg-white dark:bg-white/[0.05] rounded-xl border border-slate-200 dark:border-white/10 p-5 shadow-sm">
+          <p className="text-[12px] text-slate-400 dark:text-white/45 font-medium">Active</p>
+          <p className="text-[28px] font-bold text-emerald-600 dark:text-emerald-200 mt-1">{stats.active}</p>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-          <p className="text-[12px] text-slate-400 font-medium">Interviews Scheduled</p>
-          <p className="text-[28px] font-bold text-brand-600 mt-1">{stats.interviews}</p>
+        <div className="bg-white dark:bg-white/[0.05] rounded-xl border border-slate-200 dark:border-white/10 p-5 shadow-sm">
+          <p className="text-[12px] text-slate-400 dark:text-white/45 font-medium">Interviews Scheduled</p>
+          <p className="text-[28px] font-bold text-brand-600 dark:text-white mt-1">{stats.interviews}</p>
         </div>
       </div>
 
       {/* Applications List */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold text-slate-900">My Applications</h2>
+      <div className="bg-white dark:bg-white/[0.05] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm">
+        <div className="p-5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between">
+          <h2 className="text-[15px] font-semibold text-slate-900 dark:text-white">My Applications</h2>
           <Link href="/jobs" className="text-[13px] text-[#4B7BFF] hover:text-[#2D3DB5] font-medium transition-colors">
             Browse more jobs →
           </Link>
         </div>
 
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-slate-100 dark:divide-white/10">
           {mockApplications.map((app) => (
-            <div key={app.id} className="px-5 py-5 hover:bg-slate-50/50 transition-colors">
+            <div key={app.id} className="px-5 py-5 hover:bg-slate-50/50 dark:hover:bg-white/[0.04] transition-colors">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-white/[0.06] flex items-center justify-center shrink-0 mt-0.5">
                     <Briefcase className="h-5 w-5 text-[#4B7BFF]" />
                   </div>
                   <div>
-                    <h3 className="text-[14px] font-semibold text-slate-900">{app.jobTitle}</h3>
-                    <p className="text-[13px] text-slate-500">{app.company}</p>
+                    <h3 className="text-[14px] font-semibold text-slate-900 dark:text-white">{app.jobTitle}</h3>
+                    <p className="text-[13px] text-slate-500 dark:text-white/55">{app.company}</p>
                     <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                      <span className="text-[11px] text-slate-400 dark:text-white/45 flex items-center gap-1">
                         <MapPin className="h-3 w-3" /> {app.location}
                       </span>
-                      <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                      <span className="text-[11px] text-slate-400 dark:text-white/45 flex items-center gap-1">
                         <Clock className="h-3 w-3" /> Applied {new Date(app.appliedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                       </span>
                     </div>

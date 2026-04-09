@@ -74,10 +74,11 @@ export function AIChatFAB() {
 
       {/* Chat Panel */}
       <div
+        data-lenis-prevent
         className={cn(
           'fixed z-[999] transition-all duration-300 ease-out',
           'bottom-24 right-6 w-[360px] max-h-[480px]',
-          'bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col',
+          'bg-white dark:bg-[#0A0E2E] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col',
           open
             ? 'opacity-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 translate-y-4 pointer-events-none'
@@ -103,7 +104,10 @@ export function AIChatFAB() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-slate-50/50">
+        <div
+          data-lenis-prevent
+          className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-slate-50/50 dark:bg-white/[0.04]"
+        >
           {messages.map((msg) => (
             <div
               key={msg.id}
@@ -121,7 +125,7 @@ export function AIChatFAB() {
                 className={cn(
                   'max-w-[260px] px-3 py-2 rounded-xl text-[13px] leading-relaxed',
                   msg.role === 'ai'
-                    ? 'bg-white border border-slate-200 text-slate-700 rounded-tl-sm'
+                    ? 'bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white/85 rounded-tl-sm'
                     : 'bg-[#0F1547] text-white rounded-tr-sm shadow-sm'
                 )}
               >
@@ -147,7 +151,7 @@ export function AIChatFAB() {
               <div className="w-6 h-6 rounded-md bg-brand-50 border border-brand-100 flex items-center justify-center shrink-0 mt-0.5">
                 <Sparkles className="w-3.5 h-3.5 text-brand-500" />
               </div>
-              <div className="bg-white border border-slate-200 rounded-xl rounded-tl-sm px-3 py-2 text-[13px] text-slate-400">
+              <div className="bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-xl rounded-tl-sm px-3 py-2 text-[13px] text-slate-400 dark:text-white/50">
                 <span className="animate-pulse">Thinking...</span>
               </div>
             </div>
@@ -156,12 +160,12 @@ export function AIChatFAB() {
         </div>
 
         {/* Suggestion Chips */}
-        <div className="px-3 py-2 bg-white border-t border-slate-100 flex gap-1.5 flex-wrap shrink-0">
+        <div className="px-3 py-2 bg-white dark:bg-[#0A0E2E] border-t border-slate-100 dark:border-white/10 flex gap-1.5 flex-wrap shrink-0">
           {suggestions.map((s) => (
             <button
               key={s}
               onClick={() => sendMessage(s)}
-              className="text-[10px] text-slate-600 bg-slate-100 hover:bg-brand-50 hover:text-brand-600 border border-slate-200 hover:border-brand-200 px-2 py-1 rounded-full transition-colors"
+              className="text-[10px] text-slate-600 dark:text-white/70 bg-slate-100 dark:bg-white/[0.06] hover:bg-brand-50 dark:hover:bg-white/10 hover:text-brand-600 dark:hover:text-white border border-slate-200 dark:border-white/10 hover:border-brand-200 px-2 py-1 rounded-full transition-colors"
             >
               {s}
             </button>
@@ -169,19 +173,19 @@ export function AIChatFAB() {
         </div>
 
         {/* Input */}
-        <div className="px-3 pb-3 pt-1 bg-white shrink-0">
-          <div className="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-xl px-3 py-2">
+        <div className="px-3 pb-3 pt-1 bg-white dark:bg-[#0A0E2E] shrink-0">
+          <div className="flex items-center gap-2 bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
               placeholder="Ask anything about your candidates..."
-              className="flex-1 bg-transparent text-[13px] outline-none placeholder:text-slate-400"
+              className="flex-1 bg-transparent text-[13px] outline-none placeholder:text-slate-400 dark:placeholder:text-white/35 text-slate-900 dark:text-white/85"
             />
             <button
               onClick={() => sendMessage(input)}
               disabled={!input.trim()}
-              className="p-1 rounded-md hover:bg-brand-50 transition-colors disabled:opacity-30"
+              className="p-1 rounded-md hover:bg-brand-50 dark:hover:bg-white/10 transition-colors disabled:opacity-30"
             >
               <Send className="w-4 h-4 text-[#4B7BFF]" />
             </button>
@@ -220,7 +224,8 @@ export function AIChatFAB() {
       )}
 
       {/* Inject pulse keyframe */}
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes fabPulse {
           0%, 100% { box-shadow: 0 4px 14px rgba(45,61,181,0.4); }
           50% { box-shadow: 0 4px 28px rgba(45,61,181,0.7); }

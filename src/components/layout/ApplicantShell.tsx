@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Diamond, Briefcase, LayoutDashboard, User, LogOut, Menu, X, Sun, Moon } from 'lucide-react';
+import { Briefcase, LayoutDashboard, User, LogOut, Menu, X, Sun, Moon } from 'lucide-react';
 import { ReactNode, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
 import { useTheme } from '@/hooks/useTheme';
 import { Footer } from '@/components/layout/Footer';
+import { IntoreMark } from '@/components/branding/IntoreMark';
 
 const navItems = [
   { label: 'Browse Jobs', path: '/jobs', icon: Briefcase },
@@ -22,14 +23,14 @@ export function ApplicantShell({ children }: { children: ReactNode }) {
   const isActive = (path: string) => router.pathname === path || router.asPath.startsWith(path + '/');
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 relative overflow-x-hidden">
       {/* Top Navbar */}
       <header className="fixed top-0 left-0 right-0 h-16 bg-brand-900 z-50 shadow-md">
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-6">
           {/* Logo */}
           <Link href="/jobs" className="flex items-center gap-2.5">
             <div className="bg-[#0F1547] p-1 rounded-md flex items-center justify-center border border-[rgba(75,123,255,0.3)]">
-              <Diamond className="h-4 w-4 text-white fill-white" />
+              <IntoreMark className="h-4 w-4 text-white animate-brand-spin" />
             </div>
             <span className="text-lg font-bold text-white">Intore</span>
             <span className="text-[10px] text-white/40 font-medium border border-white/15 rounded px-1.5 py-0.5 ml-1">JOBS</span>
@@ -50,7 +51,7 @@ export function ApplicantShell({ children }: { children: ReactNode }) {
               >
                 <item.icon className="h-4 w-4" />
                 {item.label}
-          </Link>
+              </Link>
             ))}
           </nav>
 
@@ -109,11 +110,7 @@ export function ApplicantShell({ children }: { children: ReactNode }) {
         )}
       </header>
 
-      {/* Page Content */}
-      <main className="pt-16 min-h-screen">{children}</main>
-
-      {/* Footer */}
-      <Footer />
+      <main className="pt-16 min-h-screen relative z-10">{children}</main>
     </div>
   );
 }

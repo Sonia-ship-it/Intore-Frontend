@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, type MouseEvent as ReactMouseEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
 import {
   Diamond, Menu, Sparkles, FileText, ShieldCheck,
@@ -7,55 +7,36 @@ import {
 } from 'lucide-react';
 import { Footer } from '@/components/layout/Footer';
 import { cn } from '@/lib/utils';
+import { RevealOnScroll, RevealChild, AnimatedCounter, useParallaxCursor } from '@/components/animations/RevealOnScroll';
+import { IntoreMark } from '@/components/branding/IntoreMark';
+import { HeroMouseMotion } from '@/components/animations/HeroMouseMotion';
 
 export default function LandingPage() {
-  const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [featuresVisible, setFeaturesVisible] = useState(false);
-  const [cursor, setCursor] = useState({ x: 50, y: 35 });
-  const featuresRef = useRef<HTMLElement | null>(null);
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const parallaxRef1 = useParallaxCursor(12);
+  const parallaxRef2 = useParallaxCursor(-8);
 
-  useEffect(() => {
-    const previous = document.documentElement.style.scrollBehavior;
-    document.documentElement.style.scrollBehavior = 'smooth';
-    return () => {
-      document.documentElement.style.scrollBehavior = previous;
-    };
-  }, []);
-
-  useEffect(() => {
-    const target = featuresRef.current;
-    if (!target) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setFeaturesVisible(true);
-      },
-      { threshold: 0.2 }
-    );
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, []);
-
-  const scrollToSection = (e: React.MouseEvent, id: string) => {
+  const scrollToSection = (e: ReactMouseEvent, id: string) => {
     e.preventDefault();
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      const lenis = (window as any).lenis;
+      if (lenis && typeof lenis.scrollTo === 'function') {
+        lenis.scrollTo(el, { offset: -88, duration: 2.0 });
+      } else {
+        const navOffset = 88;
+        const targetY = el.getBoundingClientRect().top + window.scrollY - navOffset;
+        window.scrollTo({ top: targetY, behavior: 'smooth' });
+      }
       setMobileMenuOpen(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
+    <div className="min-h-screen bg-white overflow-x-hidden relative">
       {/* GLOBAL LANDING STYLES */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         :root {
           --brand-50:  #EEF0FD;
           --brand-100: #CDD5F8;
@@ -71,7 +52,6 @@ export default function LandingPage() {
           --accent: #4B7BFF;
         }
         
-        /* Background panels handled inline */
         @keyframes fadeUpFloat {
           from { opacity: 0; transform: translateY(24px) rotate(var(--card-rot)); }
           to   { opacity: 1; transform: translateY(0px)  rotate(var(--card-rot)); }
@@ -96,19 +76,21 @@ export default function LandingPage() {
           animation: heroPulse 3s infinite ease-in-out;
         }
 
-        @keyframes revealUp {
-          from { opacity: 0; transform: translateY(26px) scale(0.985); }
-          to { opacity: 1; transform: translateY(0px) scale(1); }
+        @keyframes heroReveal {
+          from { opacity: 0; transform: translateY(20px); filter: blur(4px); }
+          to { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
 
-        .feature-reveal {
+        .hero-reveal {
           opacity: 0;
-          transform: translateY(26px);
+          animation: heroReveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          animation-delay: var(--hero-delay, 0ms);
         }
 
-        .feature-reveal.is-visible {
-          animation: revealUp 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-          animation-delay: var(--feature-delay, 0ms);
+        /* Cursor-controlled tilt for hero cards */
+        .parallax-tilt {
+          transition: transform 0.2s ease-out;
+          will-change: transform;
         }
       `}} />
 
@@ -117,7 +99,7 @@ export default function LandingPage() {
         <div className="pill-navbar">
           {/* LEFT — Logo */}
           <Link href="/" className="flex items-center gap-2" style={{ paddingRight: 32 }}>
-            <Diamond className="w-4 h-4 text-[#4B7BFF] fill-[#4B7BFF]" />
+            <IntoreMark className="w-4 h-4 text-[#4B7BFF] animate-brand-spin" />
             <span className="font-semibold text-[16px] text-white">Intore</span>
           </Link>
 
@@ -171,15 +153,9 @@ export default function LandingPage() {
         id="hero"
         className="relative w-full h-auto overflow-visible flex flex-col items-center pt-[100px] pb-24 md:pb-32 lg:pb-40"
         style={{ background: '#05071A' }}
-        onMouseMove={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          setCursor({
-            x: ((e.clientX - rect.left) / rect.width) * 100,
-            y: ((e.clientY - rect.top) / rect.height) * 100,
-          });
-        }}
       >
-        
+        <HeroMouseMotion />
+
         {/* BACKGROUND LAYERS */}
         {/* Layer 0: Base gradient */}
         <div className="absolute inset-0 z-0" style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 30%, #1E2A8A 0%, #0F1547 40%, #05071A 100%)' }} />
@@ -208,18 +184,6 @@ export default function LandingPage() {
         {/* Layer 3: Glow Orbs */}
         <div className="absolute top-[-100px] left-[-100px] w-[500px] h-[500px] rounded-full pointer-events-none z-[3]" style={{ background: 'radial-gradient(circle, rgba(45,61,181,0.5) 0%, transparent 70%)', filter: 'blur(80px)' }} />
         <div className="absolute bottom-[-50px] right-[-50px] w-[300px] h-[300px] rounded-full pointer-events-none z-[3]" style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%)', filter: 'blur(60px)' }} />
-        <div
-          className="hidden md:block absolute pointer-events-none z-[4] w-[360px] h-[360px] rounded-full"
-          style={{
-            left: `${cursor.x}%`,
-            top: `${cursor.y}%`,
-            transform: 'translate(-50%, -50%)',
-            background: 'radial-gradient(circle, rgba(75,123,255,0.22) 0%, rgba(75,123,255,0.08) 35%, transparent 70%)',
-            filter: 'blur(22px)',
-            transition: 'left 160ms ease-out, top 160ms ease-out',
-          }}
-        />
-
         {/* Layer 4: Star Field */}
         <div className="absolute inset-0 z-[4] pointer-events-none opacity-[0.12]" style={{ backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
 
@@ -228,9 +192,9 @@ export default function LandingPage() {
 
         {/* CONTENT ZONE */}
         <div className="relative z-10 w-full flex-1 flex flex-col justify-start pt-10 pb-0">
-          
+
           {/* Top text block */}
-          <div className="max-w-3xl mx-auto px-6 text-center">
+          <RevealOnScroll preset="fadeIn" delay={0.1} duration={0.8} once={true} className="max-w-3xl mx-auto px-6 text-center">
             {/* Eyebrow */}
             <div className="inline-flex items-center gap-2 bg-[#4B7BFF]/15 border border-[#4B7BFF]/40 backdrop-blur-[8px] rounded-full px-4 py-1.5 mx-auto mt-4">
               <Sparkles className="w-3 h-3 text-brand-300" />
@@ -245,12 +209,12 @@ export default function LandingPage() {
 
             {/* Subheading */}
             <p className="mt-4 text-[15px] md:text-[18px] text-white/60 leading-[1.7] max-w-xl mx-auto">
-              Intore helps Rwandan companies screen, rank, and shortlist top candidates so your team spends time on people, not paperwork.
+              Intore helps Rwandan companies screen, rank, and shortlist top candidates , so your team spends time on people, not paperwork.
             </p>
-          </div>
+          </RevealOnScroll>
 
           {/* CTA Zone (vertical mid-hero) */}
-          <div className="mt-6 text-center px-6">
+          <RevealOnScroll preset="fadeUp" delay={0.4} duration={0.8} once={true} className="mt-6 text-center px-6">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/register" className="pulse-btn bg-[#4B7BFF] text-white px-7 py-3.5 rounded-xl font-semibold text-[15px] hover:brightness-110 transition-all">
                 Start hiring smarter
@@ -263,19 +227,19 @@ export default function LandingPage() {
             <p className="mt-3 text-[12px] text-white/35 relative z-10 mb-0">
               Free for 14 days · No credit card · Cancel anytime
             </p>
-          </div>
+          </RevealOnScroll>
         </div>
       </section>
 
       {/* CARDS INTERSECTION WRAPPER */}
       <div className="cards-intersection-wrapper relative z-[20] w-full max-w-[1200px] mx-auto mt-[-80px] md:mt-[-120px] lg:mt-[-180px] pb-0 h-auto md:h-[360px] px-6 lg:px-0 pointer-events-none">
-        
+
         {/* Child relative container so absolute floating works cleanly within the max-w bounds */}
         <div className="relative w-full h-full pointer-events-auto">
-          
+
           {/* LEFT CARD */}
-          <div className="hidden md:block absolute left-0 top-[40px] w-[220px] h-[240px] rounded-[16px] p-4 text-white z-[15]" 
-               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5s ease-in-out infinite', ...({ '--card-rot': '-2deg' } as React.CSSProperties) }}>
+          <div ref={parallaxRef1} className="hidden md:block absolute left-0 top-[40px] w-[220px] h-[240px] rounded-[16px] p-4 text-white z-[15]"
+            style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5s ease-in-out infinite', ...({ '--card-rot': '-2deg' } as CSSProperties) }}>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse"></div>
               <span className="text-[11px] font-medium text-white/80">Live Screening</span>
@@ -295,13 +259,22 @@ export default function LandingPage() {
           </div>
 
           {/* CENTER CARD (Largest - Straddling Boundary) */}
-          <div className="relative md:absolute md:left-[50%] md:-translate-x-1/2 md:top-0 w-full md:w-[85vw] lg:w-[min(620px,80vw)] bg-white rounded-[20px] flex flex-col md:flex-row overflow-hidden mx-auto md:mx-0 z-[20]" 
-               style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.05), 0 20px 60px rgba(0,0,0,0.15), 0 40px 80px rgba(0,0,0,0.08)', border: '1px solid rgba(0,0,0,0.08)', maxHeight: '320px' }}>
-            
-            {/* Col A (hidden on mobile) */}
+          <RevealOnScroll
+            preset="scaleUp"
+            delay={0.6}
+            duration={1.0}
+            className="relative w-full md:w-[85vw] lg:w-[min(720px,86vw)] bg-white rounded-[20px] flex flex-col md:flex-row overflow-hidden mx-auto z-[20]"
+            style={{
+              boxShadow: '0 4px 6px rgba(0,0,0,0.05), 0 20px 60px rgba(0,0,0,0.15), 0 40px 80px rgba(0,0,0,0.08)',
+              border: '1px solid rgba(0,0,0,0.08)',
+              maxHeight: '320px',
+            }}
+          >
+
+
             <div className="hidden md:block flex-[0_0_160px] p-4 border-r border-[#F1F5F9] bg-white">
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse"></div>
+                <div className="w-2 h-2 rounded-full bg-[#4B7BFF] animate-pulse"></div>
                 <span className="text-[10px] text-slate-500 font-medium">Live Screening</span>
               </div>
               <div className="mt-3">
@@ -318,20 +291,20 @@ export default function LandingPage() {
               <div className="mt-2 text-[9px] text-slate-400">Last 5 days</div>
             </div>
 
-            {/* Col B */}
+
             <div className="flex-1 p-4 bg-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-brand-500" />
                   <span className="text-[12px] text-slate-700 font-semibold">Intore AI</span>
                 </div>
-                <div className="bg-green-500/10 border border-green-500/30 text-[#16A34A] text-[9px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <div className="w-[4px] h-[4px] rounded-full bg-[#16A34A]"></div>
+                <div className="bg-[#4B7BFF]/10 border border-[#4B7BFF]/25 text-[#2D3DB5] text-[9px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <div className="w-[4px] h-[4px] rounded-full bg-[#4B7BFF]"></div>
                   Live
                 </div>
               </div>
               <div className="mt-4">
-                <div className="text-[16px] font-bold text-slate-900 leading-tight">Scanning 18 candidates<br/><span className="text-brand-500">In Real-Time</span></div>
+                <div className="text-[16px] font-bold text-slate-900 leading-tight">Scanning 18 candidates<br /><span className="text-brand-500">In Real-Time</span></div>
               </div>
               <div className="mt-3 flex items-center">
                 <div className="relative w-[48px] h-[48px] flex-shrink-0">
@@ -360,9 +333,9 @@ export default function LandingPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-[36px] h-[4px] rounded-full bg-slate-100 overflow-hidden">
-                      <div className="h-full bg-[#22C55E] w-[94%]"></div>
+                      <div className="h-full bg-brand-500 w-[94%]"></div>
                     </div>
-                    <span className="text-[10px] font-semibold text-[#16A34A] w-[24px] text-right">94%</span>
+                    <span className="text-[10px] font-semibold text-brand-600 w-[24px] text-right">94%</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between py-1">
@@ -380,7 +353,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Col C */}
+
             <div className="flex-[0_0_180px] p-4 text-white flex flex-col" style={{ background: 'linear-gradient(160deg, #0F1547 0%, #05071A 100%)' }}>
               <div className="flex items-center gap-1">
                 <span className="text-[13px] text-[#FBBF24]">★</span>
@@ -395,7 +368,7 @@ export default function LandingPage() {
               </div>
               <button className="mt-3 w-[28px] h-[28px] rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                  <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               </button>
               <div className="relative mt-auto pt-3 border-t border-white/10 flex flex-col gap-1">
@@ -410,24 +383,24 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </RevealOnScroll>
 
           {/* RIGHT CARD */}
-          <div className="hidden md:block absolute right-0 top-[60px] w-[200px] h-[200px] rounded-[16px] p-4 text-white z-[15]"
-               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 4.5s ease-in-out infinite 0.5s', ...({ '--card-rot': '2deg' } as React.CSSProperties) }}>
+          <div ref={parallaxRef2} className="hidden md:block absolute right-0 top-[60px] w-[200px] h-[200px] rounded-[16px] p-4 text-white z-[15]"
+            style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 4.5s ease-in-out infinite 0.5s', ...({ '--card-rot': '2deg' } as CSSProperties) }}>
             <div className="text-[32px] font-bold text-white leading-none">2.4×</div>
             <div className="text-[12px] text-white/60 mt-1">Faster hiring</div>
             <div className="text-[11px] text-white/40 mt-0.5">vs. manual screening</div>
             <div className="mt-3">
               <svg width="40" height="20" viewBox="0 0 40 20" fill="none">
-                <path d="M2 18 L12 10 L22 14 L38 2" stroke="#4B7BFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 18 L12 10 L22 14 L38 2" stroke="#4B7BFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
           </div>
 
           {/* SMALL FLOATING BADGES */}
           <div className="hidden lg:flex absolute left-[40px] top-[180px] w-[160px] rounded-[16px] p-[14px] text-white items-center gap-2 z-[15]"
-               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5.5s ease-in-out infinite 1s', ...({ '--card-rot': '-3deg' } as React.CSSProperties) }}>
+            style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5.5s ease-in-out infinite 1s', ...({ '--card-rot': '-3deg' } as CSSProperties) }}>
             <ShieldCheck className="w-4 h-4 text-amber-500" />
             <div>
               <span className="block text-[11px] font-medium leading-tight">Bias Check Passed</span>
@@ -435,7 +408,7 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex lg:hidden xl:flex absolute left-[80px] bottom-[20px] lg:bottom-[40px] w-[140px] items-center gap-2 bg-white border border-[#E2E8F0] shadow-md rounded-xl p-2 z-[15]"
-               style={{ animation: 'gentleFloat 5s ease-in-out infinite 0.8s', ...({ '--card-rot': '0deg' } as React.CSSProperties) }}>
+            style={{ animation: 'gentleFloat 5s ease-in-out infinite 0.8s', ...({ '--card-rot': '0deg' } as CSSProperties) }}>
             <div className="text-amber-500">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
             </div>
@@ -445,7 +418,7 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex lg:hidden xl:flex absolute right-[60px] lg:right-[80px] bottom-[10px] lg:bottom-[30px] w-[140px] items-center gap-2 bg-white border border-[#E2E8F0] shadow-md rounded-xl p-2 z-[15]"
-               style={{ animation: 'gentleFloat 4s ease-in-out infinite 1.2s', ...({ '--card-rot': '0deg' } as React.CSSProperties) }}>
+            style={{ animation: 'gentleFloat 4s ease-in-out infinite 1.2s', ...({ '--card-rot': '0deg' } as CSSProperties) }}>
             <CheckCircle className="w-4 h-4 text-[#22C55E]" />
             <div>
               <span className="block text-[10px] text-slate-800 font-semibold leading-tight">Ready to Int</span>
@@ -453,7 +426,7 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden lg:flex absolute right-[80px] top-[-30px] h-[80px] w-[160px] rounded-[16px] p-[12px] items-center gap-3 text-white z-[15]"
-               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 6s ease-in-out infinite 0.3s', ...({ '--card-rot': '0deg' } as React.CSSProperties) }}>
+            style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 6s ease-in-out infinite 0.3s', ...({ '--card-rot': '0deg' } as CSSProperties) }}>
             <img src="https://images.unsplash.com/photo-1573497019236-17f8177b81e8?w=80&h=80&fit=crop&crop=face" className="w-[28px] h-[28px] rounded-full object-cover" />
             <div>
               <div className="text-[10px] font-medium leading-tight">Amara J.</div>
@@ -467,41 +440,45 @@ export default function LandingPage() {
       {/* SECTION 3 — SOCIAL PROOF / LOGOS BAR */}
       <section className="bg-white pt-[40px] pb-14 px-6 border-b border-slate-100 relative z-[10]">
         <div className="max-w-[1120px] mx-auto">
-          <p className="text-[13px] text-slate-400 font-medium uppercase tracking-wide text-center">
-            TRUSTED BY HIRING TEAMS ACROSS RWANDA
-          </p>
-          
-          <div className="mt-6 flex flex-wrap justify-center items-center gap-10">
-            {['Umurava', 'RCA', 'Global Kwik Coders', 'BK Capital', 'MTN Rwanda', 'Equity Bank Rwanda'].map(name => (
-              <span key={name} className="text-[18px] font-semibold text-slate-300 hover:text-slate-500 transition-colors cursor-default">
-                {name}
-              </span>
+          <RevealOnScroll preset="fadeIn" delay={0.1}>
+            <p className="text-[13px] text-slate-400 font-medium uppercase tracking-wide text-center">
+              TRUSTED BY HIRING TEAMS ACROSS RWANDA
+            </p>
+          </RevealOnScroll>
+
+          <RevealOnScroll preset="fadeUp" className="mt-6 flex flex-wrap justify-center items-center gap-10" staggerChildren={0.08}>
+            {['Inyarwanda Ltd', 'Kigali Tech Hub', 'RwandAir', 'BK Capital', 'MTN Rwanda', 'Equity Bank Rwanda'].map(name => (
+              <RevealChild key={name} preset="blurIn" as="span">
+                <span className="text-[18px] font-semibold text-slate-300 hover:text-slate-500 transition-colors cursor-default">
+                  {name}
+                </span>
+              </RevealChild>
             ))}
-          </div>
-          
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-[48px] pt-10">
+          </RevealOnScroll>
+
+          <RevealOnScroll preset="fadeUp" delay={0.2} className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-[48px] pt-10">
             <div className="text-center">
-              <div className="text-[32px] font-bold text-brand-600 leading-none">18 min</div>
+              <div className="text-[32px] font-bold text-brand-600 leading-none"><AnimatedCounter target={18} suffix=" min" className="text-[32px] font-bold text-brand-600 leading-none" /></div>
               <div className="text-[13px] text-slate-500 mt-1">Average time to shortlist</div>
             </div>
             <div className="hidden md:block w-[1px] h-10 bg-slate-200"></div>
             <div className="text-center">
-              <div className="text-[32px] font-bold text-brand-600 leading-none">94%</div>
+              <div className="text-[32px] font-bold text-brand-600 leading-none"><AnimatedCounter target={94} suffix="%" className="text-[32px] font-bold text-brand-600 leading-none" /></div>
               <div className="text-[13px] text-slate-500 mt-1">Recruiter satisfaction</div>
             </div>
             <div className="hidden md:block w-[1px] h-10 bg-slate-200"></div>
             <div className="text-center">
-              <div className="text-[32px] font-bold text-brand-600 leading-none">3.2×</div>
+              <div className="text-[32px] font-bold text-brand-600 leading-none"><AnimatedCounter target={3.2} suffix="×" className="text-[32px] font-bold text-brand-600 leading-none" /></div>
               <div className="text-[13px] text-slate-500 mt-1">Faster than manual review</div>
             </div>
-          </div>
+          </RevealOnScroll>
         </div>
       </section>
 
       {/* SECTION 4 — FEATURES */}
-      <section ref={featuresRef} id="features" className="bg-[#F8FAFF] py-24 px-6">
+      <section id="features" className="bg-[#F8FAFF] py-24 px-6">
         <div className="max-w-[1120px] mx-auto">
-          <div className={cn("text-center feature-reveal", featuresVisible && "is-visible")} style={{ ['--feature-delay' as string]: '40ms' }}>
+          <RevealOnScroll preset="fadeUp" className="text-center">
             <h2 className="text-[12px] text-[#4B7BFF] font-semibold uppercase tracking-widest">
               Features
             </h2>
@@ -511,15 +488,15 @@ export default function LandingPage() {
             <p className="mt-3 text-[16px] text-slate-500 max-w-lg mx-auto">
               Intore handles the analysis. You make the decisions.
             </p>
-          </div>
+          </RevealOnScroll>
 
           {/* LARGE FEATURE BLOCK 1 */}
-          <div className={cn("mt-14 grid grid-cols-1 md:grid-cols-12 gap-12 items-center feature-reveal", featuresVisible && "is-visible")} style={{ ['--feature-delay' as string]: '140ms' }}>
+          <RevealOnScroll preset="slideLeft" delay={0.15} className="mt-14 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
             <div className="md:col-span-5 order-2 md:order-1">
               {/* Product Mockup Image built in HTML/CSS */}
               <div className="bg-brand-50 rounded-3xl p-8 flex items-center justify-center">
                 <div className="w-full bg-white rounded-2xl border-[1.5px] border-slate-200 shadow-xl overflow-hidden"
-                     style={{ transform: 'perspective(1200px) rotateY(-8deg) rotateX(2deg)' }}>
+                  style={{ transform: 'perspective(1200px) rotateY(-8deg) rotateX(2deg)' }}>
                   <div className="bg-slate-50 border-b border-slate-100 px-4 py-2 flex gap-1.5 items-center">
                     <div className="w-2 h-2 rounded-full bg-slate-300"></div>
                     <div className="w-2 h-2 rounded-full bg-slate-300"></div>
@@ -543,11 +520,11 @@ export default function LandingPage() {
                           <div className="text-[12px] font-semibold text-slate-900">{c.name}</div>
                         </div>
                         <div className="flex-1 w-full mx-2 mt-2 sm:mt-0 flex gap-1 flex-wrap">
-                           <span className="bg-emerald-50 text-emerald-700 rounded text-[9px] px-1.5 py-0.5 border border-emerald-100">{c.s}</span>
-                           <span className="bg-red-50 text-red-700 rounded text-[9px] px-1.5 py-0.5 border border-red-100">{c.g}</span>
+                          <span className="bg-emerald-50 text-emerald-700 rounded text-[9px] px-1.5 py-0.5 border border-emerald-100">{c.s}</span>
+                          <span className="bg-red-50 text-red-700 rounded text-[9px] px-1.5 py-0.5 border border-red-100">{c.g}</span>
                         </div>
                         <div className="text-right shrink-0">
-                           <div className={cn("text-[13px] font-bold", c.score >= 80 ? "text-teal-600" : c.score >= 65 ? "text-amber-500" : "text-red-500")}>{c.score}%</div>
+                          <div className={cn("text-[13px] font-bold", c.score >= 80 ? "text-teal-600" : c.score >= 65 ? "text-amber-500" : "text-red-500")}>{c.score}%</div>
                         </div>
                       </div>
                     ))}
@@ -555,7 +532,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="md:col-span-7 order-1 md:order-2 md:pl-6">
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-brand-100 text-brand-600 text-[11px] font-medium">
                 AI Screening
@@ -582,10 +559,10 @@ export default function LandingPage() {
                 See how screening works →
               </Link>
             </div>
-          </div>
+          </RevealOnScroll>
 
           {/* LARGE FEATURE BLOCK 2 */}
-          <div className={cn("mt-20 grid grid-cols-1 md:grid-cols-12 gap-12 items-center feature-reveal", featuresVisible && "is-visible")} style={{ ['--feature-delay' as string]: '240ms' }}>
+          <RevealOnScroll preset="slideRight" delay={0.15} className="mt-20 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
             <div className="md:col-span-7 md:pr-6">
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-brand-100 text-brand-600 text-[11px] font-medium">
                 AI Chat Assistant
@@ -612,12 +589,12 @@ export default function LandingPage() {
                 Explore the chat feature →
               </Link>
             </div>
-            
+
             <div className="md:col-span-5">
               {/* Mock Chat Panel */}
               <div className="bg-brand-50 rounded-3xl p-8 flex items-center justify-center">
                 <div className="w-full bg-white rounded-2xl border-[1.5px] border-slate-200 shadow-xl overflow-hidden"
-                     style={{ transform: 'perspective(1200px) rotateY(8deg) rotateX(2deg)' }}>
+                  style={{ transform: 'perspective(1200px) rotateY(8deg) rotateX(2deg)' }}>
                   <div className="p-4 border-b border-slate-100 flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-slate-400" />
                     <span className="text-[13px] font-medium text-slate-900">AI Assistant</span>
@@ -651,79 +628,91 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </RevealOnScroll>
 
           {/* Feature Grid */}
-          <div className={cn("mt-20 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 feature-reveal", featuresVisible && "is-visible")} style={{ ['--feature-delay' as string]: '320ms' }}>
-            
-            <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
-              <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
-                <Users className="w-[20px] h-[20px] text-[#4B7BFF]" />
-              </div>
-              <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Structured profiles</h4>
-              <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
-                Native support for Umurava platform profiles and external resumes — both handled automatically.
-              </p>
-            </div>
+          <RevealOnScroll preset="scaleUp" delay={0.1} className="mt-20 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" staggerChildren={0.1}>
 
-            <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
-              <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
-                <ShieldCheck className="w-[20px] h-[20px] text-[#4B7BFF]" />
+            <RevealChild preset="fadeUp">
+              <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
+                <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
+                  <Users className="w-[20px] h-[20px] text-[#4B7BFF]" />
+                </div>
+                <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Structured profiles</h4>
+                <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
+                  Native support for Umurava platform profiles and external resumes — both handled automatically.
+                </p>
               </div>
-              <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Bias detection</h4>
-              <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
-                Automatic alerts when rankings skew toward credentials over demonstrated skills.
-              </p>
-            </div>
+            </RevealChild>
 
-            <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
-              <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
-                <FileText className="w-[20px] h-[20px] text-[#4B7BFF]" />
+            <RevealChild preset="fadeUp">
+              <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
+                <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
+                  <ShieldCheck className="w-[20px] h-[20px] text-[#4B7BFF]" />
+                </div>
+                <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Bias detection</h4>
+                <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
+                  Automatic alerts when rankings skew toward credentials over demonstrated skills.
+                </p>
               </div>
-              <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Explainable scores</h4>
-              <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
-                Every ranking comes with full AI reasoning — no black boxes, no guesswork.
-              </p>
-            </div>
+            </RevealChild>
 
-            <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
-              <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
-                <Upload className="w-[20px] h-[20px] text-[#4B7BFF]" />
+            <RevealChild preset="fadeUp">
+              <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
+                <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
+                  <FileText className="w-[20px] h-[20px] text-[#4B7BFF]" />
+                </div>
+                <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Explainable scores</h4>
+                <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
+                  Every ranking comes with full AI reasoning — no black boxes, no guesswork.
+                </p>
               </div>
-              <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Bulk import</h4>
-              <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
-                Drag in a CSV or a folder of PDFs. Intore parses and normalises everything.
-              </p>
-            </div>
+            </RevealChild>
 
-            <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
-              <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
-                <Scale className="w-[20px] h-[20px] text-[#4B7BFF]" />
+            <RevealChild preset="fadeUp">
+              <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
+                <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
+                  <Upload className="w-[20px] h-[20px] text-[#4B7BFF]" />
+                </div>
+                <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Bulk import</h4>
+                <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
+                  Drag in a CSV or a folder of PDFs. Intore parses and normalises everything.
+                </p>
               </div>
-              <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Compliance ready</h4>
-              <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
-                Built with Colorado AI Act, GDPR, and California ADS regulations in mind from day one.
-              </p>
-            </div>
+            </RevealChild>
 
-            <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
-              <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
-                <MessageSquare className="w-[20px] h-[20px] text-[#4B7BFF]" />
+            <RevealChild preset="fadeUp">
+              <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
+                <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
+                  <Scale className="w-[20px] h-[20px] text-[#4B7BFF]" />
+                </div>
+                <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Compliance ready</h4>
+                <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
+                  Built with Colorado AI Act, GDPR, and California ADS regulations in mind from day one.
+                </p>
               </div>
-              <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Chat assistant</h4>
-              <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
-                Ask natural-language follow-up questions about your shortlist after every screening run.
-              </p>
-            </div>
+            </RevealChild>
 
-          </div>
+            <RevealChild preset="fadeUp">
+              <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
+                <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
+                  <MessageSquare className="w-[20px] h-[20px] text-[#4B7BFF]" />
+                </div>
+                <h4 className="text-[15px] font-semibold text-slate-900 mt-4">Chat assistant</h4>
+                <p className="text-[14px] text-slate-500 mt-2 leading-[1.6]">
+                  Ask natural-language follow-up questions about your shortlist after every screening run.
+                </p>
+              </div>
+            </RevealChild>
+
+          </RevealOnScroll>
         </div>
       </section>
 
       {/* SECTION 5 — TESTIMONIALS */}
       <section id="testimonials" className="bg-white py-24 px-6 border-b border-slate-100">
         <div className="max-w-[1120px] mx-auto">
-          <div className="text-center">
+          <RevealOnScroll preset="fadeUp" className="text-center">
             <h2 className="text-[12px] text-[#4B7BFF] font-semibold uppercase tracking-widest">
               Testimonials
             </h2>
@@ -733,10 +722,10 @@ export default function LandingPage() {
             <p className="mt-3 text-[16px] text-slate-500">
               Real teams. Real results. Real hiring decisions.
             </p>
-          </div>
+          </RevealOnScroll>
 
-          <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6">
-            
+          <RevealOnScroll preset="fadeUp" delay={0.1} className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6" staggerChildren={0.15}>
+
             <div className="bg-white border-[1.5px] border-slate-200 rounded-2xl p-8 hover:border-brand-200 hover:shadow-md transition-all group">
               <div className="flex gap-1">
                 <span className="text-[14px] text-[#FBBF24]">★</span>
@@ -800,9 +789,9 @@ export default function LandingPage() {
               </div>
             </div>
 
-          </div>
+          </RevealOnScroll>
 
-          <div className="mt-16 bg-brand-50 border-[1.5px] border-brand-100 rounded-2xl py-12 px-8 text-center max-w-4xl mx-auto shadow-sm">
+          <RevealOnScroll preset="scaleUp" delay={0.15} className="mt-16 bg-brand-50 border-[1.5px] border-brand-100 rounded-2xl py-12 px-8 text-center max-w-4xl mx-auto shadow-sm">
             <h3 className="text-[28px] font-bold text-slate-900">Ready to hire smarter across Rwanda?</h3>
             <p className="mt-2 text-[15px] text-slate-500">Join leading Rwandan companies already using Intore to find and hire top local talent.</p>
             <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -814,7 +803,7 @@ export default function LandingPage() {
               </button>
             </div>
             <p className="text-[12px] text-slate-400 mt-3">No credit card · 14-day trial · Cancel anytime</p>
-          </div>
+          </RevealOnScroll>
         </div>
       </section>
 

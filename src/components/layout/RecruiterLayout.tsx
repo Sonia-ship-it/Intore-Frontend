@@ -8,7 +8,7 @@ export function RecruiterLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-background">
       <AppSidebar />
       <main className="md:ml-16 lg:ml-60 pt-16 min-h-screen flex flex-col justify-between">
-        <div className="flex-1">
+        <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
           {children}
         </div>
       </main>
