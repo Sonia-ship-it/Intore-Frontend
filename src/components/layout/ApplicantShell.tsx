@@ -51,7 +51,7 @@ export function ApplicantShell({ children }: { children: ReactNode }) {
               >
                 <item.icon className="h-4 w-4" />
                 {item.label}
-          </Link>
+              </Link>
             ))}
           </nav>
 
@@ -110,11 +110,7 @@ export function ApplicantShell({ children }: { children: ReactNode }) {
         )}
       </header>
 
-      {/* Page Content */}
       <main className="pt-16 min-h-screen relative z-10">{children}</main>
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }

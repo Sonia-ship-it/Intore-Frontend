@@ -6,38 +6,43 @@ function prefersReducedMotion() {
 }
 
 /**
- * Global mouse-controlled background motion.
+ * Hero mouse-controlled background motion.
  * - Smooth but "real-time": rAF loop w/ small smoothing.
- * - Works across the whole app (fixed layers).
- * - No transforms are applied to app content (only background layers).
+ * - Confined to the hero section container.
  */
-export function GlobalMouseMotion() {
+export function HeroMouseMotion() {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const blobA = useRef<HTMLDivElement | null>(null);
   const blobB = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (prefersReducedMotion()) return;
 
+    const container = containerRef.current;
+    if (!container) return;
+
     let raf = 0;
-    let tx = 0;
-    let ty = 0;
-    let x = 0;
-    let y = 0;
+    let tx = container.clientWidth / 2;
+    let ty = container.clientHeight / 2;
+    let x = tx;
+    let y = ty;
 
     const onMove = (e: PointerEvent) => {
-      tx = e.clientX;
-      ty = e.clientY;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      tx = e.clientX - rect.left;
+      ty = e.clientY - rect.top;
     };
 
     const loop = () => {
-      // Faster than before: feels "locked" but still premium smooth
+      if (!container) return;
       x += (tx - x) * 0.22;
       y += (ty - y) * 0.22;
 
       const a = blobA.current;
       const b = blobB.current;
       if (a) a.style.transform = `translate3d(${x}px, ${y}px, 0) translate3d(-50%, -50%, 0)`;
-      if (b) b.style.transform = `translate3d(${(window.innerWidth - x)}px, ${(window.innerHeight - y)}px, 0) translate3d(-50%, -50%, 0)`;
+      if (b) b.style.transform = `translate3d(${(container.clientWidth - x)}px, ${(container.clientHeight - y)}px, 0) translate3d(-50%, -50%, 0)`;
 
       raf = requestAnimationFrame(loop);
     };
@@ -52,7 +57,7 @@ export function GlobalMouseMotion() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[5]">
+    <div ref={containerRef} className="absolute inset-0 z-[3] overflow-hidden pointer-events-none">
       <div
         ref={blobA}
         className="hidden md:block absolute w-[620px] h-[620px] rounded-full"
@@ -81,4 +86,3 @@ export function GlobalMouseMotion() {
     </div>
   );
 }
-

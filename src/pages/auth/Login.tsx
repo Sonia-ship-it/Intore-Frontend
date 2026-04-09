@@ -16,7 +16,7 @@ export default function LoginPage() {
         e.preventDefault();
         setLoading(true);
         setTimeout(() => {
-            window.location.href = '/dashboard';
+            window.location.href = '/recruiter/dashboard';
         }, 1200);
     };
 

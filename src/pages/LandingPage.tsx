@@ -9,6 +9,7 @@ import { Footer } from '@/components/layout/Footer';
 import { cn } from '@/lib/utils';
 import { RevealOnScroll, RevealChild, AnimatedCounter, useParallaxCursor } from '@/components/animations/RevealOnScroll';
 import { IntoreMark } from '@/components/branding/IntoreMark';
+import { HeroMouseMotion } from '@/components/animations/HeroMouseMotion';
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -34,7 +35,8 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden relative">
       {/* GLOBAL LANDING STYLES */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         :root {
           --brand-50:  #EEF0FD;
           --brand-100: #CDD5F8;
@@ -152,7 +154,8 @@ export default function LandingPage() {
         className="relative w-full h-auto overflow-visible flex flex-col items-center pt-[100px] pb-24 md:pb-32 lg:pb-40"
         style={{ background: '#05071A' }}
       >
-        
+        <HeroMouseMotion />
+
         {/* BACKGROUND LAYERS */}
         {/* Layer 0: Base gradient */}
         <div className="absolute inset-0 z-0" style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 30%, #1E2A8A 0%, #0F1547 40%, #05071A 100%)' }} />
@@ -189,7 +192,7 @@ export default function LandingPage() {
 
         {/* CONTENT ZONE */}
         <div className="relative z-10 w-full flex-1 flex flex-col justify-start pt-10 pb-0">
-          
+
           {/* Top text block */}
           <RevealOnScroll preset="fadeIn" delay={0.1} duration={0.8} once={true} className="max-w-3xl mx-auto px-6 text-center">
             {/* Eyebrow */}
@@ -230,13 +233,13 @@ export default function LandingPage() {
 
       {/* CARDS INTERSECTION WRAPPER */}
       <div className="cards-intersection-wrapper relative z-[20] w-full max-w-[1200px] mx-auto mt-[-80px] md:mt-[-120px] lg:mt-[-180px] pb-0 h-auto md:h-[360px] px-6 lg:px-0 pointer-events-none">
-        
+
         {/* Child relative container so absolute floating works cleanly within the max-w bounds */}
         <div className="relative w-full h-full pointer-events-auto">
-          
+
           {/* LEFT CARD */}
-          <div ref={parallaxRef1} className="hidden md:block absolute left-0 top-[40px] w-[220px] h-[240px] rounded-[16px] p-4 text-white z-[15]" 
-               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5s ease-in-out infinite', ...({ '--card-rot': '-2deg' } as CSSProperties) }}>
+          <div ref={parallaxRef1} className="hidden md:block absolute left-0 top-[40px] w-[220px] h-[240px] rounded-[16px] p-4 text-white z-[15]"
+            style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5s ease-in-out infinite', ...({ '--card-rot': '-2deg' } as CSSProperties) }}>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse"></div>
               <span className="text-[11px] font-medium text-white/80">Live Screening</span>
@@ -267,8 +270,8 @@ export default function LandingPage() {
               maxHeight: '320px',
             }}
           >
-            
-            
+
+
             <div className="hidden md:block flex-[0_0_160px] p-4 border-r border-[#F1F5F9] bg-white">
               <div className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full bg-[#4B7BFF] animate-pulse"></div>
@@ -288,7 +291,7 @@ export default function LandingPage() {
               <div className="mt-2 text-[9px] text-slate-400">Last 5 days</div>
             </div>
 
-            
+
             <div className="flex-1 p-4 bg-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
@@ -301,7 +304,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="mt-4">
-                <div className="text-[16px] font-bold text-slate-900 leading-tight">Scanning 18 candidates<br/><span className="text-brand-500">In Real-Time</span></div>
+                <div className="text-[16px] font-bold text-slate-900 leading-tight">Scanning 18 candidates<br /><span className="text-brand-500">In Real-Time</span></div>
               </div>
               <div className="mt-3 flex items-center">
                 <div className="relative w-[48px] h-[48px] flex-shrink-0">
@@ -350,7 +353,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-        
+
             <div className="flex-[0_0_180px] p-4 text-white flex flex-col" style={{ background: 'linear-gradient(160deg, #0F1547 0%, #05071A 100%)' }}>
               <div className="flex items-center gap-1">
                 <span className="text-[13px] text-[#FBBF24]">★</span>
@@ -365,7 +368,7 @@ export default function LandingPage() {
               </div>
               <button className="mt-3 w-[28px] h-[28px] rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                  <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               </button>
               <div className="relative mt-auto pt-3 border-t border-white/10 flex flex-col gap-1">
@@ -384,20 +387,20 @@ export default function LandingPage() {
 
           {/* RIGHT CARD */}
           <div ref={parallaxRef2} className="hidden md:block absolute right-0 top-[60px] w-[200px] h-[200px] rounded-[16px] p-4 text-white z-[15]"
-               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 4.5s ease-in-out infinite 0.5s', ...({ '--card-rot': '2deg' } as CSSProperties) }}>
+            style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 4.5s ease-in-out infinite 0.5s', ...({ '--card-rot': '2deg' } as CSSProperties) }}>
             <div className="text-[32px] font-bold text-white leading-none">2.4×</div>
             <div className="text-[12px] text-white/60 mt-1">Faster hiring</div>
             <div className="text-[11px] text-white/40 mt-0.5">vs. manual screening</div>
             <div className="mt-3">
               <svg width="40" height="20" viewBox="0 0 40 20" fill="none">
-                <path d="M2 18 L12 10 L22 14 L38 2" stroke="#4B7BFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 18 L12 10 L22 14 L38 2" stroke="#4B7BFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
           </div>
 
           {/* SMALL FLOATING BADGES */}
           <div className="hidden lg:flex absolute left-[40px] top-[180px] w-[160px] rounded-[16px] p-[14px] text-white items-center gap-2 z-[15]"
-               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5.5s ease-in-out infinite 1s', ...({ '--card-rot': '-3deg' } as CSSProperties) }}>
+            style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5.5s ease-in-out infinite 1s', ...({ '--card-rot': '-3deg' } as CSSProperties) }}>
             <ShieldCheck className="w-4 h-4 text-amber-500" />
             <div>
               <span className="block text-[11px] font-medium leading-tight">Bias Check Passed</span>
@@ -405,7 +408,7 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex lg:hidden xl:flex absolute left-[80px] bottom-[20px] lg:bottom-[40px] w-[140px] items-center gap-2 bg-white border border-[#E2E8F0] shadow-md rounded-xl p-2 z-[15]"
-               style={{ animation: 'gentleFloat 5s ease-in-out infinite 0.8s', ...({ '--card-rot': '0deg' } as CSSProperties) }}>
+            style={{ animation: 'gentleFloat 5s ease-in-out infinite 0.8s', ...({ '--card-rot': '0deg' } as CSSProperties) }}>
             <div className="text-amber-500">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
             </div>
@@ -415,7 +418,7 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex lg:hidden xl:flex absolute right-[60px] lg:right-[80px] bottom-[10px] lg:bottom-[30px] w-[140px] items-center gap-2 bg-white border border-[#E2E8F0] shadow-md rounded-xl p-2 z-[15]"
-               style={{ animation: 'gentleFloat 4s ease-in-out infinite 1.2s', ...({ '--card-rot': '0deg' } as CSSProperties) }}>
+            style={{ animation: 'gentleFloat 4s ease-in-out infinite 1.2s', ...({ '--card-rot': '0deg' } as CSSProperties) }}>
             <CheckCircle className="w-4 h-4 text-[#22C55E]" />
             <div>
               <span className="block text-[10px] text-slate-800 font-semibold leading-tight">Ready to Int</span>
@@ -423,7 +426,7 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden lg:flex absolute right-[80px] top-[-30px] h-[80px] w-[160px] rounded-[16px] p-[12px] items-center gap-3 text-white z-[15]"
-               style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 6s ease-in-out infinite 0.3s', ...({ '--card-rot': '0deg' } as CSSProperties) }}>
+            style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 6s ease-in-out infinite 0.3s', ...({ '--card-rot': '0deg' } as CSSProperties) }}>
             <img src="https://images.unsplash.com/photo-1573497019236-17f8177b81e8?w=80&h=80&fit=crop&crop=face" className="w-[28px] h-[28px] rounded-full object-cover" />
             <div>
               <div className="text-[10px] font-medium leading-tight">Amara J.</div>
@@ -442,7 +445,7 @@ export default function LandingPage() {
               TRUSTED BY HIRING TEAMS ACROSS RWANDA
             </p>
           </RevealOnScroll>
-          
+
           <RevealOnScroll preset="fadeUp" className="mt-6 flex flex-wrap justify-center items-center gap-10" staggerChildren={0.08}>
             {['Inyarwanda Ltd', 'Kigali Tech Hub', 'RwandAir', 'BK Capital', 'MTN Rwanda', 'Equity Bank Rwanda'].map(name => (
               <RevealChild key={name} preset="blurIn" as="span">
@@ -452,7 +455,7 @@ export default function LandingPage() {
               </RevealChild>
             ))}
           </RevealOnScroll>
-          
+
           <RevealOnScroll preset="fadeUp" delay={0.2} className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-[48px] pt-10">
             <div className="text-center">
               <div className="text-[32px] font-bold text-brand-600 leading-none"><AnimatedCounter target={18} suffix=" min" className="text-[32px] font-bold text-brand-600 leading-none" /></div>
@@ -493,7 +496,7 @@ export default function LandingPage() {
               {/* Product Mockup Image built in HTML/CSS */}
               <div className="bg-brand-50 rounded-3xl p-8 flex items-center justify-center">
                 <div className="w-full bg-white rounded-2xl border-[1.5px] border-slate-200 shadow-xl overflow-hidden"
-                     style={{ transform: 'perspective(1200px) rotateY(-8deg) rotateX(2deg)' }}>
+                  style={{ transform: 'perspective(1200px) rotateY(-8deg) rotateX(2deg)' }}>
                   <div className="bg-slate-50 border-b border-slate-100 px-4 py-2 flex gap-1.5 items-center">
                     <div className="w-2 h-2 rounded-full bg-slate-300"></div>
                     <div className="w-2 h-2 rounded-full bg-slate-300"></div>
@@ -517,11 +520,11 @@ export default function LandingPage() {
                           <div className="text-[12px] font-semibold text-slate-900">{c.name}</div>
                         </div>
                         <div className="flex-1 w-full mx-2 mt-2 sm:mt-0 flex gap-1 flex-wrap">
-                           <span className="bg-emerald-50 text-emerald-700 rounded text-[9px] px-1.5 py-0.5 border border-emerald-100">{c.s}</span>
-                           <span className="bg-red-50 text-red-700 rounded text-[9px] px-1.5 py-0.5 border border-red-100">{c.g}</span>
+                          <span className="bg-emerald-50 text-emerald-700 rounded text-[9px] px-1.5 py-0.5 border border-emerald-100">{c.s}</span>
+                          <span className="bg-red-50 text-red-700 rounded text-[9px] px-1.5 py-0.5 border border-red-100">{c.g}</span>
                         </div>
                         <div className="text-right shrink-0">
-                           <div className={cn("text-[13px] font-bold", c.score >= 80 ? "text-teal-600" : c.score >= 65 ? "text-amber-500" : "text-red-500")}>{c.score}%</div>
+                          <div className={cn("text-[13px] font-bold", c.score >= 80 ? "text-teal-600" : c.score >= 65 ? "text-amber-500" : "text-red-500")}>{c.score}%</div>
                         </div>
                       </div>
                     ))}
@@ -529,7 +532,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="md:col-span-7 order-1 md:order-2 md:pl-6">
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-brand-100 text-brand-600 text-[11px] font-medium">
                 AI Screening
@@ -586,12 +589,12 @@ export default function LandingPage() {
                 Explore the chat feature →
               </Link>
             </div>
-            
+
             <div className="md:col-span-5">
               {/* Mock Chat Panel */}
               <div className="bg-brand-50 rounded-3xl p-8 flex items-center justify-center">
                 <div className="w-full bg-white rounded-2xl border-[1.5px] border-slate-200 shadow-xl overflow-hidden"
-                     style={{ transform: 'perspective(1200px) rotateY(8deg) rotateX(2deg)' }}>
+                  style={{ transform: 'perspective(1200px) rotateY(8deg) rotateX(2deg)' }}>
                   <div className="p-4 border-b border-slate-100 flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-slate-400" />
                     <span className="text-[13px] font-medium text-slate-900">AI Assistant</span>
@@ -629,7 +632,7 @@ export default function LandingPage() {
 
           {/* Feature Grid */}
           <RevealOnScroll preset="scaleUp" delay={0.1} className="mt-20 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" staggerChildren={0.1}>
-            
+
             <RevealChild preset="fadeUp">
               <div className="bg-white border-[1.5px] border-slate-200 rounded-xl p-6 hover:border-brand-300 hover:shadow-sm transition-all">
                 <div className="w-[40px] h-[40px] rounded-lg bg-brand-50 flex items-center justify-center mb-4">
@@ -722,7 +725,7 @@ export default function LandingPage() {
           </RevealOnScroll>
 
           <RevealOnScroll preset="fadeUp" delay={0.1} className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6" staggerChildren={0.15}>
-            
+
             <div className="bg-white border-[1.5px] border-slate-200 rounded-2xl p-8 hover:border-brand-200 hover:shadow-md transition-all group">
               <div className="flex gap-1">
                 <span className="text-[14px] text-[#FBBF24]">★</span>
