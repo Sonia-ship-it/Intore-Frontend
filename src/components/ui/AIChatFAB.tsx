@@ -74,6 +74,7 @@ export function AIChatFAB() {
 
       {/* Chat Panel */}
       <div
+        data-lenis-prevent
         className={cn(
           'fixed z-[999] transition-all duration-300 ease-out',
           'bottom-24 right-6 w-[360px] max-h-[480px]',
@@ -103,7 +104,10 @@ export function AIChatFAB() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-slate-50/50 dark:bg-white/[0.04]">
+        <div
+          data-lenis-prevent
+          className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-slate-50/50 dark:bg-white/[0.04]"
+        >
           {messages.map((msg) => (
             <div
               key={msg.id}
@@ -220,7 +224,8 @@ export function AIChatFAB() {
       )}
 
       {/* Inject pulse keyframe */}
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes fabPulse {
           0%, 100% { box-shadow: 0 4px 14px rgba(45,61,181,0.4); }
           50% { box-shadow: 0 4px 28px rgba(45,61,181,0.7); }

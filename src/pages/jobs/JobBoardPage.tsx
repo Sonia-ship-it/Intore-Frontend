@@ -41,7 +41,7 @@ export default function JobBoardPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by title or location..."
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400 dark:placeholder:text-white/35 text-slate-900 dark:text-white"
+              className="flex-1 bg-transparent text-sm !outline-none border-none focus:!ring-0 focus:!shadow-none focus:!border-transparent focus:!outline-none placeholder:text-slate-400 dark:placeholder:text-white/35 text-slate-900 dark:text-white dark:bg-transparent"
             />
           </div>
           <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
@@ -51,7 +51,7 @@ export default function JobBoardPage() {
                 key={dept}
                 onClick={() => setDepartment(dept)}
                 className={cn(
-                  'text-[12px] font-medium px-3 py-1.5 rounded-full border transition-colors whitespace-nowrap',
+                  'text-[12px] font-medium px-3 py-1.5 rounded-full border transition-colors whitespace-nowrap !outline-none focus:!ring-0 focus:!ring-offset-0',
                   department === dept
                     ? 'bg-[#0F1547] text-white border-[#0F1547] dark:border-white/10'
                     : 'bg-white dark:bg-white/[0.04] text-slate-600 dark:text-white/70 border-slate-200 dark:border-white/10 hover:border-[#2D3DB5]'
