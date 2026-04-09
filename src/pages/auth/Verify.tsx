@@ -26,7 +26,8 @@ export default function VerifyPage() {
     try {
       await verify(email, code);
       toast({ title: 'Verified', description: 'Your account is verified.' });
-      router.push('/recruiter/dashboard');
+      const userRole = useAuthStore.getState().role;
+      router.push(userRole === 'applicant' ? '/applicant/dashboard' : '/recruiter/dashboard');
     } catch (err) {
       toast({ title: 'Verification failed', description: err instanceof Error ? err.message : 'Invalid code', variant: 'destructive' });
     } finally {

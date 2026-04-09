@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { Sparkles, Lock, Send, MapPin, Calendar, Users, ChevronDown, ChevronUp, Upload } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { ScoreBar } from '@/components/intore/ScoreBar';
 import { ConfidenceBadge } from '@/components/intore/ConfidenceBadge';
@@ -175,56 +176,57 @@ export default function JobDetail() {
           {/* Left Panel */}
           <div className="flex-1 min-w-0 space-y-6">
             {/* Job summary bar */}
-            <div className="bg-card rounded-xl p-5 shadow-sm border flex flex-wrap items-center gap-4">
-              <div className="flex-1 min-w-0">
-                <h2 className="text-xl font-semibold">{job.title}</h2>
+            <div className="bg-card rounded-xl p-5 shadow-sm border space-y-4">
+              {/* Row 1: title + meta */}
+              <div>
+                <h2 className="text-xl font-bold">{job.title}</h2>
                 <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted-foreground">
                   <StatusBadge status={job.department} />
                   <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{job.location}</span>
                   <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{job.postedDate}</span>
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1 rounded-full border px-2 py-1">
-                    <Upload className="h-3.5 w-3.5" />
-                    {(ingestion?.candidates?.length || 0)} candidate(s) ingested
+                  <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#4B7BFF]/10 text-[#4B7BFF] text-xs font-medium">
+                    <Users className="h-3.5 w-3.5" /> {job.applicantCount} applicants
                   </span>
-                  {ingestion?.umurava?.profiles && (
-                    <span className="inline-flex items-center gap-1 rounded-full border px-2 py-1">
-                      Umurava profiles loaded
-                    </span>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.push(`/recruiter/jobs/${job.id}/upload`)}
-                    className="h-7 px-2"
-                  >
-                    Upload applicants
-                  </Button>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-brand-50 text-sm font-medium text-brand-700 dark:bg-[rgba(75,123,255,0.1)] dark:text-[#4B7BFF]">
-                  <Users className="h-4 w-4" /> {job.applicantCount} applicants
+              {/* Row 2: ingestion info + actions */}
+              <div className="flex flex-wrap items-center gap-3 pt-1 border-t">
+                <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground rounded-full border px-3 py-1.5">
+                  <Upload className="h-3.5 w-3.5" />
+                  {(ingestion?.candidates?.length || 0)} candidate(s) ingested
                 </span>
-                <select
-                  value={shortlistSize}
-                  onChange={(e) => setShortlistSize((Number(e.target.value) as 10 | 20) || 10)}
-                  className="bg-background rounded-lg border px-3 py-2 text-sm outline-none"
-                  title="Shortlist size"
-                >
-                  <option value={10}>Top 10</option>
-                  <option value={20}>Top 20</option>
-                </select>
+                {ingestion?.umurava?.profiles && (
+                  <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground rounded-full border px-3 py-1.5">
+                    Umurava profiles loaded
+                  </span>
+                )}
                 <Button
-                  onClick={runScreeningClick}
-                  disabled={status === 'running'}
-                  className={cn(status === 'running' && 'opacity-70')}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`/recruiter/jobs/${job.id}/upload`)}
                 >
-                  {status === 'running' ? <><Spinner size="sm" className="mr-2" /> Screening...</> :
-                   status === 'complete' ? <><Sparkles className="h-4 w-4 mr-2" /> Re-run Screening</> :
-                   <><Sparkles className="h-4 w-4 mr-2" /> Screen Candidates</>}
+                  Upload applicants
                 </Button>
+                <div className="ml-auto flex items-center gap-3">
+                  <select
+                    value={shortlistSize}
+                    onChange={(e) => setShortlistSize((Number(e.target.value) as 10 | 20) || 10)}
+                    className="bg-background rounded-lg border px-3 py-2 text-sm outline-none"
+                    title="Shortlist size"
+                  >
+                    <option value={10}>Top 10</option>
+                    <option value={20}>Top 20</option>
+                  </select>
+                  <Button
+                    onClick={runScreeningClick}
+                    disabled={status === 'running'}
+                    className={cn(status === 'running' && 'opacity-70')}
+                  >
+                    {status === 'running' ? <><Spinner size="sm" className="mr-2" /> Screening...</> :
+                     status === 'complete' ? <><Bot className="h-4 w-4 mr-2" /> Re-run Screening</> :
+                     <><Bot className="h-4 w-4 mr-2" /> Screen Candidates</>}
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -329,7 +331,7 @@ export default function JobDetail() {
           <div className="w-full xl:w-[400px] shrink-0">
             <div className="bg-card rounded-xl shadow-sm border flex flex-col h-[calc(100vh-8rem)] sticky top-24">
               <div className="p-4 border-b flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
+                <Bot className="h-5 w-5 text-primary" />
                 <h3 className="font-semibold">AI Recruiter Assistant</h3>
               </div>
 

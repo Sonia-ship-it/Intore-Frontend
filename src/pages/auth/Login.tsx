@@ -2,22 +2,40 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { RevealOnScroll, RevealChild } from '@/components/animations/RevealOnScroll';
 import { IntoreMark } from '@/components/branding/IntoreMark';
+import { useAuthStore } from '@/stores/authStore';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function LoginPage() {
+    const router = useRouter();
+    const { toast } = useToast();
+    const { login, role } = useAuthStore();
+
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setTimeout(() => {
-            window.location.href = '/recruiter/dashboard';
-        }, 1200);
+        try {
+            await login(email, password);
+            // role is set in the store after login
+            const userRole = useAuthStore.getState().role;
+            router.push(userRole === 'applicant' ? '/applicant/dashboard' : '/recruiter/dashboard');
+        } catch (err) {
+            toast({
+                title: 'Login failed',
+                description: err instanceof Error ? err.message : 'Invalid credentials.',
+                variant: 'destructive',
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -44,7 +62,7 @@ export default function LoginPage() {
                     </RevealOnScroll>
                     <RevealOnScroll preset="fadeUp" delay={0.2}>
                         <p className="text-slate-400 font-medium max-w-md leading-relaxed">
-                            Everything Rwandan hiring teams need to screen, rank, and hire smarter — powered by AI.
+                            Everything Rwandan hiring teams need to screen, rank, and hire smarter as powered by AI.
                         </p>
                     </RevealOnScroll>
                     <RevealOnScroll preset="fadeUp" delay={0.3} className="flex gap-6 pt-4">

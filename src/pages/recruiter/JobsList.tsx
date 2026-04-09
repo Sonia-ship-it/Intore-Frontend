@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { Plus, Search, Briefcase } from 'lucide-react';
+import { Plus, Search, Briefcase, MapPin, Calendar, ChevronRight } from 'lucide-react';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { StatusBadge, TypeBadge } from '@/components/intore/Badges';
 import { EmptyState } from '@/components/intore/EmptyState';
@@ -74,57 +74,67 @@ export default function JobsList() {
     <>
       <AppHeader title="Jobs" />
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-semibold">All Jobs</h2>
-          <Button onClick={() => router.push('/recruiter/jobs/new')}>
-            <Plus className="h-4 w-4 mr-2" /> Post New Job
+          <div>
+            <h2 className="text-2xl font-bold">All Jobs</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">{jobs.length} job{jobs.length !== 1 ? 's' : ''} posted</p>
+          </div>
+          <Button onClick={() => router.push('/recruiter/jobs/new')} className="gap-2">
+            <Plus className="h-4 w-4" /> Post New Job
           </Button>
         </div>
 
+        {/* Filters */}
         <div className="flex flex-wrap gap-3 mb-6">
-          <div className="flex items-center gap-2 bg-card rounded-lg border px-3 py-2">
+          <div className="flex items-center gap-2 bg-card rounded-xl border px-3 py-2 shadow-sm">
             <Search className="h-4 w-4 text-muted-foreground" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search jobs..." className="bg-transparent text-sm outline-none w-40 placeholder:text-muted-foreground" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search jobs..." className="bg-transparent text-sm outline-none w-44 placeholder:text-muted-foreground" />
           </div>
-          <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} className="bg-card rounded-lg border px-3 py-2 text-sm outline-none">
+          <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} className="bg-card rounded-xl border px-3 py-2 text-sm outline-none shadow-sm">
             {departments.map((d) => <option key={d}>{d}</option>)}
           </select>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-card rounded-lg border px-3 py-2 text-sm outline-none">
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-card rounded-xl border px-3 py-2 text-sm outline-none shadow-sm">
             <option>All</option><option>Active</option><option>Draft</option><option>Closed</option>
           </select>
         </div>
 
         {loading ? (
-          <div className="text-sm text-muted-foreground">Loading jobs...</div>
+          <div className="space-y-3">
+            {[1,2,3,4].map((i) => <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />)}
+          </div>
         ) : filtered.length === 0 ? (
           <EmptyState icon={Briefcase} title="No jobs found" description="No jobs match your filters or none have been created yet." actionLabel="Post New Job" onAction={() => router.push('/recruiter/jobs/new')} />
         ) : (
-          <div className="bg-card rounded-xl shadow-sm border overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b text-left">
-                  {['Job Title', 'Department', 'Location', 'Type', 'Applicants', 'Status', 'Posted', 'Actions'].map((h) => (
-                    <th key={h} className="px-5 py-3 text-xs font-medium text-muted-foreground uppercase">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((job) => (
-                  <tr key={job.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
-                    <td className="px-5 py-3"><Link href={`/recruiter/jobs/${job.id}`} className="text-sm font-medium text-primary hover:underline">{job.title}</Link></td>
-                    <td className="px-5 py-3 text-sm text-muted-foreground">{job.department}</td>
-                    <td className="px-5 py-3 text-sm text-muted-foreground">{job.location}</td>
-                    <td className="px-5 py-3"><TypeBadge type={job.type || 'Remote'} /></td>
-                    <td className="px-5 py-3 text-sm">{job.applicantCount ?? 0}</td>
-                    <td className="px-5 py-3"><StatusBadge status={job.status || 'Draft'} /></td>
-                    <td className="px-5 py-3 text-sm text-muted-foreground">{job.postedDate}</td>
-                    <td className="px-5 py-3">
-                      <Link href={`/recruiter/jobs/${job.id}`} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">View</Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-3">
+            {filtered.map((job, i) => {
+              const colors = ['#4B7BFF', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'];
+              const c = colors[i % colors.length];
+              return (
+                <div key={job.id} className="bg-card rounded-xl border shadow-sm hover:shadow-md transition-all group flex items-center gap-4 px-5 py-4">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${c}18` }}>
+                    <Briefcase className="h-5 w-5" style={{ color: c }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <Link href={`/recruiter/jobs/${job.id}`} className="text-sm font-semibold hover:text-[#4B7BFF] transition-colors">
+                      {job.title}
+                    </Link>
+                    <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
+                      {job.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{job.location}</span>}
+                      {job.department && <span>{job.department}</span>}
+                      {job.postedDate && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{job.postedDate}</span>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <TypeBadge type={job.type || 'Remote'} />
+                    <StatusBadge status={job.status || 'Draft'} />
+                    <Link href={`/recruiter/jobs/${job.id}`} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

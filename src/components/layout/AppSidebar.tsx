@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { LayoutDashboard, Briefcase, Users, Sparkles, Settings, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Users, ClipboardList, Settings, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/intore/Avatar';
 import { useAuthStore } from '@/stores/authStore';
@@ -11,7 +11,7 @@ const navItems = [
   { label: 'Dashboard', path: '/recruiter/dashboard', icon: LayoutDashboard },
   { label: 'Jobs', path: '/recruiter/jobs', icon: Briefcase },
   { label: 'Candidates', path: '/recruiter/candidates', icon: Users },
-  { label: 'Screenings', path: '/recruiter/screenings', icon: Sparkles },
+  { label: 'Screenings', path: '/recruiter/screenings', icon: ClipboardList },
   { label: 'Settings', path: '/recruiter/settings', icon: Settings },
 ];
 

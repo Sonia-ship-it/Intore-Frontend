@@ -447,7 +447,7 @@ export default function LandingPage() {
           </RevealOnScroll>
 
           <RevealOnScroll preset="fadeUp" className="mt-6 flex flex-wrap justify-center items-center gap-10" staggerChildren={0.08}>
-            {['Inyarwanda Ltd', 'Kigali Tech Hub', 'RwandAir', 'BK Capital', 'MTN Rwanda', 'Equity Bank Rwanda'].map(name => (
+            {['Umurava', 'Kigali Tech Hub', 'RwandAir', 'BK Capital', 'MTN Rwanda', 'Equity Bank Rwanda'].map(name => (
               <RevealChild key={name} preset="blurIn" as="span">
                 <span className="text-[18px] font-semibold text-slate-300 hover:text-slate-500 transition-colors cursor-default">
                   {name}
@@ -458,7 +458,7 @@ export default function LandingPage() {
 
           <RevealOnScroll preset="fadeUp" delay={0.2} className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-[48px] pt-10">
             <div className="text-center">
-              <div className="text-[32px] font-bold text-brand-600 leading-none"><AnimatedCounter target={18} suffix=" min" className="text-[32px] font-bold text-brand-600 leading-none" /></div>
+              <div className="text-[32px] font-bold text-brand-600 leading-none"><AnimatedCounter target={3} suffix=" min" className="text-[32px] font-bold text-brand-600 leading-none" /></div>
               <div className="text-[13px] text-slate-500 mt-1">Average time to shortlist</div>
             </div>
             <div className="hidden md:block w-[1px] h-10 bg-slate-200"></div>
