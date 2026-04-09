@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
 import { useToast } from '@/components/ui/use-toast';
 import Link from 'next/link';
-type JobsResponse = { data?: Array<{ id?: string; _id?: string; title: string; requiredSkills?: string[]; location?: string; isRemote?: boolean; employmentType?: string; status?: string; publishedAt?: string; createdAt?: string }> };
+type JobsResponse = { data?: Array<{ id?: string; _id?: string; title: string; department?: string; requiredSkills?: string[]; location?: string; isRemote?: boolean; employmentType?: string; status?: string; publishedAt?: string; createdAt?: string }> };
 
 export default function JobsList() {
   const router = useRouter();
@@ -39,7 +39,7 @@ export default function JobsList() {
         title: j.title,
         department: j.department || (j.requiredSkills?.[0] ? 'General' : 'General'),
         location: j.location || 'Remote / Flexible',
-        type: j.isRemote ? 'Remote' : 'Onsite',
+        type: (j.isRemote ? 'Remote' : 'Onsite') as 'Remote' | 'Hybrid' | 'Onsite',
         employmentType: j.employmentType || 'Full-time',
         status: j.status ? String(j.status).charAt(0).toUpperCase() + String(j.status).slice(1) : 'Draft',
         postedDate: j.publishedAt ? new Date(j.publishedAt).toLocaleDateString() : (j.createdAt ? new Date(j.createdAt).toLocaleDateString() : '—'),

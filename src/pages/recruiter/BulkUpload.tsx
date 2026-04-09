@@ -189,7 +189,7 @@ export default function BulkUpload() {
   const validateUmurava = (schema: unknown, profiles: unknown) => {
     const res = validateAgainstJsonSchema(schema, profiles);
     if (res.ok) setUmuravaValidation({ ok: true });
-    else setUmuravaValidation({ ok: false, errors: res.errors });
+    else setUmuravaValidation({ ok: false, errors: ['Schema validation failed'] });
     return res.ok;
   };
 

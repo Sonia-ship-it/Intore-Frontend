@@ -66,9 +66,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       token,
       user: {
         id: resp.user?.id || 'me',
-        name: resp.user?.fullName || resp.user?.name || 'User',
+        name: resp.user?.fullName || 'User',
         email: resp.user?.email || email,
-        role: resp.user?.role,
+        role: resp.user?.role as UserRole,
       },
       role: (resp.user?.role as UserRole) || 'recruiter',
       isAuthenticated: true,
@@ -90,7 +90,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       body: JSON.stringify({ email, code }),
     });
     const token = resp?.token as string | undefined;
-    if (!token) throw new Error(resp?.message || 'Verification failed');
+    if (!token) throw new Error('Verification failed');
     if (typeof window !== 'undefined') window.localStorage.setItem('intore_token', token);
     set({
       token,
@@ -98,7 +98,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         id: resp.user?.id || 'me',
         name: resp.user?.fullName || 'User',
         email: resp.user?.email || email,
-        role: resp.user?.role,
+        role: resp.user?.role as 'applicant' | 'recruiter',
       },
       role: (resp.user?.role as UserRole) || 'recruiter',
       isAuthenticated: true,
