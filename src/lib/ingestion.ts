@@ -11,8 +11,11 @@ export const CandidateSchema = z.object({
   phone: z.string().optional(),
   currentRole: z.string().optional(),
   skills: z.array(z.string()).default([]),
-  linkedin: z.string().url().optional(),
-  portfolio: z.string().url().optional(),
+  // URL fields: only validate as URL when non-empty, otherwise treat as absent
+  linkedin: z.string().optional().transform((v) => (v && v.trim() ? v.trim() : undefined))
+    .pipe(z.string().url().optional()),
+  portfolio: z.string().optional().transform((v) => (v && v.trim() ? v.trim() : undefined))
+    .pipe(z.string().url().optional()),
 });
 export type IngestedCandidate = z.infer<typeof CandidateSchema>;
 

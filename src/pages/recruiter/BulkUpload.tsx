@@ -232,7 +232,7 @@ export default function BulkUpload() {
 
   return (
     <>
-      <AppHeader title="Bulk Upload" />
+      <AppHeader title="Screen through Upload" />
       <div className="max-w-3xl mx-auto px-6 py-8">
         <div className="flex border-b mb-6">
           {(['sheet', 'pdf', 'links', 'umurava'] as const).map((t) => (

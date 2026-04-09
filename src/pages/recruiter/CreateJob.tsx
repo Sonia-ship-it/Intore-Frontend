@@ -13,6 +13,18 @@ const employmentTypes = ['Full-time', 'Part-time', 'Contract'] as const;
 const educationLevels = ['Any', 'High School', "Bachelor's", "Master's", 'PhD'];
 type CreatedJobResponse = { id?: string; _id?: string };
 
+const REQUIRED_SKILL_SUGGESTIONS = [
+  'JavaScript', 'TypeScript', 'React', 'Node.js', 'Python', 'Java', 'Go',
+  'SQL', 'PostgreSQL', 'MongoDB', 'REST APIs', 'GraphQL', 'Docker', 'Kubernetes',
+  'AWS', 'Git', 'CI/CD', 'Agile', 'Figma', 'Communication',
+];
+
+const NICE_SKILL_SUGGESTIONS = [
+  'Next.js', 'Vue.js', 'Angular', 'Redis', 'Elasticsearch', 'Terraform',
+  'Machine Learning', 'Data Analysis', 'Leadership', 'Mentoring', 'Public Speaking',
+  'Product Thinking', 'UX Research', 'A/B Testing', 'Scrum',
+];
+
 export default function CreateJob() {
   const router = useRouter();
   const { toast } = useToast();
@@ -144,25 +156,77 @@ export default function CreateJob() {
             </section>
 
             {/* Requirements */}
-            <section className="bg-card rounded-xl p-6 shadow-sm border space-y-4">
-              <h3 className="font-semibold">Requirements</h3>
-              <div>
-                <p className="text-sm font-medium mb-2">Required Skills</p>
-                <TagInput tags={form.requiredSkills} onChange={(t) => update('requiredSkills', t)} variant="primary" />
+            <section className="bg-card rounded-xl p-6 shadow-sm border space-y-5">
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold">Requirements</h3>
+                <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Type a skill and press Enter, or pick from suggestions</span>
               </div>
-              <div>
-                <p className="text-sm font-medium mb-2">Nice-to-Have Skills</p>
-                <TagInput tags={form.niceToHaveSkills} onChange={(t) => update('niceToHaveSkills', t)} variant="neutral" />
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium">Required Skills</p>
+                  {form.requiredSkills.length > 0 && (
+                    <span className="text-xs text-[#4B7BFF] font-semibold">{form.requiredSkills.length} added</span>
+                  )}
+                </div>
+                <TagInput
+                  tags={form.requiredSkills}
+                  onChange={(t) => update('requiredSkills', t)}
+                  variant="primary"
+                  suggestions={REQUIRED_SKILL_SUGGESTIONS}
+                  placeholder="e.g. React, Node.js, SQL..."
+                />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <label className="block text-sm font-medium">Min Experience (years)
-                  <input type="number" min={0} max={20} value={form.minExperience} onChange={(e) => update('minExperience', +e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
-                </label>
-                <label className="block text-sm font-medium">Education Level
-                  <select value={form.educationLevel} onChange={(e) => update('educationLevel', e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none">
-                    {educationLevels.map((e) => <option key={e}>{e}</option>)}
-                  </select>
-                </label>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium">Nice-to-Have Skills</p>
+                  {form.niceToHaveSkills.length > 0 && (
+                    <span className="text-xs text-muted-foreground font-semibold">{form.niceToHaveSkills.length} added</span>
+                  )}
+                </div>
+                <TagInput
+                  tags={form.niceToHaveSkills}
+                  onChange={(t) => update('niceToHaveSkills', t)}
+                  variant="neutral"
+                  suggestions={NICE_SKILL_SUGGESTIONS}
+                  placeholder="e.g. Docker, Leadership..."
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-1">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Min Experience (years)</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range" min={0} max={15} value={form.minExperience}
+                      onChange={(e) => update('minExperience', +e.target.value)}
+                      className="flex-1 accent-[#4B7BFF]"
+                    />
+                    <span className="w-8 text-center text-sm font-bold text-[#4B7BFF]">{form.minExperience}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{form.minExperience === 0 ? 'No minimum' : `${form.minExperience}+ years required`}</p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Education Level</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {educationLevels.map((lvl) => (
+                      <button
+                        key={lvl}
+                        type="button"
+                        onClick={() => update('educationLevel', lvl)}
+                        className={cn(
+                          'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all',
+                          form.educationLevel === lvl
+                            ? 'bg-[#4B7BFF] text-white border-[#4B7BFF]'
+                            : 'bg-background text-muted-foreground border-border hover:border-[#4B7BFF]/40'
+                        )}
+                      >
+                        {lvl}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </section>
 

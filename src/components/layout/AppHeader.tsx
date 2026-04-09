@@ -53,23 +53,27 @@ export function AppHeader({ title }: { title: string }) {
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-52 rounded-xl shadow-lg border py-1.5 animate-fade-in bg-white/95 backdrop-blur-md dark:bg-[#0A0E2E]/95 dark:border-white/10">
+            <div className="absolute right-0 mt-2 w-52 rounded-xl shadow-xl border py-1.5 animate-fade-in z-50 bg-white dark:bg-[#0A0E2E] border-slate-200 dark:border-white/10">
+              <div className="px-4 py-2.5 border-b border-slate-100 dark:border-white/10 mb-1">
+                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{user?.name || 'User'}</p>
+                <p className="text-xs text-slate-500 dark:text-white/40 truncate">{user?.email || ''}</p>
+              </div>
               <button
                 onClick={() => { setDropdownOpen(false); router.push('/recruiter/settings'); }}
-                className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors rounded-md hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-white"
+                className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm font-medium transition-colors hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-white/80"
               >
-                <User className="h-4 w-4 text-slate-600 dark:text-white/70" /> Profile
+                <User className="h-4 w-4 text-slate-500 dark:text-white/50" /> Profile
               </button>
               <button
                 onClick={() => { setDropdownOpen(false); router.push('/recruiter/settings'); }}
-                className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors rounded-md hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-white"
+                className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm font-medium transition-colors hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-white/80"
               >
-                <Settings className="h-4 w-4 text-slate-600 dark:text-white/70" /> Settings
+                <Settings className="h-4 w-4 text-slate-500 dark:text-white/50" /> Settings
               </button>
-              <hr className="my-1 border-slate-200 dark:border-white/10" />
+              <hr className="my-1 border-slate-100 dark:border-white/10" />
               <button
                 onClick={() => { logout(); router.push('/login'); }}
-                className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors rounded-md hover:bg-rose-50 dark:hover:bg-rose-500/10 text-rose-600 dark:text-rose-300"
+                className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm font-medium transition-colors hover:bg-rose-50 dark:hover:bg-rose-500/10 text-rose-600 dark:text-rose-400"
               >
                 <LogOut className="h-4 w-4" /> Logout
               </button>
