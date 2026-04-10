@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Upload, FileText, Download, Check, Link2, Braces, Bot, RefreshCw, ChevronDown, ChevronUp, Send, Lock, AlertTriangle } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -123,14 +124,32 @@ export default function BulkUpload() {
   };
 
   const confirmSheetIngestion = () => {
-    if (!ensureJob() || !rows.length) { toast({ title: 'No data', description: 'Upload a file first.', variant: 'destructive' }); return; }
-    const { candidates, errors } = candidatesFromRows(rows, mapping);
+    if (!ensureJob()) return;
+    if (!rows.length) {
+      toast({ title: 'No data to ingest', description: 'Upload a CSV/Excel first.', variant: 'destructive' });
+      return;
+    }
+
+    const { candidates, errors } = candidatesFromRows(rows);
     setSheetErrors(errors);
-    if (errors.length) { toast({ title: 'Mapping issues', description: `${errors.length} issue(s) found.`, variant: 'destructive' }); return; }
-    const isCsv = (sheetFileName || '').toLowerCase().endsWith('.csv');
-    setCandidates(jobId!, candidates, { type: isCsv ? 'csv' : 'excel', filename: sheetFileName || 'upload', count: candidates.length });
-    toast({ title: 'Candidates ingested', description: `${candidates.length} candidate(s) ready.` });
-    setIngested(true); setIngestedCount(candidates.length);
+    if (errors.length) {
+      toast({ title: 'Some rows are invalid', description: `Fix data format. ${errors.length} issue(s).`, variant: 'destructive' });
+      return;
+    }
+
+    const filename = sheetFileName || 'upload';
+    const isCsv = filename.toLowerCase().endsWith('.csv');
+    setCandidates(jobId!, candidates, {
+      type: isCsv ? 'csv' : 'excel',
+      filename,
+      count: candidates.length,
+    });
+    toast({ title: 'Candidates ingested successfully!', description: `${candidates.length} candidate(s) saved for this job.` });
+    
+    // Redirect back to job detail page to show AI screening button
+    setTimeout(() => {
+      router.push(`/recruiter/jobs/${jobId}`);
+    }, 1500);
   };
 
   const uploadSheetToBackend = async () => {
@@ -179,6 +198,29 @@ export default function BulkUpload() {
   };
 
   const readJsonFile = async (file: File): Promise<unknown> => JSON.parse(await file.text());
+
+  const downloadXLSX = () => {
+    if (!results.length) return;
+    const rows = results.map((r) => ({
+      Rank: r.rank,
+      Name: r.name,
+      'Match Score (%)': Math.round(r.score),
+      Confidence: r.confidence,
+      Recommendation: r.recommendation,
+      'Top Strength': r.strengths?.[0] || '—',
+      'Key Gap': r.gaps?.[0] || '—',
+      'All Strengths': r.strengths.join(', '),
+      'All Gaps': r.gaps.join(', '),
+      'AI Reasoning': r.reason,
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    // Auto column widths
+    const colWidths = Object.keys(rows[0]).map((k) => ({ wch: Math.max(k.length, 18) }));
+    ws['!cols'] = colWidths;
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Shortlist');
+    XLSX.writeFile(wb, `screening-shortlist.xlsx`);
+  };
 
   // ── Screening ──────────────────────────────────────────────────────────────
   const startProgressAnimation = () => {
@@ -262,27 +304,49 @@ export default function BulkUpload() {
                 </div>
                 {rows.length > 0 && (
                   <div className="bg-card rounded-xl p-4 border space-y-3">
-                    <p className="text-sm font-semibold">Column Mapping</p>
-                    {(['name', 'email', 'phone', 'currentRole', 'skills', 'linkedin', 'portfolio'] as const).map((key) => (
-                      <div key={key} className="flex items-center gap-2">
-                        <span className="text-xs w-24 text-muted-foreground capitalize">{key}</span>
-                        <span className="text-muted-foreground text-xs">→</span>
-                        <select value={(mapping as Record<string, string | undefined>)[key] || ''} onChange={(e) => setMapping((m) => ({ ...m, [key]: e.target.value || undefined }))} className="flex-1 bg-background rounded-lg border px-2 py-1 text-xs outline-none">
-                          <option value="">(not mapped)</option>
-                          {headers.map((h) => <option key={h} value={h}>{h}</option>)}
-                        </select>
-                      </div>
-                    ))}
-                    {sheetErrors.length > 0 && <div className="text-xs text-destructive bg-destructive/5 rounded-lg p-2">{sheetErrors.slice(0, 3).join(' · ')}</div>}
-                    <div className="overflow-x-auto max-h-40">
-                      <table className="w-full text-xs"><thead><tr className="border-b">{headers.slice(0, 6).map((h) => <th key={h} className="px-2 py-1 text-left text-muted-foreground">{h}</th>)}</tr></thead>
-                        <tbody>{previewRows.map((r, i) => <tr key={i} className="border-b">{headers.slice(0, 6).map((h) => <td key={h} className="px-2 py-1 whitespace-nowrap">{String((r as Record<string, unknown>)[h] ?? '')}</td>)}</tr>)}</tbody>
-                      </table>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Check className="h-5 w-5 text-green-500" />
+                      <p className="text-sm font-semibold text-green-700">File Loaded Successfully</p>
                     </div>
-                    <p className="text-xs text-muted-foreground">{rows.length} total row(s)</p>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Total Candidates:</span>
+                        <span className="text-sm font-semibold">{rows.length}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Columns Detected:</span>
+                        <span className="text-sm font-semibold">{headers.length}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Automatic Mapping:</span>
+                        <span className="text-sm font-semibold text-green-600">Complete</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                      <p className="text-xs text-blue-800">
+                        <strong>Automatic column mapping completed!</strong> The system has automatically detected and mapped your columns. No manual configuration needed.
+                      </p>
+                    </div>
+
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={uploadSheetToBackend} disabled={isBackendUploading}>{isBackendUploading ? 'Uploading...' : 'Send to Backend'}</Button>
-                      <Button size="sm" onClick={confirmSheetIngestion}>Confirm Ingest</Button>
+                      <Button 
+                        onClick={uploadSheetToBackend} 
+                        disabled={isBackendUploading}
+                        className="flex-1"
+                        size="sm"
+                      >
+                        {isBackendUploading ? 'Uploading...' : 'Send to Backend'}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={confirmSheetIngestion}
+                        className="flex-1"
+                        size="sm"
+                      >
+                        Confirm Ingest (Frontend)
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -392,6 +456,9 @@ export default function BulkUpload() {
               <div className="bg-card rounded-xl border overflow-hidden">
                 <div className="px-5 py-3.5 border-b flex items-center justify-between">
                   <div><p className="font-semibold text-sm">Ranked Candidates</p><p className="text-xs text-muted-foreground">{results.length} candidates · Gemini</p></div>
+                  <Button variant="outline" size="sm" onClick={downloadXLSX} className="gap-1.5">
+                    <Download className="h-3.5 w-3.5" /> Download XLSX
+                  </Button>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -436,13 +503,18 @@ export default function BulkUpload() {
             )}
 
             {/* AI Chat */}
-            <div className="bg-card rounded-xl border flex flex-col" style={{ minHeight: 320 }}>
+            <div className="bg-card rounded-xl border flex flex-col" style={{ minHeight: 480 }}>
               <div className="p-4 border-b flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-[#4B7BFF]/10 flex items-center justify-center"><Bot className="h-4 w-4 text-[#4B7BFF]" /></div>
-                  <div><p className="font-semibold text-sm">AI Recruiter Assistant</p><p className="text-[10px] text-muted-foreground">Powered by Gemini</p></div>
+                  <div className="w-8 h-8 rounded-xl bg-[#4B7BFF]/10 border border-[#4B7BFF]/20 flex items-center justify-center"><Bot className="h-4 w-4 text-[#4B7BFF]" /></div>
+                  <div>
+                    <p className="font-semibold text-sm">AI Recruiter Assistant</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className={cn('w-1.5 h-1.5 rounded-full', chatUnlocked ? 'bg-emerald-400 animate-pulse' : 'bg-slate-300')} />
+                      <p className="text-[10px] text-muted-foreground">{chatUnlocked ? 'Live · Powered by Gemini' : 'Locked until screening runs'}</p>
+                    </div>
+                  </div>
                 </div>
-                {chatUnlocked && <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600">Live</span>}
               </div>
               {!chatUnlocked ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-2">
@@ -452,17 +524,38 @@ export default function BulkUpload() {
                 </div>
               ) : (
                 <div className="flex flex-col flex-1">
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-64">
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ minHeight: 280, maxHeight: 420 }}>
                     {chatMessages.map((msg) => <ChatBubble key={msg.id} role={msg.role} content={msg.content} />)}
-                    {chatLoading && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Spinner size="sm" /> Gemini is thinking...</div>}
+                    {chatLoading && (
+                      <div className="flex gap-2 items-start">
+                        <div className="w-6 h-6 rounded-md bg-[#4B7BFF]/10 border border-[#4B7BFF]/20 flex items-center justify-center shrink-0 mt-1">
+                          <Bot className="w-3.5 h-3.5 text-[#4B7BFF]" />
+                        </div>
+                        <div className="bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#4B7BFF] animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#4B7BFF] animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#4B7BFF] animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </div>
+                    )}
                     <div ref={chatEndRef} />
                   </div>
-                  <div className="p-4 border-t space-y-2">
+                  <div className="p-4 border-t space-y-3 bg-muted/20">
                     <SuggestionChips suggestions={SUGGESTIONS} onSelect={(s) => sendMessage(s)} />
-                    <div className="flex gap-2">
-                      <input value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(chatInput); } }} placeholder="Ask about candidates..." className="flex-1 rounded-xl border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#4B7BFF]/20" />
-                      <Button size="icon" onClick={() => sendMessage(chatInput)} disabled={!chatInput.trim() || chatLoading}><Send className="h-4 w-4" /></Button>
+                    <div className="flex gap-2 items-end">
+                      <textarea
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(chatInput); } }}
+                        placeholder="Ask anything about the candidates, rankings, or gaps... (Enter to send)"
+                        rows={2}
+                        className="flex-1 rounded-xl border bg-background px-3 py-2.5 text-sm outline-none resize-none focus:ring-2 focus:ring-[#4B7BFF]/20 focus:border-[#4B7BFF] transition-all"
+                      />
+                      <Button size="icon" onClick={() => sendMessage(chatInput)} disabled={!chatInput.trim() || chatLoading} className="shrink-0 h-10 w-10">
+                        <Send className="h-4 w-4" />
+                      </Button>
                     </div>
+                    <p className="text-[10px] text-muted-foreground text-center">Shift+Enter for new line · Powered by Gemini 1.5 Pro</p>
                   </div>
                 </div>
               )}
