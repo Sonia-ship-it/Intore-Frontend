@@ -7,15 +7,12 @@ import { z } from 'zod';
 export const CandidateSchema = z.object({
   id: z.string(),
   name: z.string().min(1),
-  email: z.string().email().optional().or(z.literal('')).transform((v) => (v ? v : undefined)),
+  email: z.string().optional(),
   phone: z.string().optional(),
   currentRole: z.string().optional(),
   skills: z.array(z.string()).default([]),
-  // URL fields: only validate as URL when non-empty, otherwise treat as absent
-  linkedin: z.string().optional().transform((v) => (v && v.trim() ? v.trim() : undefined))
-    .pipe(z.string().url().optional()),
-  portfolio: z.string().optional().transform((v) => (v && v.trim() ? v.trim() : undefined))
-    .pipe(z.string().url().optional()),
+  linkedin: z.string().optional(),
+  portfolio: z.string().optional(),
 });
 export type IngestedCandidate = z.infer<typeof CandidateSchema>;
 
@@ -43,29 +40,62 @@ function stableIdFromRow(rowIndex: number, name: string) {
   return `row_${rowIndex + 1}_${name.toLowerCase().replace(/\s+/g, '_').slice(0, 24) || 'candidate'}`;
 }
 
+// Automatic column mapping - no user intervention needed
+function autoMapColumns(headers: string[]): ColumnMapping {
+  const find = (cands: string[]) => {
+    const lowerHeaders = headers.map(h => h.toLowerCase().trim());
+    return cands.find(cand => lowerHeaders.some(h => h.includes(cand.toLowerCase())));
+  };
+  
+  return {
+    name: find(['name', 'full name', 'candidate name', 'applicant']) || headers[0],
+    email: find(['email', 'email address', 'mail']),
+    phone: find(['phone', 'phone number', 'mobile', 'tel']),
+    currentRole: find(['current role', 'role', 'title', 'job title', 'position']),
+    skills: find(['skills', 'skill', 'tech stack', 'stack', 'technologies']),
+    linkedin: find(['linkedin', 'linkedin url', 'linkedin profile']),
+    portfolio: find(['portfolio', 'portfolio url', 'github', 'github url', 'website'])
+  };
+}
+
 export function candidatesFromRows(
-  rows: Record<string, unknown>[],
-  mapping: ColumnMapping
+  rows: Record<string, unknown>[]
 ): { candidates: IngestedCandidate[]; errors: string[] } {
   const errors: string[] = [];
   const candidates: IngestedCandidate[] = [];
 
+  // Automatic column mapping
+  const headers = rows.length > 0 ? Object.keys(rows[0]) : [];
+  const mapping = autoMapColumns(headers);
+
   rows.forEach((row, i) => {
-    const name = String(mapping.name ? row[mapping.name] : row['name'] ?? row['Name'] ?? '').trim();
+    const name = String(row[mapping.name] || '').trim();
     if (!name) {
       errors.push(`Row ${i + 1}: missing name`);
       return;
     }
 
+    // Clean and process the data automatically
+    const rawEmail = String(row[mapping.email] || '');
+    const rawPhone = String(row[mapping.phone] || '');
+    const rawCurrentRole = String(row[mapping.currentRole] || '');
+    const rawSkills = splitSkills(row[mapping.skills] || '');
+    const rawLinkedin = String(row[mapping.linkedin] || '');
+    const rawPortfolio = String(row[mapping.portfolio] || '');
+
+    // Validate email format if provided
+    const cleanEmail = rawEmail.trim();
+    const email = cleanEmail && cleanEmail.includes('@') ? cleanEmail : undefined;
+
     const candidate: IngestedCandidate = {
       id: stableIdFromRow(i, name),
       name,
-      email: mapping.email ? String(row[mapping.email] ?? '') : String(row['email'] ?? row['Email'] ?? ''),
-      phone: mapping.phone ? String(row[mapping.phone] ?? '') : String(row['phone'] ?? row['Phone'] ?? ''),
-      currentRole: mapping.currentRole ? String(row[mapping.currentRole] ?? '') : String(row['currentRole'] ?? row['Current Role'] ?? ''),
-      skills: splitSkills(mapping.skills ? row[mapping.skills] : row['skills'] ?? row['Skills']),
-      linkedin: mapping.linkedin ? String(row[mapping.linkedin] ?? '') : String(row['linkedin'] ?? row['LinkedIn'] ?? ''),
-      portfolio: mapping.portfolio ? String(row[mapping.portfolio] ?? '') : String(row['portfolio'] ?? row['Portfolio'] ?? ''),
+      email,
+      phone: rawPhone.trim() || undefined,
+      currentRole: rawCurrentRole.trim() || undefined,
+      skills: rawSkills,
+      linkedin: (rawLinkedin.trim() && rawLinkedin.trim().startsWith('http')) ? rawLinkedin.trim() : undefined,
+      portfolio: (rawPortfolio.trim() && rawPortfolio.trim().startsWith('http')) ? rawPortfolio.trim() : undefined,
     };
 
     const parsed = CandidateSchema.safeParse(candidate);

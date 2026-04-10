@@ -176,6 +176,57 @@ export default function JobDetail() {
     }
   };
 
+  const runNewAiScreening = async () => {
+    const hasExternal = (ingestion?.candidates?.length || 0) > 0;
+    const hasUmurava = Boolean(ingestion?.umurava?.profiles);
+    if (!hasExternal && !hasUmurava) {
+      toast({ title: 'No applicants uploaded', description: 'Upload candidates via CSV/Excel, PDF/links, or Umurava profiles first.', variant: 'destructive' });
+      return;
+    }
+
+    // Show loading state
+    toast({
+      title: 'Starting AI Screening',
+      description: `AI is evaluating ${ingestion?.candidates?.length || 0} candidates...`,
+    });
+
+    try {
+      // Get candidate IDs from ingestion data
+      const candidateIds = ingestion?.candidates?.map((c: any) => c.id) || [];
+
+      const response = await apiFetch<{ success: boolean; data?: any; error?: string }>('/api/screenings/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobId: job.id,
+          candidateIds,
+          shortlistSize
+        }),
+      });
+
+      if (response.success && response.data) {
+        toast({
+          title: 'AI Screening Complete',
+          description: `Successfully screened ${response.data.totalCandidatesEvaluated} candidates. Redirecting to results...`,
+        });
+        // Redirect to the new results page
+        router.push(`/recruiter/screenings/${job.id}`);
+      } else {
+        toast({
+          title: 'Screening failed',
+          description: response.error || 'Unknown error occurred',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Screening failed',
+        description: error instanceof Error ? error.message : 'Failed to run AI screening',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
     addChatMessage({ id: `u${Date.now()}`, role: 'user', content: text, timestamp: new Date().toISOString() });
@@ -244,6 +295,9 @@ export default function JobDetail() {
                     <option value={10}>Top 10</option>
                     <option value={20}>Top 20</option>
                   </select>
+                  <Button variant="outline" onClick={runNewAiScreening} disabled={status === 'running'} className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-0">
+                    <Bot className="h-4 w-4 mr-2" /> Run AI Screening
+                  </Button>
                   <Button onClick={runScreeningClick} disabled={status === 'running'} className={cn(status === 'running' && 'opacity-70')}>
                     {status === 'running'
                       ? <><Spinner size="sm" className="mr-2" /> Screening...</>

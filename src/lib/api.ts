@@ -20,8 +20,8 @@ function getAuthToken(): string | undefined {
   return window.localStorage.getItem('intore_token') || undefined;
 }
 
-async function parseJsonSafe(res: Response) {
-  const text = await res.text();
+async function parseJsonSafe(response: Response) {
+  const text = await response.text();
   if (!text) return undefined;
   try {
     return JSON.parse(text);
@@ -45,9 +45,9 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
   const token = getAuthToken();
-  let res: Response;
+  let response: Response;
   try {
-    res = await fetch(url, {
+    response = await fetch(url, {
       ...opts,
       headers: {
         Accept: 'application/json',
@@ -59,25 +59,24 @@ export async function apiFetch<T>(
     throw new ApiError('Unable to connect to the server. Please check your internet or server status.', 0);
   }
 
-  if (!res.ok) {
-    const details = await parseJsonSafe(res);
+  if (!response.ok) {
+    const details = await parseJsonSafe(response);
     const backendMessage = extractBackendMessage(details);
     const fallbackMessage =
-      res.status === 401
+      response.status === 401
         ? 'Your session is invalid. Please log in again.'
-        : res.status === 403
+        : response.status === 403
           ? 'You are not allowed to perform this action.'
-          : res.status === 404
+          : response.status === 404
             ? 'The requested resource was not found.'
-            : res.status >= 500
+            : response.status >= 500
               ? 'Something went wrong on the server. Please try again shortly.'
               : 'We could not process your request. Please review your input and try again.';
-    throw new ApiError(backendMessage || fallbackMessage, res.status, details);
+    throw new ApiError(backendMessage || fallbackMessage, response.status, details);
   }
 
-  // 204 No Content
-  if (res.status === 204) return undefined as T;
-  return (await res.json()) as T;
+  if (response.status === 204) return undefined as T;
+  return (await response.json()) as T;
 }
 
 export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
