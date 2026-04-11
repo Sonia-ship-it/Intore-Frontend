@@ -60,7 +60,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
-    // Step 1: OTP required — return flag so UI can show OTP step
+    // Step 1: OTP required  return flag so UI can show OTP step
     if ((resp as any)?.otpRequired) {
       return { otpRequired: true, email: (resp as any).email, devCode: (resp as any).devCode };
     }

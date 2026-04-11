@@ -142,7 +142,7 @@ export default function LoginPage() {
                                 <p className="text-sm text-slate-500 font-medium max-w-xs">
                                     We sent a 6-digit code to <span className="font-semibold text-slate-700">{otpEmail}</span>. Enter it below to complete sign in.
                                 </p>
-                                {devCode && (
+                                {devCode && process.env.NODE_ENV !== 'production' && (
                                     <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 font-mono">
                                         Dev code: <strong>{devCode}</strong>
                                     </p>
