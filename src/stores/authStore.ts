@@ -40,7 +40,8 @@ interface AuthState {
   user: { id: string; name: string; email: string; avatar?: string; role?: UserRole } | null;
   role: UserRole;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ otpRequired: boolean; email?: string; devCode?: string }>;
+  verifyLoginOtp: (email: string, code: string) => Promise<void>;
   register: (params: { name: string; email: string; password: string; role: UserRole; phoneNumber: string; companyName?: string }) => Promise<{ verificationRequired: boolean; devCode?: string }>;
   verify: (email: string, code: string) => Promise<void>;
   resendCode: (email: string, purpose: 'register' | 'reset_password') => Promise<{ devCode?: string }>;
@@ -59,8 +60,34 @@ export const useAuthStore = create<AuthState>((set) => ({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
+    // Step 1: OTP required — return flag so UI can show OTP step
+    if ((resp as any)?.otpRequired) {
+      return { otpRequired: true, email: (resp as any).email, devCode: (resp as any).devCode };
+    }
     const token = resp?.token as string | undefined;
     if (!token) throw new Error(resp?.message || 'Login failed');
+    if (typeof window !== 'undefined') window.localStorage.setItem('intore_token', token);
+    set({
+      token,
+      user: {
+        id: resp.user?.id || 'me',
+        name: resp.user?.fullName || 'User',
+        email: resp.user?.email || email,
+        role: resp.user?.role as UserRole,
+      },
+      role: (resp.user?.role as UserRole) || 'recruiter',
+      isAuthenticated: true,
+    });
+    return { otpRequired: false };
+  },
+  verifyLoginOtp: async (email, code) => {
+    const resp = await apiFetch<LoginResponse>('/auth/verify-login-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code }),
+    });
+    const token = resp?.token as string | undefined;
+    if (!token) throw new Error(resp?.message || 'OTP verification failed');
     if (typeof window !== 'undefined') window.localStorage.setItem('intore_token', token);
     set({
       token,

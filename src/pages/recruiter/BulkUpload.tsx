@@ -1,8 +1,9 @@
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { Upload, FileText, Download, Check, Link2, Braces, RefreshCw, ChevronDown, ChevronUp, Send, Lock, AlertTriangle } from 'lucide-react';
+import { Upload, FileText, Download, Check, Link2, Braces, RefreshCw, ChevronDown, ChevronUp, Send, Lock, AlertTriangle, ThumbsUp, ThumbsDown, BarChart2 } from 'lucide-react';
 import { IntoreMark } from '@/components/branding/IntoreMark';
 import * as XLSX from 'xlsx';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -22,6 +23,7 @@ import { BiasWarning } from '@/components/intore/BiasWarning';
 type ScreeningStatus = 'idle' | 'running' | 'complete' | 'error';
 type UiResult = ApiScreeningResult & { confidence: 'High' | 'Medium' | 'Low' };
 type ChatMsg = { id: string; role: 'user' | 'ai'; content: string };
+type RecruiterDecision = 'approved' | 'rejected' | null;
 
 const SUGGESTIONS = ['Who is the best fit?', 'Compare top 3', 'What are the biggest gaps?', 'Who should I interview first?'];
 
@@ -111,6 +113,10 @@ export default function BulkUpload() {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [biasWarningDismissed, setBiasWarningDismissed] = useState(false);
   const progressTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Recruiter decisions — thumbs up/down per candidate
+  const [decisions, setDecisions] = useState<Record<string, RecruiterDecision>>({});
+  const [showCharts, setShowCharts] = useState(false);
 
   // Chat state
   const [chatMessages, setChatMessages] = useState<ChatMsg[]>([]);
@@ -491,55 +497,209 @@ export default function BulkUpload() {
             )}
 
             {/* Results */}
-            {screeningStatus === 'complete' && results.length > 0 && (
-              <div className="bg-card rounded-xl border overflow-hidden">
-                <div className="px-5 py-3.5 border-b flex items-center justify-between">
-                  <div><p className="font-semibold text-sm">Ranked Candidates</p><p className="text-xs text-muted-foreground">{results.length} candidates · Gemini</p></div>
-                  <Button variant="outline" size="sm" onClick={downloadXLSX} className="gap-1.5">
-                    <Download className="h-3.5 w-3.5" /> Download XLSX
-                  </Button>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead><tr className="border-b bg-muted/30 text-left">{['Rank', 'Candidate', 'Score', 'Verdict', 'Strength', 'Gap', ''].map((h) => <th key={h} className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase">{h}</th>)}</tr></thead>
-                    <tbody>
-                      {results.map((r, i) => {
-                        const isExpanded = expandedRow === r.applicationId;
-                        return (
-                          <>
-                            <tr key={r.applicationId} className={cn('border-b hover:bg-muted/30 transition-colors', isExpanded && 'bg-muted/20')}>
-                              <td className="px-4 py-3"><span className={cn('font-black text-sm', i < 3 ? 'text-[#4B7BFF]' : 'text-muted-foreground')}>#{r.rank}</span></td>
-                              <td className="px-4 py-3"><div className="flex items-center gap-2"><Avatar name={r.name} color="bg-[#0F1547]" size="sm" /><p className="text-sm font-semibold">{r.name}</p></div></td>
-                              <td className="px-4 py-3 min-w-[120px]"><ScoreBar score={Math.round(r.score)} /></td>
-                              <td className="px-4 py-3"><RecBadge rec={r.recommendation} /></td>
-                              <td className="px-4 py-3"><StrengthChip label={r.strengths?.[0] || '—'} /></td>
-                              <td className="px-4 py-3"><GapChip label={r.gaps?.[0] || '—'} /></td>
-                              <td className="px-4 py-3"><button onClick={() => setExpandedRow(isExpanded ? null : (r.applicationId || String(r.rank)))} className="p-1 rounded hover:bg-muted">{isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</button></td>
-                            </tr>
-                            {isExpanded && (
-                              <tr key={`${r.applicationId}-exp`} className="border-b bg-muted/10">
-                                <td colSpan={7} className="px-6 py-4">
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div><p className="text-xs font-bold uppercase text-muted-foreground mb-1">AI Reasoning</p><p className="text-sm">{r.reason}</p></div>
-                                    <div className="space-y-2">
-                                      <div><p className="text-xs font-bold uppercase text-muted-foreground mb-1">Strengths</p><div className="flex flex-wrap gap-1">{r.strengths.map((s) => <StrengthChip key={s} label={s} />)}</div></div>
-                                      <div><p className="text-xs font-bold uppercase text-muted-foreground mb-1">Gaps</p><div className="flex flex-wrap gap-1">{r.gaps.map((g) => <GapChip key={g} label={g} />)}</div></div>
+            {screeningStatus === 'complete' && results.length > 0 && (() => {
+              const approved = Object.values(decisions).filter(d => d === 'approved').length;
+              const rejected = Object.values(decisions).filter(d => d === 'rejected').length;
+              const pending = results.length - approved - rejected;
+              const verdictData = [
+                { name: 'Shortlist', value: results.filter(r => r.recommendation.toLowerCase().includes('shortlist')).length, color: '#10b981' },
+                { name: 'Consider', value: results.filter(r => r.recommendation.toLowerCase().includes('consider')).length, color: '#f59e0b' },
+                { name: 'Not Selected', value: results.filter(r => !r.recommendation.toLowerCase().includes('shortlist') && !r.recommendation.toLowerCase().includes('consider')).length, color: '#ef4444' },
+              ].filter(d => d.value > 0);
+              const decisionData = [
+                { name: 'Approved', value: approved, color: '#10b981' },
+                { name: 'Rejected', value: rejected, color: '#ef4444' },
+                { name: 'Pending', value: pending, color: '#94a3b8' },
+              ].filter(d => d.value > 0);
+              const scoreData = results.map(r => ({ name: r.name.split(' ')[0], score: Math.round(r.score) }));
+
+              return (
+                <div className="space-y-5">
+                  {/* Header */}
+                  <div className="bg-card rounded-xl border shadow-sm">
+                    <div className="px-6 py-4 border-b bg-muted/20 flex items-center justify-between flex-wrap gap-3">
+                      <div>
+                        <p className="font-bold text-base">Ranked Candidates</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{results.length} candidates · Powered by Gemini · Your final decision matters</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Button variant="outline" size="sm" onClick={() => setShowCharts(!showCharts)} className="gap-1.5">
+                          <BarChart2 className="h-3.5 w-3.5" /> {showCharts ? 'Hide' : 'Show'} Charts
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => { setResults([]); setScreeningStatus('idle'); setDecisions({}); }} className="gap-1.5">
+                          <RefreshCw className="h-3.5 w-3.5" /> Re-screen
+                        </Button>
+                        <Button size="sm" onClick={downloadXLSX} className="gap-1.5">
+                          <Download className="h-3.5 w-3.5" /> Download XLSX
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Decision summary pills */}
+                    <div className="px-6 py-3 flex items-center gap-4 flex-wrap border-b bg-muted/5">
+                      <span className="text-xs text-muted-foreground font-medium">Your decisions:</span>
+                      <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600"><ThumbsUp className="h-3.5 w-3.5" /> {approved} Approved</span>
+                      <span className="flex items-center gap-1.5 text-xs font-semibold text-rose-600"><ThumbsDown className="h-3.5 w-3.5" /> {rejected} Rejected</span>
+                      <span className="text-xs text-muted-foreground">{pending} pending review</span>
+                      <span className="ml-auto text-[10px] text-muted-foreground italic">AI ranks candidates — you make the final call</span>
+                    </div>
+
+                    {/* Charts */}
+                    {showCharts && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-b">
+                        {/* Pie: AI Verdicts */}
+                        <div className="p-5 border-r">
+                          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">AI Verdicts</p>
+                          <ResponsiveContainer width="100%" height={160}>
+                            <PieChart>
+                              <Pie data={verdictData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={3} dataKey="value">
+                                {verdictData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                              </Pie>
+                              <Tooltip formatter={(v, n) => [v, n]} contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {verdictData.map(d => <span key={d.name} className="flex items-center gap-1 text-[10px]"><span className="w-2 h-2 rounded-full inline-block" style={{ background: d.color }} />{d.name} ({d.value})</span>)}
+                          </div>
+                        </div>
+                        {/* Pie: Your Decisions */}
+                        <div className="p-5 border-r">
+                          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">Your Decisions</p>
+                          <ResponsiveContainer width="100%" height={160}>
+                            <PieChart>
+                              <Pie data={decisionData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={3} dataKey="value">
+                                {decisionData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                              </Pie>
+                              <Tooltip formatter={(v, n) => [v, n]} contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {decisionData.map(d => <span key={d.name} className="flex items-center gap-1 text-[10px]"><span className="w-2 h-2 rounded-full inline-block" style={{ background: d.color }} />{d.name} ({d.value})</span>)}
+                          </div>
+                        </div>
+                        {/* Bar: Score distribution */}
+                        <div className="p-5">
+                          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">Match Scores</p>
+                          <ResponsiveContainer width="100%" height={160}>
+                            <BarChart data={scoreData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                              <XAxis dataKey="name" tick={{ fontSize: 9 }} />
+                              <YAxis domain={[0, 100]} tick={{ fontSize: 9 }} />
+                              <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                              <Bar dataKey="score" radius={[4, 4, 0, 0]}>
+                                {scoreData.map((entry, i) => <Cell key={i} fill={entry.score >= 70 ? '#10b981' : entry.score >= 50 ? '#f59e0b' : '#ef4444'} />)}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Table */}
+                    <div className="w-full overflow-x-auto">
+                      <table className="w-full min-w-[700px]">
+                        <thead>
+                          <tr className="border-b bg-muted/10 text-left">
+                            {['Rank', 'Candidate', 'Match Score', 'AI Verdict', 'Top Strength', 'Key Gap', 'Your Decision', ''].map((h) => (
+                              <th key={h} className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {results.map((r, i) => {
+                            const key = r.applicationId || String(r.rank);
+                            const isExp = expandedRow === key;
+                            const decision = decisions[key] || null;
+                            const rankColor = i === 0 ? 'text-amber-500' : i === 1 ? 'text-slate-400' : i === 2 ? 'text-orange-400' : 'text-muted-foreground';
+                            const rowBg = decision === 'approved' ? 'bg-emerald-500/5' : decision === 'rejected' ? 'bg-rose-500/5' : '';
+                            return (
+                              <>
+                                <tr key={key} className={cn('border-b hover:bg-muted/20 transition-colors', isExp && 'bg-muted/10', rowBg)}>
+                                  <td className="px-4 py-3.5 w-14">
+                                    <span className={cn('font-black text-sm', rankColor)}>#{r.rank}</span>
+                                  </td>
+                                  <td className="px-4 py-3.5">
+                                    <div className="flex items-center gap-2.5">
+                                      <Avatar name={r.name} color="bg-[#0F1547]" size="sm" />
+                                      <p className="text-sm font-semibold whitespace-nowrap">{r.name}</p>
                                     </div>
-                                  </div>
-                                  <Button size="sm" variant="outline" className="mt-3 gap-1.5" onClick={() => sendMessage(`Tell me more about ${r.name} and why they ranked #${r.rank}`)}>
-                                    <IntoreMark className="h-3.5 w-3.5 text-[#4B7BFF]" /> Ask AI about this candidate
-                                  </Button>
-                                </td>
-                              </tr>
-                            )}
-                          </>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                                  </td>
+                                  <td className="px-4 py-3.5 w-40"><ScoreBar score={Math.round(r.score)} /></td>
+                                  <td className="px-4 py-3.5 w-28"><RecBadge rec={r.recommendation} /></td>
+                                  <td className="px-4 py-3.5 max-w-[160px]">
+                                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 block truncate">{r.strengths?.[0] || '—'}</span>
+                                  </td>
+                                  <td className="px-4 py-3.5 max-w-[160px]">
+                                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-700 block truncate">{r.gaps?.[0] || '—'}</span>
+                                  </td>
+                                  <td className="px-4 py-3.5 w-32">
+                                    <div className="flex items-center gap-1.5">
+                                      <button
+                                        onClick={() => setDecisions(prev => ({ ...prev, [key]: prev[key] === 'approved' ? null : 'approved' }))}
+                                        className={cn('p-1.5 rounded-lg transition-all', decision === 'approved' ? 'bg-emerald-500 text-white shadow-sm' : 'hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-600')}
+                                        title="Approve"
+                                      >
+                                        <ThumbsUp className="h-4 w-4" />
+                                      </button>
+                                      <button
+                                        onClick={() => setDecisions(prev => ({ ...prev, [key]: prev[key] === 'rejected' ? null : 'rejected' }))}
+                                        className={cn('p-1.5 rounded-lg transition-all', decision === 'rejected' ? 'bg-rose-500 text-white shadow-sm' : 'hover:bg-rose-500/10 text-muted-foreground hover:text-rose-600')}
+                                        title="Reject"
+                                      >
+                                        <ThumbsDown className="h-4 w-4" />
+                                      </button>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-3.5 w-10">
+                                    <button onClick={() => setExpandedRow(isExp ? null : key)} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+                                      {isExp ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                    </button>
+                                  </td>
+                                </tr>
+                                {isExp && (
+                                  <tr key={`${key}-exp`} className="border-b bg-[#4B7BFF]/5">
+                                    <td colSpan={8} className="px-6 py-5">
+                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                        <div>
+                                          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">AI Reasoning</p>
+                                          <p className="text-sm leading-relaxed">{r.reason}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">Strengths</p>
+                                          <div className="flex flex-wrap gap-1.5">{r.strengths.map((s) => <span key={s} className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 font-medium">{s}</span>)}</div>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">Gaps</p>
+                                          <div className="flex flex-wrap gap-1.5">{r.gaps.map((g) => <span key={g} className="text-xs px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-700 font-medium">{g}</span>)}</div>
+                                        </div>
+                                      </div>
+                                      <div className="mt-4 pt-3 border-t flex items-center gap-3 flex-wrap">
+                                        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => sendMessage(`Tell me more about ${r.name} and why they ranked #${r.rank}`)}>
+                                          <IntoreMark className="h-3.5 w-3.5 text-[#4B7BFF]" /> Ask AI about this candidate
+                                        </Button>
+                                        <div className="flex items-center gap-2 ml-auto">
+                                          <span className="text-xs text-muted-foreground">Your decision:</span>
+                                          <button onClick={() => setDecisions(prev => ({ ...prev, [key]: prev[key] === 'approved' ? null : 'approved' }))} className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', decisions[key] === 'approved' ? 'bg-emerald-500 text-white' : 'border hover:bg-emerald-500/10 hover:text-emerald-700')}>
+                                            <ThumbsUp className="h-3.5 w-3.5" /> Approve
+                                          </button>
+                                          <button onClick={() => setDecisions(prev => ({ ...prev, [key]: prev[key] === 'rejected' ? null : 'rejected' }))} className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', decisions[key] === 'rejected' ? 'bg-rose-500 text-white' : 'border hover:bg-rose-500/10 hover:text-rose-700')}>
+                                            <ThumbsDown className="h-3.5 w-3.5" /> Reject
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* AI Chat */}
             <div className="bg-card rounded-xl border flex flex-col" style={{ minHeight: 480 }}>
