@@ -54,7 +54,7 @@ export default function RegisterPage() {
                 phoneNumber: phone,
                 companyName,
             });
-            router.push(`/verify?email=${encodeURIComponent(email)}`);
+            router.push('/recruiter/dashboard');
         } catch (err) {
             toast({
                 title: 'Registration failed',
