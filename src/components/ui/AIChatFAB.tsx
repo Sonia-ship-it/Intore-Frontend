@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, ChevronDown, Loader2 } from 'lucide-react';
+import { X, Send, ChevronDown, Loader2 } from 'lucide-react';
+import { IntoreMark } from '@/components/branding/IntoreMark';
 import { cn } from '@/lib/utils';
 import { apiFetch } from '@/lib/api';
 import { useRouter } from 'next/router';
@@ -138,7 +139,7 @@ export function AIChatFAB() {
         <div className="bg-[#0F1547] px-4 py-3 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-[#4B7BFF]/20 border border-[#4B7BFF]/30 flex items-center justify-center">
-              <Bot className="w-4 h-4 text-[#4B7BFF]" />
+              <IntoreMark className="w-4 h-4 text-[#4B7BFF]" />
             </div>
             <div>
               <div className="text-[13px] font-semibold text-white">Intore AI</div>
@@ -159,7 +160,7 @@ export function AIChatFAB() {
             <div key={msg.id} className={cn('flex gap-2', msg.role === 'user' ? 'flex-row-reverse' : '')}>
               {msg.role === 'ai' && (
                 <div className="w-6 h-6 rounded-md bg-[#4B7BFF]/10 border border-[#4B7BFF]/20 flex items-center justify-center shrink-0 mt-0.5">
-                  <Bot className="w-3.5 h-3.5 text-[#4B7BFF]" />
+                  <IntoreMark className="w-3.5 h-3.5 text-[#4B7BFF]" />
                 </div>
               )}
               <div className={cn(
@@ -176,7 +177,7 @@ export function AIChatFAB() {
           {loading && (
             <div className="flex gap-2">
               <div className="w-6 h-6 rounded-md bg-[#4B7BFF]/10 border border-[#4B7BFF]/20 flex items-center justify-center shrink-0 mt-0.5">
-                <Bot className="w-3.5 h-3.5 text-[#4B7BFF]" />
+                <IntoreMark className="w-3.5 h-3.5 text-[#4B7BFF]" />
               </div>
               <div className="bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-xl rounded-tl-sm px-3 py-2.5 flex items-center gap-2">
                 <Loader2 className="w-3.5 h-3.5 text-[#4B7BFF] animate-spin" />
@@ -233,7 +234,7 @@ export function AIChatFAB() {
         style={!open ? { animation: 'fabPulse 3s infinite ease-in-out' } : undefined}
         aria-label="Open AI assistant"
       >
-        {open ? <X className="w-5 h-5 text-white" /> : <Bot className="w-5 h-5 text-white" />}
+        {open ? <X className="w-5 h-5 text-white" /> : <IntoreMark className="w-5 h-5 text-white" />}
       </button>
 
       {/* Tooltip */}
@@ -248,3 +249,4 @@ export function AIChatFAB() {
     </>
   );
 }
+

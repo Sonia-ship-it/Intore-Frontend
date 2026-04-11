@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { Lock, Send, MapPin, Calendar, Users, ChevronDown, ChevronUp, Upload, Download, RefreshCw, Bot, AlertTriangle, CheckCircle2, XCircle, HelpCircle } from 'lucide-react';
+import { Lock, Send, MapPin, Calendar, Users, ChevronDown, ChevronUp, Upload, Download, RefreshCw, AlertTriangle, CheckCircle2, XCircle, HelpCircle } from 'lucide-react';
+import { IntoreMark } from '@/components/branding/IntoreMark';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { ScoreBar } from '@/components/intore/ScoreBar';
 import { ConfidenceBadge } from '@/components/intore/ConfidenceBadge';
@@ -238,7 +239,12 @@ export default function JobDetail() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jobId: job.id, question: text }),
       });
-      addChatMessage({ id: `a${Date.now()}`, role: 'ai', content: resp.answer || 'I could not find enough context. Try rephrasing.', timestamp: new Date().toISOString() });
+      // Strip JSON if Gemini ignores instructions
+      const raw = resp.answer || 'I could not find enough context. Try rephrasing.';
+      const answer = raw.trim().startsWith('{') || raw.trim().startsWith('[')
+        ? raw.replace(/[{}\[\]"]/g, '').replace(/,\s*/g, '\n').replace(/:\s*/g, ': ')
+        : raw;
+      addChatMessage({ id: `a${Date.now()}`, role: 'ai', content: answer, timestamp: new Date().toISOString() });
     } catch (err) {
       addChatMessage({ id: `a${Date.now()}`, role: 'ai', content: err instanceof Error ? err.message : 'Unable to answer right now.', timestamp: new Date().toISOString() });
     } finally {
@@ -295,15 +301,12 @@ export default function JobDetail() {
                     <option value={10}>Top 10</option>
                     <option value={20}>Top 20</option>
                   </select>
-                  <Button variant="outline" onClick={runNewAiScreening} disabled={status === 'running'} className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-0">
-                    <Bot className="h-4 w-4 mr-2" /> Run AI Screening
-                  </Button>
                   <Button onClick={runScreeningClick} disabled={status === 'running'} className={cn(status === 'running' && 'opacity-70')}>
                     {status === 'running'
                       ? <><Spinner size="sm" className="mr-2" /> Screening...</>
                       : status === 'complete'
                         ? <><RefreshCw className="h-4 w-4 mr-2" /> Re-run</>
-                        : <><Bot className="h-4 w-4 mr-2" /> Screen Candidates</>}
+                        : <><IntoreMark className="h-4 w-4 mr-2 text-[#4B7BFF]" /> Screen Candidates</>}
                   </Button>
                 </div>
               </div>
@@ -415,7 +418,7 @@ export default function JobDetail() {
                                   </div>
                                   <div className="mt-4 pt-3 border-t flex gap-2">
                                     <Button size="sm" variant="outline" onClick={() => sendMessage(`Tell me more about ${displayName} and why they ranked #${r.rank}`)}>
-                                      <Bot className="h-3.5 w-3.5 mr-1.5" /> Ask AI about this candidate
+                                      <IntoreMark className="h-3.5 w-3.5 mr-1.5 text-[#4B7BFF]" /> Ask AI about this candidate
                                     </Button>
                                   </div>
                                 </td>
@@ -449,10 +452,10 @@ export default function JobDetail() {
               <div className="p-4 border-b flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-[#4B7BFF]/10 flex items-center justify-center">
-                    <Bot className="h-4 w-4 text-[#4B7BFF]" />
+                    <IntoreMark className="h-4 w-4 text-[#4B7BFF]" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm">AI Recruiter Assistant</h3>
+                    <h3 className="font-semibold text-sm">Intore  Assistant</h3>
                     <p className="text-[10px] text-muted-foreground">Powered by Gemini</p>
                   </div>
                 </div>
@@ -512,3 +515,4 @@ export default function JobDetail() {
     </>
   );
 }
+

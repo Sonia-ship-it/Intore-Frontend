@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuthStore } from '@/stores/authStore';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 
 export function AppHeader({ title }: { title: string }) {
   const { isDark, toggle } = useTheme();
@@ -23,7 +24,7 @@ export function AppHeader({ title }: { title: string }) {
   const initials = (user?.name || 'U').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <header className="app-header fixed top-0 right-0 left-0 md:left-16 lg:left-60 h-16 z-30 flex items-center justify-between px-6">
+    <header className="app-header fixed top-0 right-0 left-0 md:left-16 lg:left-60 h-16 z-30 flex items-center justify-between px-6 overflow-visible">
       <h1 className="text-xl font-semibold ml-10 md:ml-0" style={{ color: 'white' }}>{title}</h1>
 
       <div className="flex items-center gap-4">
@@ -39,6 +40,8 @@ export function AppHeader({ title }: { title: string }) {
           {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </button>
 
+        <LanguageSwitcher />
+
         <button className="notification-btn p-2 rounded-lg transition-colors relative" style={{ color: 'white', opacity: 0.7 }} aria-label="Notifications">
           <Bell className="h-5 w-5" />
           <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full" style={{ background: '#4B7BFF' }} />
@@ -53,7 +56,7 @@ export function AppHeader({ title }: { title: string }) {
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-52 rounded-xl shadow-xl border py-1.5 animate-fade-in z-50 bg-white dark:bg-[#0A0E2E] border-slate-200 dark:border-white/10">
+            <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-2xl border py-1.5 animate-fade-in z-[200] bg-white dark:bg-[#0A0E2E] border-slate-200 dark:border-white/10" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
               <div className="px-4 py-2.5 border-b border-slate-100 dark:border-white/10 mb-1">
                 <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{user?.name || 'User'}</p>
                 <p className="text-xs text-slate-500 dark:text-white/40 truncate">{user?.email || ''}</p>

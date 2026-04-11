@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { Bot } from 'lucide-react';
+import { IntoreMark } from '@/components/branding/IntoreMark';
 
 interface ChatBubbleProps {
   role: 'ai' | 'user';
@@ -76,7 +76,7 @@ export function ChatBubble({ role, content, isStreaming }: ChatBubbleProps) {
     <div className={cn('flex gap-2 animate-slide-up-chat', isAi ? 'justify-start' : 'justify-end')}>
       {isAi && (
         <div className="w-6 h-6 rounded-md bg-[#4B7BFF]/10 border border-[#4B7BFF]/20 flex items-center justify-center shrink-0 mt-1">
-          <Bot className="w-3.5 h-3.5 text-[#4B7BFF]" />
+          <IntoreMark className="w-3.5 h-3.5 text-[#4B7BFF]" />
         </div>
       )}
       <div className={cn(
@@ -93,3 +93,4 @@ export function ChatBubble({ role, content, isStreaming }: ChatBubbleProps) {
     </div>
   );
 }
+

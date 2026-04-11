@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { Upload, FileText, Download, Check, Link2, Braces, Bot, RefreshCw, ChevronDown, ChevronUp, Send, Lock, AlertTriangle } from 'lucide-react';
+import { Upload, FileText, Download, Check, Link2, Braces, RefreshCw, ChevronDown, ChevronUp, Send, Lock, AlertTriangle } from 'lucide-react';
+import { IntoreMark } from '@/components/branding/IntoreMark';
 import * as XLSX from 'xlsx';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,41 @@ function RecBadge({ rec }: { rec: string }) {
   if (l.includes('shortlist')) return <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600">Shortlist</span>;
   if (l.includes('consider')) return <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600">Consider</span>;
   return <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600">Not Selected</span>;
+}
+
+// Converts a JSON response from Gemini into human-readable prose
+function formatAiAnswer(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) return trimmed;
+  try {
+    const parsed = JSON.parse(trimmed);
+    return jsonToProse(parsed);
+  } catch {
+    return trimmed;
+  }
+}
+
+function jsonToProse(obj: unknown): string {
+  if (typeof obj === 'string') return obj;
+  if (typeof obj === 'number' || typeof obj === 'boolean') return String(obj);
+  if (Array.isArray(obj)) return obj.map((item) => `- ${jsonToProse(item)}`).join('\n');
+  if (obj && typeof obj === 'object') {
+    const entries = Object.entries(obj as Record<string, unknown>);
+    if (entries.length === 1) return jsonToProse(entries[0][1]);
+    const r = obj as Record<string, unknown>;
+    const parts: string[] = [];
+    if (r.name) parts.push(`**${r.name}**`);
+    if (r.score !== undefined) parts.push(`with a **${Math.round(Number(r.score))}% match score**`);
+    if (r.recommendation) parts.push(`— **${r.recommendation}**`);
+    if (r.reason || r.reasoning) parts.push(`\n\n${r.reason || r.reasoning}`);
+    if (Array.isArray(r.strengths) && r.strengths.length)
+      parts.push(`\n\n**Strengths:**\n${(r.strengths as string[]).map((s) => `- ${s}`).join('\n')}`);
+    if (Array.isArray(r.gaps) && r.gaps.length)
+      parts.push(`\n\n**Gaps:**\n${(r.gaps as string[]).map((g) => `- ${g}`).join('\n')}`);
+    if (parts.length) return parts.join(' ');
+    return entries.map(([k, v]) => `**${k.replace(/_/g, ' ')}:** ${jsonToProse(v)}`).join('\n');
+  }
+  return String(obj);
 }
 
 export default function BulkUpload() {
@@ -258,7 +294,10 @@ export default function BulkUpload() {
     setChatInput(''); setChatLoading(true);
     try {
       const resp = await apiFetch<{ answer: string }>('/screening/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jobId, question: text }) });
-      setChatMessages((prev) => [...prev, { id: `a${Date.now()}`, role: 'ai', content: resp.answer || 'No answer available.' }]);
+      const raw = resp.answer || 'No answer available.';
+      // Safety net: if Gemini still returns JSON, convert it to readable prose
+      const answer = formatAiAnswer(raw);
+      setChatMessages((prev) => [...prev, { id: `a${Date.now()}`, role: 'ai', content: answer }]);
     } catch (err) {
       setChatMessages((prev) => [...prev, { id: `e${Date.now()}`, role: 'ai', content: err instanceof Error ? err.message : 'Unable to answer.' }]);
     } finally { setChatLoading(false); }
@@ -337,7 +376,7 @@ export default function BulkUpload() {
                         className="flex-1"
                         size="sm"
                       >
-                        {isBackendUploading ? 'Uploading...' : 'Send to Backend'}
+                        {isBackendUploading ? 'Uploading...' : 'Upload to System'}
                       </Button>
                       <Button 
                         variant="outline" 
@@ -345,7 +384,7 @@ export default function BulkUpload() {
                         className="flex-1"
                         size="sm"
                       >
-                        Confirm Ingest (Frontend)
+                        Confirm Ingest
                       </Button>
                     </div>
                   </div>
@@ -423,7 +462,7 @@ export default function BulkUpload() {
                     <option value={20}>Top 20</option>
                   </select>
                   <Button onClick={runScreening} disabled={screeningStatus === 'running' || candidateCount === 0} className={cn(screeningStatus === 'running' && 'opacity-70')}>
-                    {screeningStatus === 'running' ? <><Spinner size="sm" className="mr-2" />Screening...</> : screeningStatus === 'complete' ? <><RefreshCw className="h-4 w-4 mr-2" />Re-run</> : <><Bot className="h-4 w-4 mr-2" />Screen Candidates</>}
+                    {screeningStatus === 'running' ? <><Spinner size="sm" className="mr-2" />Screening...</> : screeningStatus === 'complete' ? <><RefreshCw className="h-4 w-4 mr-2" />Re-run</> : <><IntoreMark className="h-4 w-4 mr-2 text-[#4B7BFF]" />Screen Candidates</>}
                   </Button>
                 </div>
               </div>
@@ -488,7 +527,7 @@ export default function BulkUpload() {
                                     </div>
                                   </div>
                                   <Button size="sm" variant="outline" className="mt-3 gap-1.5" onClick={() => sendMessage(`Tell me more about ${r.name} and why they ranked #${r.rank}`)}>
-                                    <Bot className="h-3.5 w-3.5" /> Ask AI about this candidate
+                                    <IntoreMark className="h-3.5 w-3.5 text-[#4B7BFF]" /> Ask AI about this candidate
                                   </Button>
                                 </td>
                               </tr>
@@ -506,9 +545,9 @@ export default function BulkUpload() {
             <div className="bg-card rounded-xl border flex flex-col" style={{ minHeight: 480 }}>
               <div className="p-4 border-b flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-[#4B7BFF]/10 border border-[#4B7BFF]/20 flex items-center justify-center"><Bot className="h-4 w-4 text-[#4B7BFF]" /></div>
+                  <div className="w-8 h-8 rounded-xl bg-[#4B7BFF]/10 border border-[#4B7BFF]/20 flex items-center justify-center"><IntoreMark className="h-4 w-4 text-[#4B7BFF]" /></div>
                   <div>
-                    <p className="font-semibold text-sm">AI Recruiter Assistant</p>
+                    <p className="font-semibold text-sm">Intore Assistant</p>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span className={cn('w-1.5 h-1.5 rounded-full', chatUnlocked ? 'bg-emerald-400 animate-pulse' : 'bg-slate-300')} />
                       <p className="text-[10px] text-muted-foreground">{chatUnlocked ? 'Live · Powered by Gemini' : 'Locked until screening runs'}</p>
@@ -529,7 +568,7 @@ export default function BulkUpload() {
                     {chatLoading && (
                       <div className="flex gap-2 items-start">
                         <div className="w-6 h-6 rounded-md bg-[#4B7BFF]/10 border border-[#4B7BFF]/20 flex items-center justify-center shrink-0 mt-1">
-                          <Bot className="w-3.5 h-3.5 text-[#4B7BFF]" />
+                          <IntoreMark className="w-3.5 h-3.5 text-[#4B7BFF]" />
                         </div>
                         <div className="bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#4B7BFF] animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -567,3 +606,4 @@ export default function BulkUpload() {
     </>
   );
 }
+

@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { RecruiterLayout } from '@/components/layout/RecruiterLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { IntoreMark } from '@/components/branding/IntoreMark';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Download, RefreshCw, Users, TrendingUp, Award } from 'lucide-react';
@@ -86,7 +87,7 @@ export default function ScreeningResultsPage() {
 
   const fetchJobDetails = async () => {
     try {
-      const response = await apiFetch(`/jobs/${jobId}`);
+      const response = await apiFetch<{ title?: string }>(`/jobs/${jobId}`);
       if (response.title) {
         setJobTitle(response.title);
       }
@@ -394,7 +395,7 @@ export default function ScreeningResultsPage() {
                 {candidate.reasoning && (
                   <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                     <div className="flex items-center gap-2 mb-2">
-                      <Bot className="h-4 w-4 text-blue-600" />
+                      <IntoreMark className="h-4 w-4 text-blue-600" />
                       <div className="text-sm font-medium text-blue-700">AI Analysis & Reasoning</div>
                     </div>
                     <div className="text-sm text-blue-800 leading-relaxed whitespace-pre-line">
