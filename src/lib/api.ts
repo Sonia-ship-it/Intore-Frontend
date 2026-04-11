@@ -9,10 +9,7 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  'http://localhost:4000';
+const API_BASE_URL = "https://backend-services-6.onrender.com";
 
 function getAuthToken(): string | undefined {
   // Avoid crashing during Next SSR.
