@@ -4,7 +4,7 @@ import { mockJobs } from '@/data/mockData';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
-const departmentFilters = ['All', 'Engineering', 'Design', 'Data', 'Infrastructure', 'Marketing'];
+const departmentFilters = ['All', 'Engineering','Data', 'Infrastructure', 'Marketing',"UI/UX","Communication","Management",""];
 
 export default function JobBoardPage() {
   const [search, setSearch] = useState('');

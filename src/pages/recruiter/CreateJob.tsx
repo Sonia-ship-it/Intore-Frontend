@@ -16,13 +16,13 @@ type CreatedJobResponse = { id?: string; _id?: string };
 const REQUIRED_SKILL_SUGGESTIONS = [
   'JavaScript', 'TypeScript', 'React', 'Node.js', 'Python', 'Java', 'Go',
   'SQL', 'PostgreSQL', 'MongoDB', 'REST APIs', 'GraphQL', 'Docker', 'Kubernetes',
-  'AWS', 'Git', 'CI/CD', 'Agile', 'Figma', 'Communication',
+  'AWS', 'Git', 'CI/CD', 'Agile', 'Figma', 'Communication', ''
 ];
 
 const NICE_SKILL_SUGGESTIONS = [
   'Next.js', 'Vue.js', 'Angular', 'Redis', 'Elasticsearch', 'Terraform',
   'Machine Learning', 'Data Analysis', 'Leadership', 'Mentoring', 'Public Speaking',
-  'Product Thinking', 'UX Research', 'A/B Testing', 'Scrum',
+  'Product Thinking', 'UX Research', 'A/B Testing', 'Scrum','Team work','Collaboration'
 ];
 
 export default function CreateJob() {
