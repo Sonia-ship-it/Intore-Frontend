@@ -64,77 +64,127 @@ function ConfettiExplosion({ active }: { active: boolean }) {
 
 // ── PDF generator ─────────────────────────────────────────────────────────────
 function generatePDF(results: UiResult[], decisions: Record<string, RecruiterDecision>, finalSummary: string, jobTitle: string) {
-  const approved = results.filter((r) => decisions[r.applicationId || String(r.rank)] === 'approved');
-  const rejected = results.filter((r) => decisions[r.applicationId || String(r.rank)] === 'rejected');
-  const pending = results.filter((r) => !decisions[r.applicationId || String(r.rank)]);
+  const key = (r: UiResult) => r.applicationId || String(r.rank);
+  const approved = results.filter((r) => decisions[key(r)] === 'approved');
+  const rejected = results.filter((r) => decisions[key(r)] === 'rejected');
+  const pending = results.filter((r) => !decisions[key(r)]);
+  const date = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>Screening Report — ${jobTitle}</title>
+  const candidateCard = (r: UiResult, badge: string, badgeColor: string) => `
+    <div class="card">
+      <div class="card-header">
+        <div class="rank-badge">#${r.rank}</div>
+        <div class="candidate-info">
+          <div class="candidate-name">${r.name}</div>
+          <div class="candidate-meta">Match Score: <strong>${Math.round(r.score)}%</strong> &nbsp;·&nbsp; AI Verdict: <strong>${r.recommendation}</strong></div>
+        </div>
+        <div class="decision-badge" style="background:${badgeColor}20;color:${badgeColor};border:1.5px solid ${badgeColor}40">${badge}</div>
+        <div class="score-circle" style="border-color:${r.score >= 70 ? '#10b981' : r.score >= 50 ? '#f59e0b' : '#ef4444'}">${Math.round(r.score)}%</div>
+      </div>
+      <div class="card-body">
+        <div class="section">
+          <div class="section-title">AI Analysis</div>
+          <p class="reasoning">${r.reason || 'No detailed reasoning provided.'}</p>
+        </div>
+        <div class="two-col">
+          <div class="section">
+            <div class="section-title strengths-title">Key Strengths</div>
+            <ul class="tag-list">${r.strengths.map(s => `<li class="tag strength-tag">${s}</li>`).join('')}</ul>
+          </div>
+          <div class="section">
+            <div class="section-title gaps-title">Areas for Development</div>
+            <ul class="tag-list">${r.gaps.map(g => `<li class="tag gap-tag">${g}</li>`).join('')}</ul>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  const html = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>Screening Report — ${jobTitle}</title>
 <style>
-  body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; color: #1e293b; }
-  h1 { color: #0f172a; border-bottom: 3px solid #4B7BFF; padding-bottom: 12px; }
-  h2 { color: #1e40af; margin-top: 32px; }
-  .summary { background: #f0f9ff; border-left: 4px solid #4B7BFF; padding: 16px; border-radius: 4px; margin: 20px 0; }
-  .candidate { border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 12px 0; }
-  .approved { border-left: 4px solid #10b981; }
-  .rejected { border-left: 4px solid #ef4444; }
-  .pending { border-left: 4px solid #94a3b8; }
-  .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-  .badge-approved { background: #d1fae5; color: #065f46; }
-  .badge-rejected { background: #fee2e2; color: #991b1b; }
-  .badge-pending { background: #f1f5f9; color: #475569; }
-  .score { font-size: 24px; font-weight: 800; color: #4B7BFF; }
-  .meta { color: #64748b; font-size: 13px; margin: 4px 0; }
-  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 12px; }
-</style></head><body>
-<h1>🎯 Final Screening Report</h1>
-<p class="meta">Job: <strong>${jobTitle}</strong> &nbsp;|&nbsp; Generated: ${new Date().toLocaleDateString('en-US', { dateStyle: 'long' })}</p>
-<div class="summary">
-  <strong>AI Summary</strong><br/><br/>
-  ${finalSummary.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')}
-</div>
-<p><strong>Total screened:</strong> ${results.length} &nbsp;|&nbsp; 
-   <strong style="color:#10b981">✓ Approved: ${approved.length}</strong> &nbsp;|&nbsp; 
-   <strong style="color:#ef4444">✗ Rejected: ${rejected.length}</strong> &nbsp;|&nbsp; 
-   <strong style="color:#94a3b8">⏳ Pending: ${pending.length}</strong></p>
-
-<h2>✅ Approved Candidates (${approved.length})</h2>
-${approved.map((r) => `
-<div class="candidate approved">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <div><strong style="font-size:16px">#${r.rank} ${r.name}</strong> <span class="badge badge-approved">Approved</span></div>
-    <span class="score">${Math.round(r.score)}%</span>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f8fafc;color:#1e293b;line-height:1.6}
+  .page{max-width:860px;margin:0 auto;padding:48px 40px}
+  .report-header{background:linear-gradient(135deg,#0F1547 0%,#1a2060 100%);border-radius:16px;padding:36px 40px;margin-bottom:32px;color:white;display:flex;align-items:flex-start;justify-content:space-between}
+  .logo{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .logo-name{font-size:22px;font-weight:800}
+  .report-title{font-size:26px;font-weight:800}
+  .report-meta{font-size:13px;color:rgba(255,255,255,0.6);margin-top:6px}
+  .stat-box{background:rgba(255,255,255,0.1);border-radius:12px;padding:16px 24px;text-align:center;min-width:120px}
+  .stat-number{font-size:36px;font-weight:800;color:#4B7BFF}
+  .stat-label{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px}
+  .summary-box{background:white;border-radius:12px;border-left:4px solid #4B7BFF;padding:24px 28px;margin-bottom:28px;box-shadow:0 1px 8px rgba(0,0,0,0.06)}
+  .summary-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#4B7BFF;margin-bottom:10px}
+  .summary-text{font-size:14px;color:#374151;line-height:1.7}
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px}
+  .stat-card{background:white;border-radius:12px;padding:20px 24px;box-shadow:0 1px 8px rgba(0,0,0,0.06);text-align:center}
+  .stat-card .number{font-size:32px;font-weight:800}
+  .stat-card .label{font-size:12px;color:#64748b;margin-top:4px;font-weight:500}
+  .approved-stat .number{color:#10b981}
+  .rejected-stat .number{color:#ef4444}
+  .pending-stat .number{color:#94a3b8}
+  .section-heading{font-size:18px;font-weight:700;color:#0f172a;margin:32px 0 16px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}
+  .card{background:white;border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,0.06);margin-bottom:16px;overflow:hidden}
+  .card-header{display:flex;align-items:center;gap:16px;padding:20px 24px;border-bottom:1px solid #f1f5f9}
+  .rank-badge{width:36px;height:36px;border-radius:10px;background:#0F1547;color:white;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .candidate-info{flex:1}
+  .candidate-name{font-size:16px;font-weight:700;color:#0f172a}
+  .candidate-meta{font-size:12px;color:#64748b;margin-top:2px}
+  .decision-badge{padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;flex-shrink:0}
+  .score-circle{width:52px;height:52px;border-radius:50%;border:3px solid;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+  .card-body{padding:20px 24px}
+  .section{margin-bottom:16px}
+  .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-bottom:8px}
+  .strengths-title{color:#059669}
+  .gaps-title{color:#dc2626}
+  .reasoning{font-size:13px;color:#374151;line-height:1.65}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .tag-list{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+  .tag{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500}
+  .strength-tag{background:#d1fae5;color:#065f46}
+  .gap-tag{background:#fee2e2;color:#991b1b}
+  .footer{margin-top:48px;padding-top:20px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center}
+  .footer-brand{font-size:13px;font-weight:700;color:#4B7BFF}
+  .footer-meta{font-size:12px;color:#94a3b8}
+  @media print{body{background:white}.page{padding:20px}}
+</style></head>
+<body><div class="page">
+  <div class="report-header">
+    <div>
+      <div class="logo">
+        <svg width="36" height="36" viewBox="0 0 64 64" fill="none"><path d="M32 5.5 54.5 32 32 58.5 9.5 32 32 5.5Z" stroke="#4B7BFF" stroke-width="4.5" stroke-linejoin="round"/><circle cx="32" cy="32" r="6.5" fill="#4B7BFF"/></svg>
+        <span class="logo-name">Intore</span>
+      </div>
+      <div class="report-title">Final Screening Report</div>
+      <div class="report-meta">Position: <strong style="color:white">${jobTitle}</strong> &nbsp;·&nbsp; ${date}</div>
+    </div>
+    <div class="stat-box"><div class="stat-number">${results.length}</div><div class="stat-label">Candidates Screened</div></div>
   </div>
-  <p class="meta">Recommendation: ${r.recommendation}</p>
-  <p class="meta"><strong>Strengths:</strong> ${r.strengths.join(' · ')}</p>
-  <p class="meta"><strong>Gaps:</strong> ${r.gaps.join(' · ')}</p>
-  <p style="font-size:13px;color:#374151;margin-top:8px">${r.reason}</p>
-</div>`).join('')}
-
-<h2>❌ Rejected Candidates (${rejected.length})</h2>
-${rejected.map((r) => `
-<div class="candidate rejected">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <div><strong style="font-size:16px">#${r.rank} ${r.name}</strong> <span class="badge badge-rejected">Rejected</span></div>
-    <span class="score" style="color:#ef4444">${Math.round(r.score)}%</span>
+  <div class="summary-box">
+    <div class="summary-title">AI Screening Summary</div>
+    <div class="summary-text">${finalSummary.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br/>')}</div>
   </div>
-  <p class="meta"><strong>Key gaps:</strong> ${r.gaps.join(' · ')}</p>
-</div>`).join('')}
-
-${pending.length > 0 ? `<h2>⏳ Pending Review (${pending.length})</h2>
-${pending.map((r) => `<div class="candidate pending"><strong>#${r.rank} ${r.name}</strong> — ${Math.round(r.score)}%</div>`).join('')}` : ''}
-
-<div class="footer">Generated by Intore AI · Built for Rwanda's growing workforce · ${new Date().getFullYear()}</div>
-</body></html>`;
+  <div class="stats-row">
+    <div class="stat-card approved-stat"><div class="number">${approved.length}</div><div class="label">Approved by Recruiter</div></div>
+    <div class="stat-card rejected-stat"><div class="number">${rejected.length}</div><div class="label">Rejected by Recruiter</div></div>
+    <div class="stat-card pending-stat"><div class="number">${pending.length}</div><div class="label">Pending Review</div></div>
+  </div>
+  ${approved.length > 0 ? `<div class="section-heading">✅ Approved Candidates (${approved.length})</div>${approved.map(r => candidateCard(r, 'Approved', '#10b981')).join('')}` : ''}
+  ${rejected.length > 0 ? `<div class="section-heading">❌ Rejected Candidates (${rejected.length})</div>${rejected.map(r => candidateCard(r, 'Rejected', '#ef4444')).join('')}` : ''}
+  ${pending.length > 0 ? `<div class="section-heading">⏳ Pending Review (${pending.length})</div>${pending.map(r => candidateCard(r, 'Pending', '#94a3b8')).join('')}` : ''}
+  <div class="footer">
+    <span class="footer-brand">Intore AI · Built for Rwanda's growing workforce</span>
+    <span class="footer-meta">Generated ${date} · Confidential</span>
+  </div>
+</div></body></html>`;
 
   const blob = new Blob([html], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = `screening-report-${jobTitle.replace(/\s+/g, '-').toLowerCase()}.html`;
-  a.click();
+  a.href = url; a.download = `screening-report-${jobTitle.replace(/\s+/g,'-').toLowerCase()}.html`; a.click();
   URL.revokeObjectURL(url);
 }
+
 
 const SUGGESTIONS = ['Who is the best fit?', 'Compare top 3', 'What are the biggest gaps?', 'Who should I interview first?'];
 
