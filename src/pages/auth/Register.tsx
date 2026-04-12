@@ -194,7 +194,7 @@ export default function RegisterPage() {
                                                 <div className={`h-full rounded-full transition-all duration-300 ${passwordStrength.color} ${passwordStrength.width}`} />
                                             </div>
                                             <p className={`text-[11px] font-semibold ${passwordStrength.text}`}>
-                                                {passwordStrength.label} — {passwordStrength.label === 'Weak' ? 'add uppercase, numbers & symbols' : passwordStrength.label === 'Fair' ? 'add numbers & symbols' : passwordStrength.label === 'Good' ? 'add a symbol to make it strong' : 'great password'}
+                                                {passwordStrength.label} {passwordStrength.label === 'Weak' ? 'add uppercase, numbers & symbols' : passwordStrength.label === 'Fair' ? 'add numbers & symbols' : passwordStrength.label === 'Good' ? 'add a symbol to make it strong' : 'great password'}
                                             </p>
                                         </div>
                                     )}                                </div>
