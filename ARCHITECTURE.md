@@ -88,7 +88,7 @@ Suggestions are context-aware based on the current route:
 - Job detail → candidate comparison questions
 - Candidates page → profile-specific questions
 - Screenings page → result summary questions
-- Other pages → general hiring questions
+- Other pages → general recruiting questions
 
 ---
 

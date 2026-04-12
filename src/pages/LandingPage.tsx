@@ -217,7 +217,7 @@ export default function LandingPage() {
           <RevealOnScroll preset="fadeUp" delay={0.4} duration={0.8} once={true} className="mt-6 text-center px-6">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/register" className="pulse-btn bg-[#4B7BFF] text-white px-7 py-3.5 rounded-xl font-semibold text-[15px] hover:brightness-110 transition-all">
-                Start hiring smarter
+                Start recruiting smarter
               </Link>
               <button onClick={(e) => scrollToSection(e, 'testimonials')} className="bg-white/10 border border-white/20 backdrop-blur-[8px] text-white px-7 py-3.5 rounded-xl font-medium text-[15px] hover:bg-white/15 transition-all flex items-center gap-2">
                 <PlayCircle className="w-4 h-4 text-white/80" />
@@ -389,7 +389,7 @@ export default function LandingPage() {
           <div ref={parallaxRef2} className="hidden md:block absolute right-0 top-[60px] w-[200px] h-[200px] rounded-[16px] p-4 text-white z-[15]"
             style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 4.5s ease-in-out infinite 0.5s', ...({ '--card-rot': '2deg' } as CSSProperties) }}>
             <div className="text-[32px] font-bold text-white leading-none">2.4×</div>
-            <div className="text-[12px] text-white/60 mt-1">Faster hiring</div>
+            <div className="text-[12px] text-white/60 mt-1">Faster recruiting</div>
             <div className="text-[11px] text-white/40 mt-0.5">vs. manual screening</div>
             <div className="mt-3">
               <svg width="40" height="20" viewBox="0 0 40 20" fill="none">
@@ -442,7 +442,7 @@ export default function LandingPage() {
         <div className="max-w-[1120px] mx-auto">
           <RevealOnScroll preset="fadeIn" delay={0.1}>
             <p className="text-[13px] text-slate-400 font-medium uppercase tracking-wide text-center">
-              TRUSTED BY HIRING TEAMS ACROSS RWANDA
+              TRUSTED BY recruiting TEAMS ACROSS RWANDA
             </p>
           </RevealOnScroll>
 
@@ -483,7 +483,7 @@ export default function LandingPage() {
               Features
             </h2>
             <h3 className="mt-3 text-[28px] md:text-[38px] font-bold text-slate-900">
-              Everything Rwandan hiring teams need to hire smarter.
+              Everything Rwandan recruiting teams need to hire smarter.
             </h3>
             <p className="mt-3 text-[16px] text-slate-500 max-w-lg mx-auto">
               Intore handles the analysis. You make the decisions.
@@ -720,7 +720,7 @@ export default function LandingPage() {
               Recruiters who've made the switch.
             </h3>
             <p className="mt-3 text-[16px] text-slate-500">
-              Real teams. Real results. Real hiring decisions.
+              Real teams. Real results. Real recruiting decisions.
             </p>
           </RevealOnScroll>
 
@@ -736,7 +736,7 @@ export default function LandingPage() {
               </div>
               <div className="mt-4 text-[16px] text-slate-700 leading-[1.7] italic">
                 <span className="text-brand-100 text-[48px] font-serif leading-[0] float-left mr-1 relative top-4">“</span>
-                We used to spend an entire week reviewing CVs for every open role. With Intore, we had a ranked shortlist before our Monday standup. The AI reasoning is clear enough that I can defend every decision to our MD.
+                We used to spend an entire week reviewing Resumes for every open role. With Intore, we had a ranked shortlist before our Monday standup. The AI reasoning is clear enough that I can defend every decision to our MD.
               </div>
               <div className="mt-6 flex items-center justify-between gap-3">
                 <img src="https://images.unsplash.com/photo-1573497019236-17f8177b81e8?w=80&h=80&fit=crop&crop=face" alt="Amara" className="w-[44px] h-[44px] rounded-full object-cover border-2 border-white ring-2 ring-brand-100" />
@@ -757,7 +757,7 @@ export default function LandingPage() {
               </div>
               <div className="mt-4 text-[16px] text-slate-700 leading-[1.7] italic">
                 <span className="text-brand-100 text-[48px] font-serif leading-[0] float-left mr-1 relative top-4">“</span>
-                The bias detection changed how our team thinks about hiring. We were unknowingly filtering out strong candidates from upcountry provinces. Intore surfaced talent we would have missed completely.
+                The bias detection changed how our team thinks about recruiting. We were unknowingly filtering out strong candidates from upcountry provinces. Intore surfaced talent we would have missed completely.
               </div>
               <div className="mt-6 flex items-center justify-between gap-3">
                 <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=80&h=80&fit=crop&crop=face" alt="David" className="w-[44px] h-[44px] rounded-full object-cover border-2 border-white ring-2 ring-brand-100" />

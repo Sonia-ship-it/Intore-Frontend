@@ -68,7 +68,7 @@ export default function LoginPage() {
                     </RevealOnScroll>
                     <RevealOnScroll preset="fadeUp" delay={0.2}>
                         <p className="text-slate-400 font-medium max-w-md leading-relaxed">
-                            Everything Rwandan hiring teams need to screen, rank, and hire smarter as powered by AI.
+                            Everything Rwandan recruiting teams need to screen, rank, and hire smarter as powered by AI.
                         </p>
                     </RevealOnScroll>
                     <RevealOnScroll preset="fadeUp" delay={0.3} className="flex gap-6 pt-4">

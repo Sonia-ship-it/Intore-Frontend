@@ -54,7 +54,7 @@ export default function RegisterPage() {
                 phoneNumber: phone,
                 companyName,
             });
-            router.push('/recruiter/dashboard');
+            router.push('/onboarding');
         } catch (err) {
             toast({
                 title: 'Registration failed',
@@ -88,7 +88,7 @@ export default function RegisterPage() {
                     </RevealOnScroll>
                     <RevealOnScroll preset="fadeUp" delay={0.2}>
                         <p className="text-slate-400 font-medium max-w-md leading-relaxed">
-                            Intore connects you with Rwanda&apos;s best opportunities using AI-powered matching, making the hiring and application process seamless.
+                            Intore connects you with Rwanda&apos;s best opportunities using AI-powered matching, making the recruiting and application process seamless.
                         </p>
                     </RevealOnScroll>
                 </div>

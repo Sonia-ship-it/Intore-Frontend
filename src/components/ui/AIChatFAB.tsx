@@ -42,7 +42,7 @@ export function AIChatFAB() {
     {
       id: 'welcome',
       role: 'ai',
-      content: "Hi! I'm your Intore AI assistant powered by Gemini.\n\nAsk me anything about your candidates, screening results, or hiring pipeline.",
+      content: "Hi! I'm your Intore AI assistant powered by Gemini.\n\nAsk me anything about your candidates, screening results, or recruiting pipeline.",
     },
   ]);
   const [input, setInput] = useState('');

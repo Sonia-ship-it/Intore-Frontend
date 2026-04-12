@@ -81,7 +81,7 @@ export default function RecruiterDashboard() {
             <h2 className="text-3xl font-black text-white tracking-tight">{greeting}, {firstName} 👋</h2>
             <p className="text-white/60 text-sm max-w-sm">
               {jobs.length === 0
-                ? "You haven't posted any jobs yet. Start hiring today."
+                ? "You haven't posted any jobs yet. Start recruiting today."
                 : `You have ${activeJobs} active job${activeJobs !== 1 ? 's' : ''} and ${draftJobs} draft${draftJobs !== 1 ? 's' : ''}.`}
             </p>
             <div className="flex gap-3 pt-2">
