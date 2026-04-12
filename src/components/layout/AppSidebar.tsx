@@ -59,7 +59,7 @@ export function AppSidebar() {
           </div>
         </div>
         <Link href="/" className="sidebar-back-link mt-4 block text-center">
-          Back to home
+          Logout
         </Link>
       </div>
     </div>
