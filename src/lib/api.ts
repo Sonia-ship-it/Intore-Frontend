@@ -9,7 +9,7 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL = "https://backend-services-6.onrender.com";
+const API_BASE_URL = "http://localhost:4000";
 
 function getAuthToken(): string | undefined {
   // Avoid crashing during Next SSR.

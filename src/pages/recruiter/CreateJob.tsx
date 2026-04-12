@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { TagInput } from '@/components/intore/TagInput';
+import { LocationPicker } from '@/components/intore/LocationPicker';
 import { StatusBadge, TypeBadge } from '@/components/intore/Badges';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -126,7 +127,12 @@ export default function CreateJob() {
                     </select>
                   </label>
                   <label className="block text-sm font-medium">Location
-                    <input value={form.location} onChange={(e) => update('location', e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="e.g. San Francisco, CA" />
+                    <LocationPicker
+                      value={form.location}
+                      onChange={(v) => update('location', v)}
+                      placeholder="e.g. Kigali, Rwanda"
+                      className="mt-1"
+                    />
                   </label>
                 </div>
                 <div>

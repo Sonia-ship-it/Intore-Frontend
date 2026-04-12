@@ -1,9 +1,9 @@
-import { useMemo, useRef, useState, useEffect } from 'react';
+import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { Upload, FileText, Download, Check, Link2, Braces, RefreshCw, ChevronDown, ChevronUp, Send, Lock, AlertTriangle, ThumbsUp, ThumbsDown, BarChart2 } from 'lucide-react';
+import { Upload, FileText, Download, Check, Link2, Braces, RefreshCw, ChevronDown, ChevronUp, Send, Lock, AlertTriangle, ThumbsUp, ThumbsDown, BarChart2, Trophy, CheckCircle2, FileDown, Loader2 } from 'lucide-react';
 import { IntoreMark } from '@/components/branding/IntoreMark';
 import * as XLSX from 'xlsx';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -20,10 +20,121 @@ import { ChatBubble } from '@/components/intore/ChatBubble';
 import { SuggestionChips } from '@/components/intore/SuggestionChips';
 import { BiasWarning } from '@/components/intore/BiasWarning';
 
-type ScreeningStatus = 'idle' | 'running' | 'complete' | 'error';
+type ScreeningStatus = 'idle' | 'running' | 'complete' | 'error' | 'finalized';
 type UiResult = ApiScreeningResult & { confidence: 'High' | 'Medium' | 'Low' };
 type ChatMsg = { id: string; role: 'user' | 'ai'; content: string };
 type RecruiterDecision = 'approved' | 'rejected' | null;
+
+// ── Confetti particle ─────────────────────────────────────────────────────────
+function ConfettiExplosion({ active }: { active: boolean }) {
+  if (!active) return null;
+  const particles = Array.from({ length: 60 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    delay: Math.random() * 0.8,
+    color: ['#4B7BFF', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'][i % 6],
+    size: 6 + Math.random() * 8,
+    duration: 1.5 + Math.random() * 1,
+  }));
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="absolute rounded-sm"
+          style={{
+            left: `${p.x}%`,
+            top: '-10px',
+            width: p.size,
+            height: p.size,
+            background: p.color,
+            animation: `confettiFall ${p.duration}s ease-in ${p.delay}s forwards`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes confettiFall {
+          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ── PDF generator ─────────────────────────────────────────────────────────────
+function generatePDF(results: UiResult[], decisions: Record<string, RecruiterDecision>, finalSummary: string, jobTitle: string) {
+  const approved = results.filter((r) => decisions[r.applicationId || String(r.rank)] === 'approved');
+  const rejected = results.filter((r) => decisions[r.applicationId || String(r.rank)] === 'rejected');
+  const pending = results.filter((r) => !decisions[r.applicationId || String(r.rank)]);
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Screening Report — ${jobTitle}</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; color: #1e293b; }
+  h1 { color: #0f172a; border-bottom: 3px solid #4B7BFF; padding-bottom: 12px; }
+  h2 { color: #1e40af; margin-top: 32px; }
+  .summary { background: #f0f9ff; border-left: 4px solid #4B7BFF; padding: 16px; border-radius: 4px; margin: 20px 0; }
+  .candidate { border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 12px 0; }
+  .approved { border-left: 4px solid #10b981; }
+  .rejected { border-left: 4px solid #ef4444; }
+  .pending { border-left: 4px solid #94a3b8; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge-approved { background: #d1fae5; color: #065f46; }
+  .badge-rejected { background: #fee2e2; color: #991b1b; }
+  .badge-pending { background: #f1f5f9; color: #475569; }
+  .score { font-size: 24px; font-weight: 800; color: #4B7BFF; }
+  .meta { color: #64748b; font-size: 13px; margin: 4px 0; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 12px; }
+</style></head><body>
+<h1>🎯 Final Screening Report</h1>
+<p class="meta">Job: <strong>${jobTitle}</strong> &nbsp;|&nbsp; Generated: ${new Date().toLocaleDateString('en-US', { dateStyle: 'long' })}</p>
+<div class="summary">
+  <strong>AI Summary</strong><br/><br/>
+  ${finalSummary.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')}
+</div>
+<p><strong>Total screened:</strong> ${results.length} &nbsp;|&nbsp; 
+   <strong style="color:#10b981">✓ Approved: ${approved.length}</strong> &nbsp;|&nbsp; 
+   <strong style="color:#ef4444">✗ Rejected: ${rejected.length}</strong> &nbsp;|&nbsp; 
+   <strong style="color:#94a3b8">⏳ Pending: ${pending.length}</strong></p>
+
+<h2>✅ Approved Candidates (${approved.length})</h2>
+${approved.map((r) => `
+<div class="candidate approved">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div><strong style="font-size:16px">#${r.rank} ${r.name}</strong> <span class="badge badge-approved">Approved</span></div>
+    <span class="score">${Math.round(r.score)}%</span>
+  </div>
+  <p class="meta">Recommendation: ${r.recommendation}</p>
+  <p class="meta"><strong>Strengths:</strong> ${r.strengths.join(' · ')}</p>
+  <p class="meta"><strong>Gaps:</strong> ${r.gaps.join(' · ')}</p>
+  <p style="font-size:13px;color:#374151;margin-top:8px">${r.reason}</p>
+</div>`).join('')}
+
+<h2>❌ Rejected Candidates (${rejected.length})</h2>
+${rejected.map((r) => `
+<div class="candidate rejected">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div><strong style="font-size:16px">#${r.rank} ${r.name}</strong> <span class="badge badge-rejected">Rejected</span></div>
+    <span class="score" style="color:#ef4444">${Math.round(r.score)}%</span>
+  </div>
+  <p class="meta"><strong>Key gaps:</strong> ${r.gaps.join(' · ')}</p>
+</div>`).join('')}
+
+${pending.length > 0 ? `<h2>⏳ Pending Review (${pending.length})</h2>
+${pending.map((r) => `<div class="candidate pending"><strong>#${r.rank} ${r.name}</strong> — ${Math.round(r.score)}%</div>`).join('')}` : ''}
+
+<div class="footer">Generated by Intore AI · Built for Rwanda's growing workforce · ${new Date().getFullYear()}</div>
+</body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `screening-report-${jobTitle.replace(/\s+/g, '-').toLowerCase()}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const SUGGESTIONS = ['Who is the best fit?', 'Compare top 3', 'What are the biggest gaps?', 'Who should I interview first?'];
 
@@ -117,6 +228,12 @@ export default function BulkUpload() {
   // Recruiter decisions — thumbs up/down per candidate
   const [decisions, setDecisions] = useState<Record<string, RecruiterDecision>>({});
   const [showCharts, setShowCharts] = useState(false);
+  const [aiComments, setAiComments] = useState<Record<string, string>>({});
+  const [decisionLoading, setDecisionLoading] = useState<string | null>(null);
+  const [finalizing, setFinalizing] = useState(false);
+  const [finalized, setFinalized] = useState(false);
+  const [finalSummary, setFinalSummary] = useState('');
+  const [showConfetti, setShowConfetti] = useState(false);
 
   // Chat state
   const [chatMessages, setChatMessages] = useState<ChatMsg[]>([]);
@@ -241,6 +358,72 @@ export default function BulkUpload() {
 
   const readJsonFile = async (file: File): Promise<unknown> => JSON.parse(await file.text());
 
+  // ── Load saved snapshot on mount ─────────────────────────────────────────
+  useEffect(() => {
+    if (!jobId || results.length > 0) return;
+    apiFetch<any>(`/screening/snapshot/${jobId}`)
+      .then((snap) => {
+        if (!snap || !snap.results?.length) return;
+        const uiResults: UiResult[] = snap.results.map((r: any) => ({ ...r, confidence: r.score >= 75 ? 'High' : r.score >= 50 ? 'Medium' : 'Low' }));
+        setResults(uiResults);
+        setScreeningStatus(snap.finalized ? 'finalized' : 'complete');
+        setChatUnlocked(true);
+        if (snap.decisions) setDecisions(snap.decisions as Record<string, RecruiterDecision>);
+        if (snap.finalized) { setFinalized(true); setFinalSummary(snap.finalSummary || ''); }
+      })
+      .catch(() => {});
+  }, [jobId]);
+
+  // ── Save a decision to backend + get AI comment ───────────────────────────
+  const saveDecision = useCallback(async (key: string, decision: RecruiterDecision) => {
+    if (!jobId) return;
+    const newDecision = decisions[key] === decision ? null : decision;
+    setDecisions((prev) => ({ ...prev, [key]: newDecision }));
+    if (!newDecision) return;
+    setDecisionLoading(key);
+    try {
+      const resp = await apiFetch<{ ok: boolean; aiComment?: string }>('/screening/decision', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId, applicationId: key, decision: newDecision }),
+      });
+      if (resp.aiComment) {
+        setAiComments((prev) => ({ ...prev, [key]: resp.aiComment! }));
+        // Also add to chat
+        setChatMessages((prev) => [...prev, { id: `ai-dec-${Date.now()}`, role: 'ai', content: resp.aiComment! }]);
+      }
+    } catch { /* silent */ } finally {
+      setDecisionLoading(null);
+    }
+  }, [jobId, decisions]);
+
+  // ── Finalize screening ────────────────────────────────────────────────────
+  const finalizeScreening = async () => {
+    if (!jobId) return;
+    setFinalizing(true);
+    try {
+      const resp = await apiFetch<{ ok: boolean; finalSummary: string; approved: number; rejected: number }>('/screening/finalize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId }),
+      });
+      setFinalized(true);
+      setScreeningStatus('finalized');
+      setFinalSummary(resp.finalSummary);
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 4000);
+      setChatMessages((prev) => [...prev, {
+        id: `final-${Date.now()}`, role: 'ai',
+        content: `🎉 **Screening finalized!**\n\n${resp.finalSummary}\n\n**${resp.approved} approved**, ${resp.rejected} rejected. The full report is ready to download.`
+      }]);
+      toast({ title: '🎉 Screening finalized!', description: `${resp.approved} candidates approved.` });
+    } catch (err) {
+      toast({ title: 'Finalization failed', description: err instanceof Error ? err.message : 'Try again.', variant: 'destructive' });
+    } finally {
+      setFinalizing(false);
+    }
+  };
+
   const downloadXLSX = () => {
     if (!results.length) return;
     const rows = results.map((r) => ({
@@ -311,6 +494,7 @@ export default function BulkUpload() {
 
   return (
     <>
+      <ConfettiExplosion active={showConfetti} />
       <AppHeader title="Upload & Screen" />
       <div className="max-w-[1400px] mx-auto px-6 py-8">
         <div className="flex flex-col xl:flex-row gap-6">
@@ -541,7 +725,27 @@ export default function BulkUpload() {
                       <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600"><ThumbsUp className="h-3.5 w-3.5" /> {approved} Approved</span>
                       <span className="flex items-center gap-1.5 text-xs font-semibold text-rose-600"><ThumbsDown className="h-3.5 w-3.5" /> {rejected} Rejected</span>
                       <span className="text-xs text-muted-foreground">{pending} pending review</span>
-                      <span className="ml-auto text-[10px] text-muted-foreground italic">AI ranks candidates — you make the final call</span>
+                      {!finalized && pending === 0 && results.length > 0 && (
+                        <button onClick={finalizeScreening} disabled={finalizing}
+                          className="ml-auto flex items-center gap-2 px-4 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/20 disabled:opacity-60">
+                          {finalizing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trophy className="h-3.5 w-3.5" />}
+                          {finalizing ? 'Finalizing...' : 'Finalize & Generate Report'}
+                        </button>
+                      )}
+                      {finalized && (
+                        <div className="ml-auto flex items-center gap-2">
+                          <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-500/10 px-3 py-1 rounded-full">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Finalized
+                          </span>
+                          <button onClick={() => generatePDF(results, decisions, finalSummary, 'Screening')}
+                            className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#4B7BFF] text-white text-xs font-bold hover:bg-[#3461DF] transition-colors">
+                            <FileDown className="h-3.5 w-3.5" /> Download Report
+                          </button>
+                        </div>
+                      )}
+                      {!finalized && pending > 0 && (
+                        <span className="ml-auto text-[10px] text-muted-foreground italic">Review all {pending} remaining candidates to finalize</span>
+                      )}
                     </div>
 
                     {/* Charts */}
@@ -635,20 +839,26 @@ export default function BulkUpload() {
                                   <td className="px-4 py-3.5 w-32">
                                     <div className="flex items-center gap-1.5">
                                       <button
-                                        onClick={() => setDecisions(prev => ({ ...prev, [key]: prev[key] === 'approved' ? null : 'approved' }))}
-                                        className={cn('p-1.5 rounded-lg transition-all', decision === 'approved' ? 'bg-emerald-500 text-white shadow-sm' : 'hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-600')}
+                                        onClick={() => saveDecision(key, 'approved')}
+                                        disabled={!!decisionLoading || finalized}
+                                        className={cn('p-1.5 rounded-lg transition-all', decision === 'approved' ? 'bg-emerald-500 text-white shadow-sm' : 'hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-600', 'disabled:opacity-40')}
                                         title="Approve"
                                       >
-                                        <ThumbsUp className="h-4 w-4" />
+                                        {decisionLoading === key ? <Loader2 className="h-4 w-4 animate-spin" /> : <ThumbsUp className="h-4 w-4" />}
                                       </button>
                                       <button
-                                        onClick={() => setDecisions(prev => ({ ...prev, [key]: prev[key] === 'rejected' ? null : 'rejected' }))}
-                                        className={cn('p-1.5 rounded-lg transition-all', decision === 'rejected' ? 'bg-rose-500 text-white shadow-sm' : 'hover:bg-rose-500/10 text-muted-foreground hover:text-rose-600')}
+                                        onClick={() => saveDecision(key, 'rejected')}
+                                        disabled={!!decisionLoading || finalized}
+                                        className={cn('p-1.5 rounded-lg transition-all', decision === 'rejected' ? 'bg-rose-500 text-white shadow-sm' : 'hover:bg-rose-500/10 text-muted-foreground hover:text-rose-600', 'disabled:opacity-40')}
                                         title="Reject"
                                       >
                                         <ThumbsDown className="h-4 w-4" />
                                       </button>
                                     </div>
+                                    {/* AI comment on decision */}
+                                    {aiComments[key] && (
+                                      <p className="text-[10px] text-muted-foreground mt-1 max-w-[120px] leading-tight">{aiComments[key].slice(0, 60)}…</p>
+                                    )}
                                   </td>
                                   <td className="px-4 py-3.5 w-10">
                                     <button onClick={() => setExpandedRow(isExp ? null : key)} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
@@ -663,6 +873,12 @@ export default function BulkUpload() {
                                         <div>
                                           <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">AI Reasoning</p>
                                           <p className="text-sm leading-relaxed">{r.reason}</p>
+                                          {aiComments[key] && (
+                                            <div className="mt-3 p-3 rounded-lg bg-[#4B7BFF]/5 border border-[#4B7BFF]/20">
+                                              <p className="text-[10px] font-bold text-[#4B7BFF] uppercase mb-1">AI on your decision</p>
+                                              <p className="text-xs text-slate-700 dark:text-white/80">{aiComments[key]}</p>
+                                            </div>
+                                          )}
                                         </div>
                                         <div>
                                           <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">Strengths</p>
@@ -677,15 +893,17 @@ export default function BulkUpload() {
                                         <Button size="sm" variant="outline" className="gap-1.5" onClick={() => sendMessage(`Tell me more about ${r.name} and why they ranked #${r.rank}`)}>
                                           <IntoreMark className="h-3.5 w-3.5 text-[#4B7BFF]" /> Ask AI about this candidate
                                         </Button>
-                                        <div className="flex items-center gap-2 ml-auto">
-                                          <span className="text-xs text-muted-foreground">Your decision:</span>
-                                          <button onClick={() => setDecisions(prev => ({ ...prev, [key]: prev[key] === 'approved' ? null : 'approved' }))} className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', decisions[key] === 'approved' ? 'bg-emerald-500 text-white' : 'border hover:bg-emerald-500/10 hover:text-emerald-700')}>
-                                            <ThumbsUp className="h-3.5 w-3.5" /> Approve
-                                          </button>
-                                          <button onClick={() => setDecisions(prev => ({ ...prev, [key]: prev[key] === 'rejected' ? null : 'rejected' }))} className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', decisions[key] === 'rejected' ? 'bg-rose-500 text-white' : 'border hover:bg-rose-500/10 hover:text-rose-700')}>
-                                            <ThumbsDown className="h-3.5 w-3.5" /> Reject
-                                          </button>
-                                        </div>
+                                        {!finalized && (
+                                          <div className="flex items-center gap-2 ml-auto">
+                                            <span className="text-xs text-muted-foreground">Your decision:</span>
+                                            <button onClick={() => saveDecision(key, 'approved')} disabled={!!decisionLoading} className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', decisions[key] === 'approved' ? 'bg-emerald-500 text-white' : 'border hover:bg-emerald-500/10 hover:text-emerald-700')}>
+                                              <ThumbsUp className="h-3.5 w-3.5" /> Approve
+                                            </button>
+                                            <button onClick={() => saveDecision(key, 'rejected')} disabled={!!decisionLoading} className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', decisions[key] === 'rejected' ? 'bg-rose-500 text-white' : 'border hover:bg-rose-500/10 hover:text-rose-700')}>
+                                              <ThumbsDown className="h-3.5 w-3.5" /> Reject
+                                            </button>
+                                          </div>
+                                        )}
                                       </div>
                                     </td>
                                   </tr>

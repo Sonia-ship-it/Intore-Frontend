@@ -181,7 +181,7 @@ export function AIChatFAB() {
               </div>
               <div className="bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-xl rounded-tl-sm px-3 py-2.5 flex items-center gap-2">
                 <Loader2 className="w-3.5 h-3.5 text-[#4B7BFF] animate-spin" />
-                <span className="text-[12px] text-slate-400 dark:text-white/40">Gemini is thinking...</span>
+                <span className="text-[12px] text-slate-400 dark:text-white/40">Intore is thinking...</span>
               </div>
             </div>
           )}
