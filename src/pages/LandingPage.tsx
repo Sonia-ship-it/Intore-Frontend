@@ -397,7 +397,6 @@ export default function LandingPage() {
               </svg>
             </div>
           </div>
-
           {/* SMALL FLOATING BADGES */}
           <div className="hidden lg:flex absolute left-[40px] top-[180px] w-[160px] rounded-[16px] p-[14px] text-white items-center gap-2 z-[15]"
             style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 5.5s ease-in-out infinite 1s', ...({ '--card-rot': '-3deg' } as CSSProperties) }}>
@@ -429,7 +428,7 @@ export default function LandingPage() {
             style={{ background: 'rgba(15,21,71,0.85)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'gentleFloat 6s ease-in-out infinite 0.3s', ...({ '--card-rot': '0deg' } as CSSProperties) }}>
             <img src="https://images.unsplash.com/photo-1573497019236-17f8177b81e8?w=80&h=80&fit=crop&crop=face" className="w-[28px] h-[28px] rounded-full object-cover" />
             <div>
-              <div className="text-[10px] font-medium leading-tight">Amara J.</div>
+              <div className="text-[10px] font-medium leading-tight">Belyse B.</div>
               <div className="text-[9px] text-white/40 leading-tight mt-0.5">Director</div>
             </div>
           </div>

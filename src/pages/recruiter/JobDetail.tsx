@@ -405,6 +405,11 @@ export default function JobDetail() {
                 <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground rounded-full border px-3 py-1.5"><Upload className="h-3.5 w-3.5" />{ingestion?.candidates?.length || 0} candidate(s) ingested</span>
                 <Button variant="outline" size="sm" onClick={() => router.push(`/recruiter/jobs/${job.id}/upload`)}><Upload className="h-3.5 w-3.5 mr-1.5" /> Upload applicants</Button>
                 <div className="ml-auto flex items-center gap-3">
+                  {(status === 'complete' || finalized) && (
+                    <Button onClick={() => router.push(`/recruiter/jobs/${job.id}/review`)} className="gap-2 bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20">
+                      <Trophy className="h-4 w-4" /> Start AI-Assisted Review
+                    </Button>
+                  )}
                   <select value={shortlistSize} onChange={(e) => setShortlistSize((Number(e.target.value) as 10 | 20) || 10)} className="bg-background rounded-lg border px-3 py-2 text-sm outline-none">
                     <option value={10}>Top 10</option><option value={20}>Top 20</option>
                   </select>
@@ -424,6 +429,40 @@ export default function JobDetail() {
               </div>
             )}
 
+            {/* AI-Assisted Review CTA — shown after screening */}
+            {(status === 'complete' || finalized) && results.length > 0 && !finalized && (
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-500/10 via-[#4B7BFF]/10 to-violet-500/10 border border-emerald-500/20 p-6 flex items-center justify-between gap-4">
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Trophy className="h-4 w-4 text-emerald-500" />
+                    <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Ready for Review</span>
+                  </div>
+                  <h3 className="font-bold text-base">Start AI-Assisted Decision Session</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">Review each candidate with Gemini AI — thumbs up/down, ask questions, finalise decisions, generate PDF report.</p>
+                </div>
+                <Button
+                  onClick={() => router.push(`/recruiter/jobs/${job.id}/review`)}
+                  className="shrink-0 gap-2 bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 text-base px-6 py-3 h-auto"
+                >
+                  <Trophy className="h-5 w-5" /> Start AI Review
+                </Button>
+              </div>
+            )}
+
+            {finalized && (
+              <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-700">Screening Finalized</p>
+                    <p className="text-xs text-emerald-600/70">All decisions saved. Download the report or view the AI conversation.</p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => router.push(`/recruiter/jobs/${job.id}/review`)} className="gap-1.5">
+                  View Session
+                </Button>
+              </div>
+            )}
             {/* Bias Warning */}
             {status === 'complete' && !biasWarningDismissed && (
               <BiasWarning message="Ranking may favour candidates with formal degrees. Consider reviewing candidates with strong project portfolios." onDismiss={dismissBiasWarning} />
