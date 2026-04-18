@@ -30,6 +30,13 @@ export type ApiScreeningResult = {
   rank: number;
   name: string;
   score: number;
+  subscores?: {
+    skills: number;
+    experience: number;
+    education: number;
+    projects: number;
+    availability: number;
+  };
   strengths: string[];
   gaps: string[];
   reason: string;

@@ -11,6 +11,69 @@ import { RevealOnScroll, RevealChild, AnimatedCounter, useParallaxCursor } from 
 import { IntoreMark } from '@/components/branding/IntoreMark';
 import { HeroMouseMotion } from '@/components/animations/HeroMouseMotion';
 
+function RoiCalculator() {
+  const [cvsPerWeek, setCvsPerWeek] = useState(100);
+  const [hoursPerCv, setHoursPerCv] = useState(0.25);
+  const [hourlyRate, setHourlyRate] = useState(15);
+
+  const hoursPerWeek = 52 / 12; // monthly
+  const hoursSaved = Math.round(cvsPerWeek * hoursPerWeek * hoursPerCv * 0.85); // 85% time saved
+  const moneySaved = Math.round(hoursSaved * hourlyRate);
+
+  return (
+    <div className="mt-16 max-w-4xl mx-auto">
+      <div className="text-center mb-8">
+        <span className="text-[11px] font-bold uppercase tracking-widest text-[#4B7BFF]">ROI Calculator</span>
+        <h3 className="text-[28px] font-bold text-slate-900 mt-2">How much time is manual screening costing you?</h3>
+        <p className="text-[15px] text-slate-500 mt-2">Adjust the sliders to see your potential savings with Intore.</p>
+      </div>
+      <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Sliders */}
+        <div className="space-y-6">
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="text-[13px] font-semibold text-slate-700">CVs received per week</label>
+              <span className="text-[13px] font-bold text-[#4B7BFF]">{cvsPerWeek}</span>
+            </div>
+            <input type="range" min={10} max={500} step={10} value={cvsPerWeek} onChange={(e) => setCvsPerWeek(Number(e.target.value))} className="w-full accent-[#4B7BFF]" />
+            <div className="flex justify-between text-[11px] text-slate-400 mt-1"><span>10</span><span>500</span></div>
+          </div>
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="text-[13px] font-semibold text-slate-700">Minutes spent per CV</label>
+              <span className="text-[13px] font-bold text-[#4B7BFF]">{Math.round(hoursPerCv * 60)} min</span>
+            </div>
+            <input type="range" min={0.08} max={1} step={0.08} value={hoursPerCv} onChange={(e) => setHoursPerCv(Number(e.target.value))} className="w-full accent-[#4B7BFF]" />
+            <div className="flex justify-between text-[11px] text-slate-400 mt-1"><span>5 min</span><span>60 min</span></div>
+          </div>
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="text-[13px] font-semibold text-slate-700">Recruiter hourly rate (USD)</label>
+              <span className="text-[13px] font-bold text-[#4B7BFF]">${hourlyRate}/hr</span>
+            </div>
+            <input type="range" min={5} max={50} step={5} value={hourlyRate} onChange={(e) => setHourlyRate(Number(e.target.value))} className="w-full accent-[#4B7BFF]" />
+            <div className="flex justify-between text-[11px] text-slate-400 mt-1"><span>$5</span><span>$50</span></div>
+          </div>
+        </div>
+        {/* Results */}
+        <div className="flex flex-col justify-center space-y-4">
+          <div className="bg-[#4B7BFF]/5 border border-[#4B7BFF]/20 rounded-xl p-5 text-center">
+            <p className="text-[12px] font-bold text-[#4B7BFF] uppercase tracking-wide mb-1">Hours saved per month</p>
+            <p className="text-[48px] font-black text-[#4B7BFF] leading-none">{hoursSaved}</p>
+            <p className="text-[12px] text-slate-500 mt-1">hours your team gets back</p>
+          </div>
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 text-center">
+            <p className="text-[12px] font-bold text-emerald-700 uppercase tracking-wide mb-1">Cost saved per month</p>
+            <p className="text-[48px] font-black text-emerald-600 leading-none">${moneySaved.toLocaleString()}</p>
+            <p className="text-[12px] text-slate-500 mt-1">in recruiter time costs</p>
+          </div>
+          <p className="text-[11px] text-slate-400 text-center">Based on 85% time reduction from AI pre-screening</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const parallaxRef1 = useParallaxCursor(12);
@@ -108,7 +171,7 @@ export default function LandingPage() {
             <a href="#features" onClick={(e) => scrollToSection(e, 'features')}>Features</a>
             <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')}>How it works</a>
             <a href="#testimonials" onClick={(e) => scrollToSection(e, 'testimonials')}>Testimonials</a>
-            <a href="#blog">Blog</a>
+            <a href="#pricing">Pricing</a>
           </div>
 
           {/* RIGHT — Login + CTA */}
@@ -140,7 +203,7 @@ export default function LandingPage() {
           <a href="#features" onClick={(e) => scrollToSection(e, 'features')}>Features</a>
           <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')}>How it works</a>
           <a href="#testimonials" onClick={(e) => scrollToSection(e, 'testimonials')}>Testimonials</a>
-          <a href="#blog" onClick={() => setMobileMenuOpen(false)}>Blog</a>
+          <a href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
           <div className="mobile-menu-actions">
             <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="mobile-login">Log in</Link>
             <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="mobile-cta">Get started</Link>
@@ -789,6 +852,8 @@ export default function LandingPage() {
             </div>
 
           </RevealOnScroll>
+
+          <RoiCalculator />
 
           <RevealOnScroll preset="scaleUp" delay={0.15} className="mt-16 bg-brand-50 border-[1.5px] border-brand-100 rounded-2xl py-12 px-8 text-center max-w-4xl mx-auto shadow-sm">
             <h3 className="text-[28px] font-bold text-slate-900">Ready to hire smarter across Rwanda?</h3>

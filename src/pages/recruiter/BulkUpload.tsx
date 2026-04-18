@@ -547,6 +547,31 @@ export default function BulkUpload() {
       <ConfettiExplosion active={showConfetti} />
       <AppHeader title="Upload & Screen" />
       <div className="max-w-[1400px] mx-auto px-6 py-8">
+
+        {/* Step indicator */}
+        <div className="flex items-center gap-0 mb-8">
+          {[
+            { n: 1, label: 'Upload Candidates', desc: 'CSV, Excel, PDF links, or Umurava profiles', done: ingested },
+            { n: 2, label: 'Run AI Screening', desc: 'Gemini ranks all candidates in seconds', done: screeningStatus === 'complete' || screeningStatus === 'finalized' },
+            { n: 3, label: 'Review & Decide', desc: 'Approve or reject with AI guidance', done: screeningStatus === 'finalized' },
+          ].map((step, i) => (
+            <div key={step.n} className="flex items-center flex-1">
+              <div className="flex items-center gap-3 flex-1">
+                <div className={cn(
+                  'w-9 h-9 rounded-full flex items-center justify-center text-sm font-black shrink-0 transition-all',
+                  step.done ? 'bg-emerald-500 text-white' : i === 0 && !ingested ? 'bg-[#4B7BFF] text-white ring-4 ring-[#4B7BFF]/20' : i === 1 && ingested && screeningStatus === 'idle' ? 'bg-[#4B7BFF] text-white ring-4 ring-[#4B7BFF]/20' : i === 2 && (screeningStatus === 'complete') ? 'bg-[#4B7BFF] text-white ring-4 ring-[#4B7BFF]/20' : 'bg-muted text-muted-foreground'
+                )}>
+                  {step.done ? '✓' : step.n}
+                </div>
+                <div className="min-w-0">
+                  <p className={cn('text-sm font-semibold', step.done ? 'text-emerald-600' : 'text-foreground')}>{step.label}</p>
+                  <p className="text-xs text-muted-foreground hidden sm:block">{step.desc}</p>
+                </div>
+              </div>
+              {i < 2 && <div className={cn('h-0.5 w-8 mx-2 shrink-0 rounded-full transition-all', step.done ? 'bg-emerald-400' : 'bg-muted')} />}
+            </div>
+          ))}
+        </div>
         <div className="flex flex-col xl:flex-row gap-6">
 
           {/* ── LEFT: Upload panel ── */}
@@ -693,7 +718,9 @@ export default function BulkUpload() {
                 <div>
                   <h2 className="font-bold text-base">AI Screening</h2>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {candidateCount > 0 ? `${candidateCount} candidate${candidateCount !== 1 ? 's' : ''} ready to screen` : 'Upload candidates on the left to begin'}
+                    {candidateCount > 0
+                      ? `${candidateCount} candidate${candidateCount !== 1 ? 's' : ''} ready — click Screen Candidates to begin`
+                      : '← Upload candidates on the left to get started'}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -701,7 +728,7 @@ export default function BulkUpload() {
                     <option value={10}>Top 10</option>
                     <option value={20}>Top 20</option>
                   </select>
-                  <Button onClick={runScreening} disabled={screeningStatus === 'running' || candidateCount === 0} className={cn(screeningStatus === 'running' && 'opacity-70')}>
+                  <Button onClick={runScreening} disabled={screeningStatus === 'running' || candidateCount === 0} className={cn(screeningStatus === 'running' && 'opacity-70')} title={candidateCount === 0 ? 'Upload candidates first using the tabs on the left' : undefined}>
                     {screeningStatus === 'running' ? <><Spinner size="sm" className="mr-2" />Screening...</> : screeningStatus === 'complete' ? <><RefreshCw className="h-4 w-4 mr-2" />Re-run</> : <><IntoreMark className="h-4 w-4 mr-2 text-[#4B7BFF]" />Screen Candidates</>}
                   </Button>
                 </div>
@@ -719,10 +746,15 @@ export default function BulkUpload() {
               {screeningStatus === 'error' && (
                 <div className="flex items-start gap-3 rounded-xl bg-rose-500/10 border border-rose-500/20 p-4">
                   <AlertTriangle className="h-5 w-5 text-rose-500 shrink-0 mt-0.5" />
-                  <div><p className="text-sm font-semibold">Screening failed</p><p className="text-xs text-muted-foreground mt-0.5">Check backend connectivity and try again.</p></div>
+                  <div><p className="text-sm font-semibold">Screening failed</p><p className="text-xs text-muted-foreground mt-0.5">Gemini took too long or the backend is unreachable. Wait 30 seconds and try again.</p></div>
                   <Button size="sm" variant="outline" className="ml-auto shrink-0" onClick={runScreening}>Retry</Button>
                 </div>
               )}
+              {/* Privacy trust signal */}
+              <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                Candidate data is processed securely and never used to train AI models.
+              </p>
             </div>
 
             {/* Bias warning */}

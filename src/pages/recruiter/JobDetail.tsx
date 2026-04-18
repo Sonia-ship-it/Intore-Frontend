@@ -267,6 +267,7 @@ export default function JobDetail() {
   const [decisions, setDecisions] = useState<Record<string, 'approved'|'rejected'|null>>({});
   const [aiComments, setAiComments] = useState<Record<string, string>>({});
   const [decisionLoading, setDecisionLoading] = useState<string | null>(null);
+  const [notes, setNotes] = useState<Record<string, string>>({});
   const [finalizing, setFinalizing] = useState(false);
   const [finalized, setFinalized] = useState(false);
   const [finalSummary, setFinalSummary] = useState('');
@@ -293,6 +294,10 @@ export default function JobDetail() {
         setResults(uiResults); setStatus('complete'); setIsUnlocked(true);
         if (snap.decisions) setDecisions(snap.decisions);
         if (snap.finalized) { setFinalized(true); setFinalSummary(snap.finalSummary || ''); }
+        // Restore notes
+        const noteMap: Record<string, string> = {};
+        Object.entries((snap.decisions || {}) as Record<string, any>).forEach(([k, v]) => { if (v?.note) noteMap[k] = v.note; });
+        if (Object.keys(noteMap).length) setNotes(noteMap);
         setChatMessages([{ id: 'restored', role: 'ai', content: `Welcome back! Restored screening for **${snap.results.length} candidates**. ${snap.finalized ? '✅ Finalized.' : 'Continue reviewing.'}`, timestamp: new Date().toISOString() }]);
       }).catch(() => {});
   }, [id]);
@@ -329,7 +334,7 @@ export default function JobDetail() {
     if (!newDecision) return;
     setDecisionLoading(candidateId);
     try {
-      const resp = await apiFetch<{ ok: boolean; aiComment?: string }>('/screening/decision', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jobId: id, applicationId: candidateId, decision: newDecision }) });
+      const resp = await apiFetch<{ ok: boolean; aiComment?: string }>('/screening/decision', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jobId: id, applicationId: candidateId, decision: newDecision, note: notes[candidateId] || undefined }) });
       if (resp.aiComment) { setAiComments((prev) => ({ ...prev, [candidateId]: resp.aiComment! })); addChatMessage({ id: `dec-${Date.now()}`, role: 'ai', content: resp.aiComment!, timestamp: new Date().toISOString() }); }
     } catch { } finally { setDecisionLoading(null); }
   }, [id, decisions]);
@@ -575,6 +580,37 @@ export default function JobDetail() {
                                       )}
                                     </div>
                                     <div className="space-y-3">
+                                      {/* Subscore breakdown */}
+                                      {r._raw?.subscores && (
+                                        <div>
+                                          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5">
+                                            Score Breakdown
+                                            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-[#4B7BFF]/10 text-[#4B7BFF]">Gemini AI</span>
+                                          </p>
+                                          <div className="space-y-2">
+                                            {([
+                                              { label: 'Skills Match', key: 'skills', max: 100, color: '#4B7BFF' },
+                                              { label: 'Experience', key: 'experience', max: 100, color: '#8b5cf6' },
+                                              { label: 'Education', key: 'education', max: 100, color: '#10b981' },
+                                              { label: 'Projects', key: 'projects', max: 100, color: '#f59e0b' },
+                                              { label: 'Availability', key: 'availability', max: 100, color: '#06b6d4' },
+                                            ] as const).map(({ label, key, color }) => {
+                                              const val = (r._raw!.subscores as any)[key] ?? 0;
+                                              return (
+                                                <div key={key}>
+                                                  <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-xs text-muted-foreground">{label}</span>
+                                                    <span className="text-xs font-bold" style={{ color }}>{val}/100</span>
+                                                  </div>
+                                                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                                                    <div className="h-full rounded-full transition-all duration-500" style={{ width: `${val}%`, background: color }} />
+                                                  </div>
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      )}
                                       <div>
                                         <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">Strengths</p>
                                         <div className="flex flex-wrap gap-1.5">{r.strengths.length > 0 ? r.strengths.map((s) => <StrengthChip key={s} label={s} />) : <span className="text-xs text-muted-foreground">None listed</span>}</div>
@@ -597,6 +633,27 @@ export default function JobDetail() {
                                         <button onClick={() => saveDecision(r.candidateId, 'rejected')} disabled={!!decisionLoading} className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', decision === 'rejected' ? 'bg-rose-500 text-white' : 'border hover:bg-rose-500/10 hover:text-rose-700')}>
                                           <ThumbsDown className="h-3.5 w-3.5" /> Reject
                                         </button>
+                                      </div>
+                                    )}
+                                    {/* Recruiter note */}
+                                    {!finalized && (
+                                      <div className="w-full mt-3 pt-3 border-t">
+                                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide block mb-1.5">
+                                          Recruiter Note <span className="font-normal normal-case">(optional — saved with decision)</span>
+                                        </label>
+                                        <textarea
+                                          value={notes[r.candidateId] || ''}
+                                          onChange={(e) => setNotes((prev) => ({ ...prev, [r.candidateId]: e.target.value }))}
+                                          placeholder="e.g. Strong culture fit, salary expectations TBC, follow up on portfolio..."
+                                          rows={2}
+                                          className="w-full rounded-lg border bg-background px-3 py-2 text-xs outline-none resize-none focus:ring-2 focus:ring-[#4B7BFF]/20 focus:border-[#4B7BFF] transition-all placeholder:text-muted-foreground/60"
+                                        />
+                                      </div>
+                                    )}
+                                    {finalized && notes[r.candidateId] && (
+                                      <div className="w-full mt-3 pt-3 border-t">
+                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1">Recruiter Note</p>
+                                        <p className="text-xs text-muted-foreground italic">"{notes[r.candidateId]}"</p>
                                       </div>
                                     )}
                                   </div>
