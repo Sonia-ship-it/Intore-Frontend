@@ -855,6 +855,126 @@ export default function LandingPage() {
 
           <RoiCalculator />
 
+          {/* ── Pricing Section ── */}
+          <div className="mt-24 max-w-5xl mx-auto" id="pricing">
+            <RevealOnScroll preset="fadeUp" className="text-center mb-12">
+              <span className="text-[11px] font-bold uppercase tracking-widest text-[#4B7BFF]">Pricing</span>
+              <h3 className="text-[32px] font-black text-slate-900 mt-2 tracking-tight">Simple, transparent pricing</h3>
+              <p className="text-[15px] text-slate-500 mt-2 max-w-lg mx-auto">Start free. Scale as you grow. No hidden fees, no long-term contracts.</p>
+              <div className="inline-flex items-center gap-2 mt-4 bg-amber-50 border border-amber-200 rounded-full px-4 py-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-[12px] font-semibold text-amber-700">Paid plans launching soon,join the waitlist below</span>
+              </div>
+            </RevealOnScroll>
+
+            <RevealOnScroll preset="fadeUp" staggerChildren={0.1} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Free */}
+              <RevealChild preset="fadeUp">
+                <div className="bg-white border-2 border-slate-200 rounded-2xl p-7 flex flex-col h-full">
+                  <div className="mb-6">
+                    <p className="text-[12px] font-bold uppercase tracking-widest text-slate-400">Starter</p>
+                    <div className="flex items-end gap-1 mt-2">
+                      <span className="text-[42px] font-black text-slate-900 leading-none">Free</span>
+                    </div>
+                    <p className="text-[13px] text-slate-500 mt-2">Perfect for small teams getting started with AI screening.</p>
+                  </div>
+                  <ul className="space-y-3 flex-1 mb-8">
+                    {['Up to 3 active jobs', '50 CV screenings / month', 'AI ranking & shortlisting', 'CSV & Excel upload', 'Basic PDF report', 'Email support'].map((f) => (
+                      <li key={f} className="flex items-center gap-2.5 text-[13px] text-slate-700">
+                        <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] font-bold shrink-0">✓</span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <a href="/register" className="block w-full text-center py-3 rounded-xl border-2 border-[#0F1547] text-[#0F1547] font-bold text-[14px] hover:bg-[#0F1547] hover:text-white transition-all">
+                    Get started free
+                  </a>
+                </div>
+              </RevealChild>
+
+              {/* Pro — Coming Soon */}
+              <RevealChild preset="fadeUp">
+                <div className="relative bg-[#0F1547] border-2 border-[#4B7BFF] rounded-2xl p-7 flex flex-col h-full overflow-hidden">
+                  {/* Popular badge */}
+                  <div className="absolute top-4 right-4 bg-[#4B7BFF] text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">Most Popular</div>
+                  {/* Coming Soon overlay */}
+                  <div className="absolute inset-0 bg-[#0F1547]/80 backdrop-blur-[2px] rounded-2xl flex flex-col items-center justify-center z-10">
+                    <div className="bg-[#4B7BFF] text-white text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-3 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                      Coming Soon
+                    </div>
+                    <p className="text-white/70 text-[13px] text-center max-w-[180px]">Join the waitlist to get early access and a 3-month discount.</p>
+                    <a href="mailto:hello@intore.rw?subject=Pro Plan Waitlist" className="mt-4 bg-[#4B7BFF] text-white text-[13px] font-bold px-5 py-2 rounded-xl hover:bg-[#3461DF] transition-colors">
+                      Join waitlist →
+                    </a>
+                  </div>
+                  <div className="mb-6">
+                    <p className="text-[12px] font-bold uppercase tracking-widest text-[#4B7BFF]">Pro</p>
+                    <div className="flex items-end gap-1 mt-2">
+                      <span className="text-[42px] font-black text-white leading-none">$49</span>
+                      <span className="text-white/50 text-[14px] mb-1.5">/month</span>
+                    </div>
+                    <p className="text-[13px] text-white/60 mt-2">For growing HR teams screening at scale.</p>
+                  </div>
+                  <ul className="space-y-3 flex-1 mb-8">
+                    {['Unlimited active jobs', '500 CV screenings / month', 'AI Decision Session (chat)', 'Umurava profile integration', 'Bias & diversity report', 'Branded PDF reports', 'Priority support'].map((f) => (
+                      <li key={f} className="flex items-center gap-2.5 text-[13px] text-white/80">
+                        <span className="w-4 h-4 rounded-full bg-[#4B7BFF]/30 text-[#4B7BFF] flex items-center justify-center text-[10px] font-bold shrink-0">✓</span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <button disabled className="block w-full text-center py-3 rounded-xl bg-[#4B7BFF] text-white font-bold text-[14px] opacity-50 cursor-not-allowed">
+                    Coming soon
+                  </button>
+                </div>
+              </RevealChild>
+
+              {/* Enterprise — Coming Soon */}
+              <RevealChild preset="fadeUp">
+                <div className="relative bg-white border-2 border-slate-200 rounded-2xl p-7 flex flex-col h-full overflow-hidden">
+                  {/* Coming Soon overlay */}
+                  <div className="absolute inset-0 bg-white/85 backdrop-blur-[2px] rounded-2xl flex flex-col items-center justify-center z-10">
+                    <div className="bg-slate-900 text-white text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-3 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                      Coming Soon
+                    </div>
+                    <p className="text-slate-600 text-[13px] text-center max-w-[180px]">Custom pricing for large organisations and staffing agencies.</p>
+                    <a href="mailto:hello@intore.rw?subject=Enterprise Inquiry" className="mt-4 bg-slate-900 text-white text-[13px] font-bold px-5 py-2 rounded-xl hover:bg-slate-700 transition-colors">
+                      Contact us →
+                    </a>
+                  </div>
+                  <div className="mb-6">
+                    <p className="text-[12px] font-bold uppercase tracking-widest text-slate-400">Enterprise</p>
+                    <div className="flex items-end gap-1 mt-2">
+                      <span className="text-[42px] font-black text-slate-900 leading-none">Custom</span>
+                    </div>
+                    <p className="text-[13px] text-slate-500 mt-2">For staffing agencies and large organisations.</p>
+                  </div>
+                  <ul className="space-y-3 flex-1 mb-8">
+                    {['Unlimited everything', 'Custom AI scoring weights', 'Multi-recruiter workspace', 'ATS integration (coming)', 'Dedicated account manager', 'SLA & compliance support', 'On-premise option'].map((f) => (
+                      <li key={f} className="flex items-center gap-2.5 text-[13px] text-slate-700">
+                        <span className="w-4 h-4 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold shrink-0">✓</span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <button disabled className="block w-full text-center py-3 rounded-xl border-2 border-slate-300 text-slate-400 font-bold text-[14px] cursor-not-allowed">
+                    Coming soon
+                  </button>
+                </div>
+              </RevealChild>
+            </RevealOnScroll>
+
+            {/* FAQ row */}
+            <RevealOnScroll preset="fadeUp" className="mt-10 text-center">
+              <p className="text-[13px] text-slate-500">
+                All plans include a 14-day free trial of Pro features. No credit card required. &nbsp;
+                <a href="mailto:hello@intore.rw" className="text-[#4B7BFF] font-semibold hover:underline">Questions? Email us →</a>
+              </p>
+            </RevealOnScroll>
+          </div>
+
           <RevealOnScroll preset="scaleUp" delay={0.15} className="mt-16 bg-brand-50 border-[1.5px] border-brand-100 rounded-2xl py-12 px-8 text-center max-w-4xl mx-auto shadow-sm">
             <h3 className="text-[28px] font-bold text-slate-900">Ready to hire smarter across Rwanda?</h3>
             <p className="mt-2 text-[15px] text-slate-500">Join leading Rwandan companies already using Intore to find and hire top local talent.</p>
