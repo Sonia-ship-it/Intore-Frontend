@@ -3,6 +3,8 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next/pages';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuthStore } from '@/stores/authStore';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
@@ -57,33 +59,57 @@ export function AppHeader({ title }: { title: string }) {
             <ChevronDown className="chevron-icon h-4 w-4 hidden sm:block" style={{ color: 'white', opacity: 0.6 }} />
           </button>
 
-          {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-2xl border py-1.5 animate-fade-in z-[200] bg-white dark:bg-[#0A0E2E] border-slate-200 dark:border-white/10" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
-              <div className="px-4 py-2.5 border-b border-slate-100 dark:border-white/10 mb-1">
-                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{user?.name || 'User'}</p>
-                <p className="text-xs text-slate-500 dark:text-white/40 truncate">{user?.email || ''}</p>
-              </div>
-              <button
-                onClick={() => { setDropdownOpen(false); router.push('/recruiter/settings'); }}
-                className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm font-medium transition-colors hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-white/80"
+          <AnimatePresence>
+            {dropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                className="absolute right-0 mt-3 w-64 p-1.5 rounded-2xl border shadow-2xl z-[9999] bg-[#0A0E2E]/95 backdrop-blur-xl border-white/10"
+                style={{ boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5)' }}
               >
-                <User className="h-4 w-4 text-slate-500 dark:text-white/50" /> {t('header.profile', 'Profile')}
-              </button>
-              <button
-                onClick={() => { setDropdownOpen(false); router.push('/recruiter/settings'); }}
-                className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm font-medium transition-colors hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-white/80"
-              >
-                <Settings className="h-4 w-4 text-slate-500 dark:text-white/50" /> {t('nav.settings', 'Settings')}
-              </button>
-              <hr className="my-1 border-slate-100 dark:border-white/10" />
-              <button
-                onClick={() => { logout(); router.push('/login'); }}
-                className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm font-medium transition-colors hover:bg-rose-50 dark:hover:bg-rose-500/10 text-rose-600 dark:text-rose-400"
-              >
-                <LogOut className="h-4 w-4" /> {t('header.logout', 'Logout')}
-              </button>
-            </div>
-          )}
+                <div className="px-4 py-3 border-b border-white/10 mb-1.5">
+                  <p className="text-sm font-bold text-white truncate">{user?.name || 'User'}</p>
+                  <p className="text-[11px] text-white/40 font-medium truncate">{user?.email || ''}</p>
+                </div>
+
+                <div className="space-y-0.5">
+                  <button
+                    onClick={() => { setDropdownOpen(false); router.push('/recruiter/settings'); }}
+                    className="flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group text-white/60 hover:bg-white/10 hover:text-white"
+                  >
+                    <div className="p-1.5 rounded-lg bg-white/5 group-hover:bg-[#4B7BFF]/20 group-hover:text-[#4B7BFF] transition-all">
+                      <User className="h-4 w-4" />
+                    </div>
+                    <span>{t('header.profile', 'Profile')}</span>
+                  </button>
+
+                  <button
+                    onClick={() => { setDropdownOpen(false); router.push('/recruiter/settings'); }}
+                    className="flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group text-white/60 hover:bg-white/10 hover:text-white"
+                  >
+                    <div className="p-1.5 rounded-lg bg-white/5 group-hover:bg-[#4B7BFF]/20 group-hover:text-[#4B7BFF] transition-all">
+                      <Settings className="h-4 w-4" />
+                    </div>
+                    <span>{t('nav.settings', 'Settings')}</span>
+                  </button>
+
+                  <div className="my-1.5 h-px bg-white/10 mx-2" />
+
+                  <button
+                    onClick={() => { logout(); router.push('/login'); }}
+                    className="flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group text-rose-400/80 hover:bg-rose-500/10 hover:text-rose-400"
+                  >
+                    <div className="p-1.5 rounded-lg bg-rose-500/5 group-hover:bg-rose-500/20 transition-all">
+                      <LogOut className="h-4 w-4" />
+                    </div>
+                    <span>{t('header.logout', 'Logout')}</span>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </header>
