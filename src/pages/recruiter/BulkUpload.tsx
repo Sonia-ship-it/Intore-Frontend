@@ -269,7 +269,7 @@ export default function BulkUpload() {
   const [screeningStatus, setScreeningStatus] = useState<ScreeningStatus>('idle');
   const [progress, setProgress] = useState(0);
   const [progressLabel, setProgressLabel] = useState('');
-  const [shortlistSize, setShortlistSize] = useState<10 | 20>(10);
+  const [shortlistSize, setShortlistSize] = useState<3 | 5 | 10 | 15 | 20>(10);
   const [results, setResults] = useState<UiResult[]>([]);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [biasWarningDismissed, setBiasWarningDismissed] = useState(false);
@@ -724,8 +724,11 @@ export default function BulkUpload() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <select value={shortlistSize} onChange={(e) => setShortlistSize(Number(e.target.value) as 10 | 20)} className="bg-background rounded-lg border px-3 py-2 text-sm outline-none">
+                  <select value={shortlistSize} onChange={(e) => setShortlistSize(Number(e.target.value) as 3 | 5 | 10 | 15 | 20)} className="bg-background rounded-lg border px-3 py-2 text-sm font-medium outline-none focus:ring-2 focus:ring-[#4B7BFF]/20 focus:border-[#4B7BFF] transition-all">
+                    <option value={3}>Top 3</option>
+                    <option value={5}>Top 5</option>
                     <option value={10}>Top 10</option>
+                    <option value={15}>Top 15</option>
                     <option value={20}>Top 20</option>
                   </select>
                   <Button onClick={runScreening} disabled={screeningStatus === 'running' || candidateCount === 0} className={cn(screeningStatus === 'running' && 'opacity-70')} title={candidateCount === 0 ? 'Upload candidates first using the tabs on the left' : undefined}>
@@ -832,47 +835,63 @@ export default function BulkUpload() {
 
                     {/* Charts */}
                     {showCharts && (
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-b">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 border-b p-8 bg-slate-50/50">
                         {/* Pie: AI Verdicts */}
-                        <div className="p-5 border-r">
-                          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">AI Verdicts</p>
-                          <ResponsiveContainer width="100%" height={160}>
+                        <div className="bg-white rounded-xl p-6 shadow-sm border">
+                          <p className="text-sm font-bold uppercase tracking-wide text-slate-700 mb-4">AI Verdicts</p>
+                          <ResponsiveContainer width="100%" height={240}>
                             <PieChart>
-                              <Pie data={verdictData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={3} dataKey="value">
+                              <Pie data={verdictData} cx="50%" cy="50%" innerRadius={60} outerRadius={95} paddingAngle={4} dataKey="value" label={(entry) => `${entry.value}`}>
                                 {verdictData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                               </Pie>
-                              <Tooltip formatter={(v, n) => [v, n]} contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                              <Tooltip formatter={(v, n) => [v, n]} contentStyle={{ fontSize: 13, borderRadius: 10, padding: '8px 12px' }} />
                             </PieChart>
                           </ResponsiveContainer>
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {verdictData.map(d => <span key={d.name} className="flex items-center gap-1 text-[10px]"><span className="w-2 h-2 rounded-full inline-block" style={{ background: d.color }} />{d.name} ({d.value})</span>)}
+                          <div className="flex flex-col gap-2 mt-4">
+                            {verdictData.map(d => (
+                              <span key={d.name} className="flex items-center justify-between text-sm font-medium">
+                                <span className="flex items-center gap-2">
+                                  <span className="w-3 h-3 rounded-full inline-block" style={{ background: d.color }} />
+                                  {d.name}
+                                </span>
+                                <span className="font-bold text-slate-700">({d.value})</span>
+                              </span>
+                            ))}
                           </div>
                         </div>
                         {/* Pie: Your Decisions */}
-                        <div className="p-5 border-r">
-                          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">Your Decisions</p>
-                          <ResponsiveContainer width="100%" height={160}>
+                        <div className="bg-white rounded-xl p-6 shadow-sm border">
+                          <p className="text-sm font-bold uppercase tracking-wide text-slate-700 mb-4">Your Decisions</p>
+                          <ResponsiveContainer width="100%" height={240}>
                             <PieChart>
-                              <Pie data={decisionData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={3} dataKey="value">
+                              <Pie data={decisionData} cx="50%" cy="50%" innerRadius={60} outerRadius={95} paddingAngle={4} dataKey="value" label={(entry) => `${entry.value}`}>
                                 {decisionData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                               </Pie>
-                              <Tooltip formatter={(v, n) => [v, n]} contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                              <Tooltip formatter={(v, n) => [v, n]} contentStyle={{ fontSize: 13, borderRadius: 10, padding: '8px 12px' }} />
                             </PieChart>
                           </ResponsiveContainer>
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {decisionData.map(d => <span key={d.name} className="flex items-center gap-1 text-[10px]"><span className="w-2 h-2 rounded-full inline-block" style={{ background: d.color }} />{d.name} ({d.value})</span>)}
+                          <div className="flex flex-col gap-2 mt-4">
+                            {decisionData.map(d => (
+                              <span key={d.name} className="flex items-center justify-between text-sm font-medium">
+                                <span className="flex items-center gap-2">
+                                  <span className="w-3 h-3 rounded-full inline-block" style={{ background: d.color }} />
+                                  {d.name}
+                                </span>
+                                <span className="font-bold text-slate-700">({d.value})</span>
+                              </span>
+                            ))}
                           </div>
                         </div>
                         {/* Bar: Score distribution */}
-                        <div className="p-5">
-                          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">Match Scores</p>
-                          <ResponsiveContainer width="100%" height={160}>
-                            <BarChart data={scoreData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                              <XAxis dataKey="name" tick={{ fontSize: 9 }} />
-                              <YAxis domain={[0, 100]} tick={{ fontSize: 9 }} />
-                              <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
-                              <Bar dataKey="score" radius={[4, 4, 0, 0]}>
+                        <div className="bg-white rounded-xl p-6 shadow-sm border">
+                          <p className="text-sm font-bold uppercase tracking-wide text-slate-700 mb-4">Match Scores</p>
+                          <ResponsiveContainer width="100%" height={240}>
+                            <BarChart data={scoreData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                              <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} angle={-45} textAnchor="end" height={60} />
+                              <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#64748b' }} label={{ value: 'Score %', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: '#64748b' } }} />
+                              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 10, padding: '8px 12px' }} />
+                              <Bar dataKey="score" radius={[6, 6, 0, 0]} barSize={40}>
                                 {scoreData.map((entry, i) => <Cell key={i} fill={entry.score >= 70 ? '#10b981' : entry.score >= 50 ? '#f59e0b' : '#ef4444'} />)}
                               </Bar>
                             </BarChart>
@@ -882,12 +901,12 @@ export default function BulkUpload() {
                     )}
 
                     {/* Table */}
-                    <div className="w-full overflow-x-auto">
-                      <table className="w-full min-w-[700px]">
+                    <div className="w-full overflow-x-auto px-6 py-4">
+                      <table className="w-full min-w-[1200px]">
                         <thead>
-                          <tr className="border-b bg-muted/10 text-left">
+                          <tr className="border-b-2 border-slate-200 bg-slate-50 text-left">
                             {['Rank', 'Candidate', 'Match Score', 'AI Verdict', 'Top Strength', 'Key Gap', 'Your Decision', ''].map((h) => (
-                              <th key={h} className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">{h}</th>
+                              <th key={h} className="px-5 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">{h}</th>
                             ))}
                           </tr>
                         </thead>
@@ -900,30 +919,30 @@ export default function BulkUpload() {
                             const rowBg = decision === 'approved' ? 'bg-emerald-500/5' : decision === 'rejected' ? 'bg-rose-500/5' : '';
                             return (
                               <>
-                                <tr key={key} className={cn('border-b hover:bg-muted/20 transition-colors', isExp && 'bg-muted/10', rowBg)}>
-                                  <td className="px-4 py-3.5 w-14">
-                                    <span className={cn('font-black text-sm', rankColor)}>#{r.rank}</span>
+                                <tr key={key} className={cn('border-b hover:bg-slate-50 transition-colors', isExp && 'bg-slate-100', rowBg)}>
+                                  <td className="px-5 py-4 w-20">
+                                    <span className={cn('font-black text-base', rankColor)}>#{r.rank}</span>
                                   </td>
-                                  <td className="px-4 py-3.5">
-                                    <div className="flex items-center gap-2.5">
+                                  <td className="px-5 py-4 min-w-[200px]">
+                                    <div className="flex items-center gap-3">
                                       <Avatar name={r.name} color="bg-[#0F1547]" size="sm" />
                                       <p className="text-sm font-semibold whitespace-nowrap">{r.name}</p>
                                     </div>
                                   </td>
-                                  <td className="px-4 py-3.5 w-40"><ScoreBar score={Math.round(r.score)} /></td>
-                                  <td className="px-4 py-3.5 w-28"><RecBadge rec={r.recommendation} /></td>
-                                  <td className="px-4 py-3.5 max-w-[160px]">
-                                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 block truncate">{r.strengths?.[0] || '—'}</span>
+                                  <td className="px-5 py-4 w-48"><ScoreBar score={Math.round(r.score)} /></td>
+                                  <td className="px-5 py-4 w-36"><RecBadge rec={r.recommendation} /></td>
+                                  <td className="px-5 py-4 min-w-[220px] max-w-[280px]">
+                                    <span className="text-xs font-medium px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 block truncate">{r.strengths?.[0] || '—'}</span>
                                   </td>
-                                  <td className="px-4 py-3.5 max-w-[160px]">
-                                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-700 block truncate">{r.gaps?.[0] || '—'}</span>
+                                  <td className="px-5 py-4 min-w-[220px] max-w-[280px]">
+                                    <span className="text-xs font-medium px-3 py-1.5 rounded-full bg-rose-500/10 text-rose-700 block truncate">{r.gaps?.[0] || '—'}</span>
                                   </td>
-                                  <td className="px-4 py-3.5 w-32">
-                                    <div className="flex items-center gap-1.5">
+                                  <td className="px-5 py-4 w-40">
+                                    <div className="flex items-center gap-2">
                                       <button
                                         onClick={() => saveDecision(key, 'approved')}
                                         disabled={!!decisionLoading || finalized}
-                                        className={cn('p-1.5 rounded-lg transition-all', decision === 'approved' ? 'bg-emerald-500 text-white shadow-sm' : 'hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-600', 'disabled:opacity-40')}
+                                        className={cn('p-2 rounded-lg transition-all', decision === 'approved' ? 'bg-emerald-500 text-white shadow-md' : 'hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-600', 'disabled:opacity-40')}
                                         title="Approve"
                                       >
                                         {decisionLoading === key ? <Loader2 className="h-4 w-4 animate-spin" /> : <ThumbsUp className="h-4 w-4" />}
@@ -931,7 +950,7 @@ export default function BulkUpload() {
                                       <button
                                         onClick={() => saveDecision(key, 'rejected')}
                                         disabled={!!decisionLoading || finalized}
-                                        className={cn('p-1.5 rounded-lg transition-all', decision === 'rejected' ? 'bg-rose-500 text-white shadow-sm' : 'hover:bg-rose-500/10 text-muted-foreground hover:text-rose-600', 'disabled:opacity-40')}
+                                        className={cn('p-2 rounded-lg transition-all', decision === 'rejected' ? 'bg-rose-500 text-white shadow-md' : 'hover:bg-rose-500/10 text-muted-foreground hover:text-rose-600', 'disabled:opacity-40')}
                                         title="Reject"
                                       >
                                         <ThumbsDown className="h-4 w-4" />
@@ -1054,7 +1073,7 @@ export default function BulkUpload() {
                         <Send className="h-4 w-4" />
                       </Button>
                     </div>
-                    <p className="text-[10px] text-muted-foreground text-center">Shift+Enter for new line · Powered by Gemini 1.5 Pro</p>
+                    <p className="text-[10px] text-muted-foreground text-center">Shift+Enter for new line · Powered by Gemini 2.5-Flash</p>
                   </div>
                 </div>
               )}
