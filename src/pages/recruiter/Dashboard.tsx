@@ -8,6 +8,7 @@ import { apiFetch } from '@/lib/api';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuthStore } from '@/stores/authStore';
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
+import { useTranslation } from 'next-i18next/pages';
 
 type JobsListResponse = { data?: Array<{ id?: string; _id?: string; title: string; status?: string; location?: string; createdAt?: string }> };
 
@@ -28,6 +29,7 @@ function MiniAvatar({ name, index }: { name: string; index: number }) {
 }
 
 export default function RecruiterDashboard() {
+  const { t } = useTranslation('common');
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuthStore();
@@ -36,7 +38,8 @@ export default function RecruiterDashboard() {
 
   const today = new Date();
   const hour = today.getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const greetingKey = hour < 12 ? 'goodMorning' : hour < 17 ? 'goodAfternoon' : 'goodEvening';
+  const greeting = t(`dashboard.${greetingKey}`);
   const dateStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const firstName = user?.name?.split(' ')[0] || 'there';
 
@@ -67,7 +70,7 @@ export default function RecruiterDashboard() {
 
   return (
     <>
-      <AppHeader title="Dashboard" />
+      <AppHeader title={t('nav.dashboard', 'Dashboard')} />
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
 
         {/* Hero welcome banner */}
@@ -81,21 +84,21 @@ export default function RecruiterDashboard() {
             <h2 className="text-3xl font-black text-white tracking-tight">{greeting}, {firstName} 👋</h2>
             <p className="text-white/60 text-sm max-w-sm">
               {jobs.length === 0
-                ? "You haven't posted any jobs yet. Start recruiting today."
-                : `You have ${activeJobs} active job${activeJobs !== 1 ? 's' : ''} and ${draftJobs} draft${draftJobs !== 1 ? 's' : ''}.`}
+                ? t("dashboard.postFirstJob")
+                : `You have ${activeJobs} ${t("common.active").toLowerCase()} and ${draftJobs} ${t("common.draft").toLowerCase()}.`}
             </p>
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => router.push('/recruiter/jobs/new')}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#4B7BFF] text-white text-sm font-semibold hover:bg-[#3461DF] transition-colors shadow-lg shadow-[#4B7BFF]/30"
               >
-                <Plus className="h-4 w-4" /> Post a Job
+                <Plus className="h-4 w-4" /> {t("dashboard.postJob")}
               </button>
               <button
                 onClick={() => router.push('/recruiter/jobs')}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 text-white text-sm font-semibold hover:bg-white/20 transition-colors border border-white/10"
               >
-                View Jobs <ArrowRight className="h-4 w-4" />
+                {t("nav.jobs")} <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -131,10 +134,10 @@ export default function RecruiterDashboard() {
         {/* Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Total Jobs', value: jobs.length, icon: Briefcase, color: 'text-[#4B7BFF]', bg: 'bg-[#4B7BFF]/10' },
-            { label: 'Active Jobs', value: activeJobs, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-            { label: 'Drafts', value: draftJobs, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-            { label: 'Candidates', value: '—', icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+            { label: t('dashboard.totalJobs'), value: jobs.length, icon: Briefcase, color: 'text-[#4B7BFF]', bg: 'bg-[#4B7BFF]/10' },
+            { label: t('dashboard.activeJobs'), value: activeJobs, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+            { label: t('dashboard.drafts'), value: draftJobs, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+            { label: t('dashboard.candidates'), value: '—', icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
           ].map((stat) => (
             <div key={stat.label} className="bg-card rounded-xl border p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
               <div className={`${stat.bg} p-3 rounded-xl shrink-0`}>
@@ -154,16 +157,16 @@ export default function RecruiterDashboard() {
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-1">
               <Zap className="h-4 w-4 text-[#4B7BFF]" />
-              <span className="text-xs font-bold text-[#4B7BFF] uppercase tracking-wider">AI-Powered</span>
+              <span className="text-xs font-bold text-[#4B7BFF] uppercase tracking-wider">{t('dashboard.aiPowered', 'AI-Powered')}</span>
             </div>
-            <h3 className="font-bold text-base">Screen candidates in seconds</h3>
-            <p className="text-sm text-muted-foreground mt-0.5">Upload resumes and let Intore AI rank and shortlist the best fits automatically.</p>
+            <h3 className="font-bold text-base">{t('dashboard.screenCandidates', 'Screen candidates in seconds')}</h3>
+            <p className="text-sm text-muted-foreground mt-0.5">{t('dashboard.screenDesc', 'Upload resumes and let Intore AI rank and shortlist the best fits automatically.')}</p>
           </div>
           <button
             onClick={() => router.push('/recruiter/jobs')}
             className="relative z-10 shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#4B7BFF] text-white text-sm font-semibold hover:bg-[#3461DF] transition-colors shadow-lg shadow-[#4B7BFF]/20 whitespace-nowrap"
           >
-            Get Started <ArrowRight className="h-4 w-4" />
+            {t('dashboard.getStarted', 'Get Started')} <ArrowRight className="h-4 w-4" />
           </button>
         </div>
 
@@ -173,9 +176,9 @@ export default function RecruiterDashboard() {
           {/* Recent Jobs — takes 2 cols */}
           <div className="lg:col-span-2 bg-card rounded-xl border shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b">
-              <h3 className="font-semibold text-sm">Recent Jobs</h3>
+              <h3 className="font-semibold text-sm">{t('dashboard.recentJobs')}</h3>
               <Link href="/recruiter/jobs" className="text-xs text-[#4B7BFF] hover:underline flex items-center gap-1">
-                View all <ChevronRight className="h-3 w-3" />
+                {t('dashboard.viewAll')} <ChevronRight className="h-3 w-3" />
               </Link>
             </div>
             {loading ? (
@@ -189,10 +192,10 @@ export default function RecruiterDashboard() {
                 <div className="w-14 h-14 rounded-full bg-[#4B7BFF]/10 flex items-center justify-center mb-3">
                   <Briefcase className="h-6 w-6 text-[#4B7BFF]" />
                 </div>
-                <p className="font-semibold text-sm mb-1">No jobs yet</p>
-                <p className="text-xs text-muted-foreground mb-4">Post your first job to start receiving applicants.</p>
+                <p className="font-semibold text-sm mb-1">{t('dashboard.noJobsYet')}</p>
+                <p className="text-xs text-muted-foreground mb-4">{t('dashboard.postFirstJob')}</p>
                 <button onClick={() => router.push('/recruiter/jobs/new')} className="px-4 py-2 rounded-lg bg-[#4B7BFF] text-white text-xs font-semibold hover:bg-[#3461DF] transition-colors">
-                  Post a Job
+                  {t('dashboard.postJob')}
                 </button>
               </div>
             ) : (
@@ -225,7 +228,7 @@ export default function RecruiterDashboard() {
             {/* Activity chart */}
             <div className="bg-card rounded-xl border shadow-sm p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-sm">Weekly Activity</h3>
+                <h3 className="font-semibold text-sm">{t('dashboard.weeklyActivity')}</h3>
                 <span className="text-xs text-emerald-500 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full">+12%</span>
               </div>
               <ResponsiveContainer width="100%" height={80}>
@@ -245,12 +248,12 @@ export default function RecruiterDashboard() {
 
             {/* Quick actions */}
             <div className="bg-card rounded-xl border shadow-sm p-5">
-              <h3 className="font-semibold text-sm mb-4">Quick Actions</h3>
+              <h3 className="font-semibold text-sm mb-4">{t('dashboard.quickActions')}</h3>
               <div className="space-y-2">
                 {[
-                  { label: 'Post a new job', icon: Plus, path: '/recruiter/jobs/new', color: '#4B7BFF' },
-                  { label: 'View candidates', icon: Users, path: '/recruiter/candidates', color: '#8b5cf6' },
-                  { label: 'Run AI screening', icon: Zap, path: '/recruiter/jobs', color: '#10b981' },
+                  { label: t('dashboard.postNewJob'), icon: Plus, path: '/recruiter/jobs/new', color: '#4B7BFF' },
+                  { label: t('dashboard.viewCandidates'), icon: Users, path: '/recruiter/candidates', color: '#8b5cf6' },
+                  { label: t('dashboard.runAiScreening'), icon: Zap, path: '/recruiter/jobs', color: '#10b981' },
                 ].map((action) => (
                   <button
                     key={action.label}

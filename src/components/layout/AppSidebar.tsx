@@ -1,24 +1,26 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next/pages';
 import { LayoutDashboard, Briefcase, Users, ClipboardList, Settings, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/intore/Avatar';
 import { useAuthStore } from '@/stores/authStore';
 import { IntoreMark } from '@/components/branding/IntoreMark';
 
-const navItems = [
-  { label: 'Dashboard', path: '/recruiter/dashboard', icon: LayoutDashboard },
-  { label: 'Jobs', path: '/recruiter/jobs', icon: Briefcase },
-  { label: 'Candidates', path: '/recruiter/candidates', icon: Users },
-  { label: 'Screenings', path: '/recruiter/screenings', icon: ClipboardList },
-  { label: 'Settings', path: '/recruiter/settings', icon: Settings },
-];
-
 export function AppSidebar() {
   const router = useRouter();
+  const { t } = useTranslation('common');
   const { user } = useAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navItems = [
+    { label: t('nav.dashboard', 'Dashboard'), path: '/recruiter/dashboard', icon: LayoutDashboard },
+    { label: t('nav.jobs', 'Jobs'), path: '/recruiter/jobs', icon: Briefcase },
+    { label: t('nav.candidates', 'Candidates'), path: '/recruiter/candidates', icon: Users },
+    { label: t('nav.screenings', 'Screenings'), path: '/recruiter/screenings', icon: ClipboardList },
+    { label: t('nav.settings', 'Settings'), path: '/recruiter/settings', icon: Settings },
+  ];
 
   const isActive = (path: string) => router.asPath.startsWith(path);
 

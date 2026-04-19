@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/intore/EmptyState';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'next-i18next/pages';
 
 const avatarColors = ['bg-violet-500', 'bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-cyan-500'];
 
@@ -19,6 +20,7 @@ function CandidateAvatar({ name, index }: { name: string; index: number }) {
 
 export default function CandidatesList() {
   const router = useRouter();
+  const { t } = useTranslation('common');
   const [jobs, setJobs] = useState<Array<{ id: string; title: string }>>([]);
   const [jobId, setJobId] = useState('');
   const [rows, setRows] = useState<Array<{ applicationId: string; name: string; skills: string[]; experience: number; education: string; projects: string[] }>>([]);
@@ -58,12 +60,12 @@ export default function CandidatesList() {
 
   return (
     <>
-      <AppHeader title="Candidates" />
+      <AppHeader title={t('nav.candidates', 'Candidates')} />
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold">Candidates</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">Normalized candidate profiles by job</p>
+            <h2 className="text-2xl font-bold">{t('nav.candidates', 'Candidates')}</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">{t('common.filter', 'Normalized candidate profiles by job')}</p>
           </div>
         </div>
 
@@ -73,16 +75,16 @@ export default function CandidatesList() {
             onChange={(e) => setJobId(e.target.value)}
             className="bg-card rounded-xl border px-3 py-2 text-sm outline-none w-[280px] shadow-sm"
           >
-            {jobs.length === 0 && <option value="">No jobs available</option>}
+            {jobs.length === 0 && <option value="">{t('common.search', 'No jobs available')}</option>}
             {jobs.map((j) => <option key={j.id} value={j.id}>{j.title}</option>)}
           </select>
           <Button onClick={fetchCandidates} disabled={loading || !jobId} className="gap-2">
-            {loading ? 'Loading...' : 'Load Candidates'}
+            {loading ? t('common.loading', 'Loading...') : t('common.submit', 'Load Candidates')}
           </Button>
           {rows.length > 0 && (
             <div className="flex items-center gap-2 bg-card rounded-xl border px-3 py-2 shadow-sm ml-auto">
               <Search className="h-4 w-4 text-muted-foreground" />
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search candidates..." className="bg-transparent text-sm outline-none w-40 placeholder:text-muted-foreground" />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('header.searchPlaceholder', 'Search candidates...')} className="bg-transparent text-sm outline-none w-40 placeholder:text-muted-foreground" />
             </div>
           )}
         </div>
@@ -90,9 +92,9 @@ export default function CandidatesList() {
         {rows.length === 0 ? (
           <EmptyState
             icon={Users}
-            title="No candidates yet"
-            description="Select a job and click Load Candidates to view normalized profiles."
-            actionLabel="Go to Jobs"
+            title={t('common.all', 'No candidates yet')}
+            description={t('common.filter', 'Select a job and click Load Candidates to view normalized profiles.')}
+            actionLabel={t('nav.jobs', 'Go to Jobs')}
             onAction={() => router.push('/recruiter/jobs')}
           />
         ) : (

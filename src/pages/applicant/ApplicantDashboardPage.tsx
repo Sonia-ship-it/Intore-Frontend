@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Briefcase, Clock, CheckCircle, AlertCircle, FileText, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
+import { useTranslation } from 'next-i18next/pages';
 
 type ApplicationStatus = 'Applied' | 'Under Review' | 'Shortlisted' | 'Interview' | 'Rejected';
 
@@ -72,6 +73,7 @@ function ProgressTracker({ current }: { current: ApplicationStatus }) {
 
 export default function ApplicantDashboardPage() {
   const { user } = useAuthStore();
+  const { t } = useTranslation('common');
 
   const stats = {
     total: mockApplications.length,
@@ -84,23 +86,23 @@ export default function ApplicantDashboardPage() {
       {/* Greeting */}
       <div className="mb-8">
         <h1 className="text-[24px] font-bold text-slate-900 dark:text-white">
-          Welcome back, {user?.name?.split(' ')[0] || 'Applicant'} 👋
+          {t('applicant.welcome', 'Welcome back')}, {user?.name?.split(' ')[0] || t('applicant.applicant', 'Applicant')} 👋
         </h1>
-        <p className="text-[14px] text-slate-500 dark:text-white/55 mt-1">Track your job applications across Rwanda.</p>
+        <p className="text-[14px] text-slate-500 dark:text-white/55 mt-1">{t('applicant.trackJobs', 'Track your job applications across Rwanda.')}</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
         <div className="bg-white dark:bg-white/[0.05] rounded-xl border border-slate-200 dark:border-white/10 p-5 shadow-sm">
-          <p className="text-[12px] text-slate-400 dark:text-white/45 font-medium">Total Applications</p>
+          <p className="text-[12px] text-slate-400 dark:text-white/45 font-medium">{t('applicant.totalApps', 'Total Applications')}</p>
           <p className="text-[28px] font-bold text-slate-900 dark:text-white mt-1">{stats.total}</p>
         </div>
         <div className="bg-white dark:bg-white/[0.05] rounded-xl border border-slate-200 dark:border-white/10 p-5 shadow-sm">
-          <p className="text-[12px] text-slate-400 dark:text-white/45 font-medium">Active</p>
+          <p className="text-[12px] text-slate-400 dark:text-white/45 font-medium">{t('common.active', 'Active')}</p>
           <p className="text-[28px] font-bold text-emerald-600 dark:text-emerald-200 mt-1">{stats.active}</p>
         </div>
         <div className="bg-white dark:bg-white/[0.05] rounded-xl border border-slate-200 dark:border-white/10 p-5 shadow-sm">
-          <p className="text-[12px] text-slate-400 dark:text-white/45 font-medium">Interviews Scheduled</p>
+          <p className="text-[12px] text-slate-400 dark:text-white/45 font-medium">{t('applicant.interviews', 'Interviews Scheduled')}</p>
           <p className="text-[28px] font-bold text-brand-600 dark:text-white mt-1">{stats.interviews}</p>
         </div>
       </div>
@@ -108,9 +110,9 @@ export default function ApplicantDashboardPage() {
       {/* Applications List */}
       <div className="bg-white dark:bg-white/[0.05] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm">
         <div className="p-5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold text-slate-900 dark:text-white">My Applications</h2>
+          <h2 className="text-[15px] font-semibold text-slate-900 dark:text-white">{t('applicant.myApps', 'My Applications')}</h2>
           <Link href="/jobs" className="text-[13px] text-[#4B7BFF] hover:text-[#2D3DB5] font-medium transition-colors">
-            Browse more jobs →
+            {t('applicant.browseMore', 'Browse more jobs')} →
           </Link>
         </div>
 
@@ -130,7 +132,7 @@ export default function ApplicantDashboardPage() {
                         <MapPin className="h-3 w-3" /> {app.location}
                       </span>
                       <span className="text-[11px] text-slate-400 dark:text-white/45 flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> Applied {new Date(app.appliedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                        <Clock className="h-3 w-3" /> {t('applicant.appliedOn', 'Applied on')} {new Date(app.appliedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                       </span>
                     </div>
                   </div>

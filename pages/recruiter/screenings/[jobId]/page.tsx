@@ -411,3 +411,12 @@ export default function ScreeningResultsPage() {
     </RecruiterLayout>
   );
 }
+
+export async function getServerSideProps({ locale }: any) {
+  const { serverSideTranslations } = require('next-i18next/pages/serverSideTranslations');
+  return {
+    props: {
+      ...(await serverSideTranslations(locale ?? 'en', ['common'])),
+    },
+  };
+}

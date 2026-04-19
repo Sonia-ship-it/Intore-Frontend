@@ -9,9 +9,12 @@ import { useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
 import { useToast } from '@/components/ui/use-toast';
 import Link from 'next/link';
+import { useTranslation } from 'next-i18next/pages';
+
 type JobsResponse = { data?: Array<{ id?: string; _id?: string; title: string; department?: string; requiredSkills?: string[]; location?: string; isRemote?: boolean; employmentType?: string; status?: string; publishedAt?: string; createdAt?: string }> };
 
 export default function JobsList() {
+  const { t } = useTranslation('common');
   const router = useRouter();
   const { toast } = useToast();
   const [search, setSearch] = useState('');
@@ -72,16 +75,16 @@ export default function JobsList() {
 
   return (
     <>
-      <AppHeader title="Jobs" />
+      <AppHeader title={t('nav.jobs', 'Jobs')} />
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold">All Jobs</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">{jobs.length} job{jobs.length !== 1 ? 's' : ''} posted</p>
+            <h2 className="text-2xl font-bold">{t('jobs.allJobs', 'All Jobs')}</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">{jobs.length} {t('nav.jobs', 'jobs')} {t('common.all', 'posted')}</p>
           </div>
           <Button onClick={() => router.push('/recruiter/jobs/new')} className="gap-2">
-            <Plus className="h-4 w-4" /> Post New Job
+            <Plus className="h-4 w-4" /> {t('jobs.postNewJob', 'Post New Job')}
           </Button>
         </div>
 
@@ -89,22 +92,22 @@ export default function JobsList() {
         <div className="flex flex-wrap gap-3 mb-6">
           <div className="flex items-center gap-2 bg-card rounded-xl border px-3 py-2 shadow-sm">
             <Search className="h-4 w-4 text-muted-foreground" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search jobs..." className="bg-transparent text-sm outline-none w-44 placeholder:text-muted-foreground" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('jobs.searchJobs', 'Search jobs...')} className="bg-transparent text-sm outline-none w-44 placeholder:text-muted-foreground" />
           </div>
           <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} className="bg-card rounded-xl border px-3 py-2 text-sm outline-none shadow-sm">
             {departments.map((d) => <option key={d}>{d}</option>)}
           </select>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-card rounded-xl border px-3 py-2 text-sm outline-none shadow-sm">
-            <option>All</option><option>Active</option><option>Draft</option><option>Closed</option>
+            <option>{t('common.all', 'All')}</option><option>{t('common.active', 'Active')}</option><option>{t('common.draft', 'Draft')}</option><option>{t('common.closed', 'Closed')}</option>
           </select>
         </div>
 
         {loading ? (
           <div className="space-y-3">
-            {[1,2,3,4].map((i) => <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />)}
+            {[1, 2, 3, 4].map((i) => <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />)}
           </div>
         ) : filtered.length === 0 ? (
-          <EmptyState icon={Briefcase} title="No jobs found" description="No jobs match your filters or none have been created yet." actionLabel="Post New Job" onAction={() => router.push('/recruiter/jobs/new')} />
+          <EmptyState icon={Briefcase} title={t('jobs.noJobsFound', 'No jobs found')} description={t('jobs.noJobsDesc', 'No jobs match your filters or none have been created yet.')} actionLabel={t('jobs.postNewJob', 'Post New Job')} onAction={() => router.push('/recruiter/jobs/new')} />
         ) : (
           <div className="space-y-3">
             {filtered.map((job, i) => {

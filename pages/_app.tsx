@@ -7,12 +7,14 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
+import { appWithTranslation } from 'next-i18next/pages';
+import nextI18NextConfig from '../next-i18next.config.js';
 import "@/index.css";
 
 const queryClient = new QueryClient();
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
-export default function NextApp({ Component, pageProps }: AppProps) {
+function NextApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const lenisRef = useRef<Lenis | null>(null);
 
@@ -96,3 +98,5 @@ export default function NextApp({ Component, pageProps }: AppProps) {
     </GoogleOAuthProvider>
   );
 }
+
+export default appWithTranslation(NextApp, nextI18NextConfig);

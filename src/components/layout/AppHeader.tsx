@@ -2,11 +2,13 @@ import { Search, Bell, Moon, Sun, ChevronDown, LogOut, User, Settings, Plus } fr
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next/pages';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuthStore } from '@/stores/authStore';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 
 export function AppHeader({ title }: { title: string }) {
+  const { t } = useTranslation('common');
   const { isDark, toggle } = useTheme();
   const { user, logout } = useAuthStore();
   const router = useRouter();
@@ -29,11 +31,11 @@ export function AppHeader({ title }: { title: string }) {
 
       <div className="flex items-center gap-4">
         <Link href="/recruiter/jobs/new" className="post-job-btn hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors" style={{ background: '#4B7BFF', color: 'white' }}>
-          <Plus className="h-4 w-4" /> Post a job
+          <Plus className="h-4 w-4" /> {t('header.postJob', 'Post a job')}
         </Link>
         <div className="header-search hidden lg:flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
           <Search className="search-icon h-4 w-4" style={{ color: 'rgba(255,255,255,0.4)' }} />
-          <input placeholder="Search jobs..." className="bg-transparent text-sm outline-none w-48" style={{ color: 'white' }} />
+          <input placeholder={t('header.searchPlaceholder', 'Search jobs...')} className="bg-transparent text-sm outline-none w-48" style={{ color: 'white' }} />
         </div>
 
         <button onClick={toggle} className="theme-toggle p-2 rounded-lg transition-colors" style={{ color: 'white', opacity: 0.7 }} aria-label="Toggle theme">
@@ -65,20 +67,20 @@ export function AppHeader({ title }: { title: string }) {
                 onClick={() => { setDropdownOpen(false); router.push('/recruiter/settings'); }}
                 className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm font-medium transition-colors hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-white/80"
               >
-                <User className="h-4 w-4 text-slate-500 dark:text-white/50" /> Profile
+                <User className="h-4 w-4 text-slate-500 dark:text-white/50" /> {t('header.profile', 'Profile')}
               </button>
               <button
                 onClick={() => { setDropdownOpen(false); router.push('/recruiter/settings'); }}
                 className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm font-medium transition-colors hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-white/80"
               >
-                <Settings className="h-4 w-4 text-slate-500 dark:text-white/50" /> Settings
+                <Settings className="h-4 w-4 text-slate-500 dark:text-white/50" /> {t('nav.settings', 'Settings')}
               </button>
               <hr className="my-1 border-slate-100 dark:border-white/10" />
               <button
                 onClick={() => { logout(); router.push('/login'); }}
                 className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm font-medium transition-colors hover:bg-rose-50 dark:hover:bg-rose-500/10 text-rose-600 dark:text-rose-400"
               >
-                <LogOut className="h-4 w-4" /> Logout
+                <LogOut className="h-4 w-4" /> {t('header.logout', 'Logout')}
               </button>
             </div>
           )}

@@ -2,23 +2,26 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Briefcase, LayoutDashboard, User, LogOut, Menu, X, Sun, Moon } from 'lucide-react';
 import { ReactNode, useState } from 'react';
+import { useTranslation } from 'next-i18next/pages';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
 import { useTheme } from '@/hooks/useTheme';
 import { Footer } from '@/components/layout/Footer';
 import { IntoreMark } from '@/components/branding/IntoreMark';
-
-const navItems = [
-  { label: 'Browse Jobs', path: '/jobs', icon: Briefcase },
-  { label: 'My Applications', path: '/applicant/dashboard', icon: LayoutDashboard },
-  { label: 'Profile', path: '/applicant/profile', icon: User },
-];
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 
 export function ApplicantShell({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const { t } = useTranslation('common');
   const { user, logout } = useAuthStore();
   const { isDark, toggle } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navItems = [
+    { label: t('nav.jobs', 'Browse Jobs'), path: '/jobs', icon: Briefcase },
+    { label: t('nav.dashboard', 'My Applications'), path: '/applicant/dashboard', icon: LayoutDashboard },
+    { label: t('settings.profile', 'Profile'), path: '/applicant/profile', icon: User },
+  ];
 
   const isActive = (path: string) => router.pathname === path || router.asPath.startsWith(path + '/');
 
@@ -57,6 +60,7 @@ export function ApplicantShell({ children }: { children: ReactNode }) {
 
           {/* Right side */}
           <div className="hidden md:flex items-center gap-3">
+            <LanguageSwitcher />
             <button onClick={toggle} className="text-white/40 hover:text-white/80 transition-colors p-2" aria-label="Toggle theme">
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>

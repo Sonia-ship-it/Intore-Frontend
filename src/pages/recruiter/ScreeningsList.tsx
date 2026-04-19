@@ -7,11 +7,13 @@ import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
 import { ScoreBar } from '@/components/intore/ScoreBar';
+import { useTranslation } from 'next-i18next/pages';
 
 const avatarColors = ['#4B7BFF', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'];
 
 export default function ScreeningsList() {
   const router = useRouter();
+  const { t } = useTranslation('common');
   const [jobs, setJobs] = useState<Array<{ id: string; title: string }>>([]);
   const [jobId, setJobId] = useState('');
   const [rows, setRows] = useState<Array<{ rank: number; name: string; score: number; recommendation: string }>>([]);
@@ -46,12 +48,12 @@ export default function ScreeningsList() {
 
   return (
     <>
-      <AppHeader title="Screenings" />
+      <AppHeader title={t('nav.screenings', 'Screenings')} />
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold">Screening Results</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">AI-ranked candidates by job</p>
+            <h2 className="text-2xl font-bold">{t('screening.rankedCandidates', 'Screening Results')}</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">{t('screening.aiAssistant', 'AI-ranked candidates by job')}</p>
           </div>
         </div>
 
@@ -61,21 +63,21 @@ export default function ScreeningsList() {
             onChange={(e) => setJobId(e.target.value)}
             className="bg-card rounded-xl border px-3 py-2 text-sm outline-none w-[280px] shadow-sm"
           >
-            {jobs.length === 0 && <option value="">No jobs available</option>}
+            {jobs.length === 0 && <option value="">{t('jobs.noJobsFound', 'No jobs available')}</option>}
             {jobs.map((j) => <option key={j.id} value={j.id}>{j.title}</option>)}
           </select>
           <Button onClick={loadResults} disabled={loading || !jobId} className="gap-2">
             <ListChecks className="h-4 w-4" />
-            {loading ? 'Loading...' : 'Load Results'}
+            {loading ? t('common.loading', 'Loading...') : t('common.submit', 'Load Results')}
           </Button>
         </div>
 
         {rows.length === 0 ? (
           <EmptyState
             icon={ListChecks}
-            title="No screening runs yet"
-            description="Run your first screening from a job detail page to see ranked results here."
-            actionLabel="Go to Jobs"
+            title={t('common.all', 'No screening runs yet')}
+            description={t('screening.runToUnlock', 'Run your first screening from a job detail page to see ranked results here.')}
+            actionLabel={t('nav.jobs', 'Go to Jobs')}
             onAction={() => router.push('/recruiter/jobs')}
           />
         ) : (

@@ -33,6 +33,7 @@
     "postJob": "Post a Job",
     "screenCandidates": "Screen candidates in seconds",
     "screenDesc": "Upload resumes and let Intore AI rank and shortlist the best fits automatically.",
+    "aiPowered": "AI-Powered",
     "getStarted": "Get Started"
   },
   "jobs": {

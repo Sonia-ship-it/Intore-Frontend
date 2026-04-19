@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { apiFetch } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'next-i18next/pages';
 
 const jobTypes = ['Remote', 'Hybrid', 'Onsite'] as const;
 const employmentTypes = ['Full-time', 'Part-time', 'Contract'] as const;
@@ -23,12 +24,13 @@ const REQUIRED_SKILL_SUGGESTIONS = [
 const NICE_SKILL_SUGGESTIONS = [
   'Next.js', 'Vue.js', 'Angular', 'Redis', 'Elasticsearch', 'Terraform',
   'Machine Learning', 'Data Analysis', 'Leadership', 'Mentoring', 'Public Speaking',
-  'Product Thinking', 'UX Research', 'A/B Testing', 'Scrum','Team work','Collaboration'
+  'Product Thinking', 'UX Research', 'A/B Testing', 'Scrum', 'Team work', 'Collaboration'
 ];
 
 export default function CreateJob() {
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useTranslation('common');
   const [form, setForm] = useState({
     title: '', department: '', location: '', type: 'Remote' as string,
     employmentType: 'Full-time' as string, description: '',
@@ -108,25 +110,25 @@ export default function CreateJob() {
 
   return (
     <>
-      <AppHeader title="Post New Job" />
+      <AppHeader title={t('jobs.postNewJob', 'Post New Job')} />
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           <div className="lg:col-span-3 space-y-6">
             {/* Basic Info */}
             <section className="bg-card rounded-xl p-6 shadow-sm border space-y-4">
-              <h3 className="font-semibold">Basic Information</h3>
+              <h3 className="font-semibold">{t('jobs.basicInfo', 'Basic Information')}</h3>
               <div className="space-y-3">
-                <label className="block text-sm font-medium">Job Title
-                  <input value={form.title} onChange={(e) => update('title', e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="e.g. Senior Frontend Developer" />
+                <label className="block text-sm font-medium">{t('jobs.jobTitle', 'Job Title')}
+                  <input value={form.title} onChange={(e) => update('title', e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder={t('jobs.jobTitlePlaceholder', 'e.g. Senior Frontend Developer')} />
                 </label>
                 <div className="grid grid-cols-2 gap-3">
-                  <label className="block text-sm font-medium">Department
+                  <label className="block text-sm font-medium">{t('jobs.department', 'Department')}
                     <select value={form.department} onChange={(e) => update('department', e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none">
-                      <option value="">Select</option>
+                      <option value="">{t('common.select', 'Select')}</option>
                       {['Engineering', 'Design', 'Data', 'Infrastructure', 'Marketing'].map((d) => <option key={d}>{d}</option>)}
                     </select>
                   </label>
-                  <label className="block text-sm font-medium">Location
+                  <label className="block text-sm font-medium">{t('jobs.location', 'Location')}
                     <LocationPicker
                       value={form.location}
                       onChange={(v) => update('location', v)}
@@ -136,18 +138,18 @@ export default function CreateJob() {
                   </label>
                 </div>
                 <div>
-                  <p className="text-sm font-medium mb-2">Job Type</p>
+                  <p className="text-sm font-medium mb-2">{t('jobs.jobType', 'Job Type')}</p>
                   <div className="flex rounded-lg border overflow-hidden">
-                    {jobTypes.map((t) => (
-                      <button key={t} onClick={() => update('type', t)} className={cn('flex-1 px-4 py-2 text-sm font-medium transition-colors', form.type === t ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-muted')}>{t}</button>
+                    {jobTypes.map((t_str) => (
+                      <button key={t_str} onClick={() => update('type', t_str)} className={cn('flex-1 px-4 py-2 text-sm font-medium transition-colors', form.type === t_str ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-muted')}>{t_str}</button>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-medium mb-2">Employment Type</p>
+                  <p className="text-sm font-medium mb-2">{t('jobs.employmentType', 'Employment Type')}</p>
                   <div className="flex rounded-lg border overflow-hidden">
-                    {employmentTypes.map((t) => (
-                      <button key={t} onClick={() => update('employmentType', t)} className={cn('flex-1 px-4 py-2 text-sm font-medium transition-colors', form.employmentType === t ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-muted')}>{t}</button>
+                    {employmentTypes.map((t_str) => (
+                      <button key={t_str} onClick={() => update('employmentType', t_str)} className={cn('flex-1 px-4 py-2 text-sm font-medium transition-colors', form.employmentType === t_str ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-muted')}>{t_str}</button>
                     ))}
                   </div>
                 </div>
@@ -156,23 +158,23 @@ export default function CreateJob() {
 
             {/* Description */}
             <section className="bg-card rounded-xl p-6 shadow-sm border space-y-4">
-              <h3 className="font-semibold">Job Description</h3>
-              <textarea value={form.description} onChange={(e) => update('description', e.target.value)} rows={6} className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none resize-none focus:ring-2 focus:ring-ring" placeholder="Describe the role, responsibilities, and what makes it exciting..." />
-              <p className={cn('text-xs', form.description.length < 200 ? 'text-muted-foreground' : 'text-emerald-600')}>{form.description.length}/200 min characters</p>
+              <h3 className="font-semibold">{t('jobs.jobDescription', 'Job Description')}</h3>
+              <textarea value={form.description} onChange={(e) => update('description', e.target.value)} rows={6} className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none resize-none focus:ring-2 focus:ring-ring" placeholder={t('jobs.jobDescPlaceholder', 'Describe the role, responsibilities, and what makes it exciting...')} />
+              <p className={cn('text-xs', form.description.length < 200 ? 'text-muted-foreground' : 'text-emerald-600')}>{form.description.length}/200 {t('common.minCharacters', 'min characters')}</p>
             </section>
 
             {/* Requirements */}
             <section className="bg-card rounded-xl p-6 shadow-sm border space-y-5">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold">Requirements</h3>
-                <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Type a skill and press Enter, or pick from suggestions</span>
+                <h3 className="font-semibold">{t('jobs.requirements', 'Requirements')}</h3>
+                <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{t('jobs.typeSkillHint', 'Type a skill and press Enter, or pick from suggestions')}</span>
               </div>
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">Required Skills</p>
+                  <p className="text-sm font-medium">{t('jobs.requiredSkills', 'Required Skills')}</p>
                   {form.requiredSkills.length > 0 && (
-                    <span className="text-xs text-[#4B7BFF] font-semibold">{form.requiredSkills.length} added</span>
+                    <span className="text-xs text-[#4B7BFF] font-semibold">{form.requiredSkills.length} {t('common.added', 'added')}</span>
                   )}
                 </div>
                 <TagInput
@@ -186,9 +188,9 @@ export default function CreateJob() {
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">Nice-to-Have Skills</p>
+                  <p className="text-sm font-medium">{t('jobs.niceToHave', 'Nice-to-Have Skills')}</p>
                   {form.niceToHaveSkills.length > 0 && (
-                    <span className="text-xs text-muted-foreground font-semibold">{form.niceToHaveSkills.length} added</span>
+                    <span className="text-xs text-muted-foreground font-semibold">{form.niceToHaveSkills.length} {t('common.added', 'added')}</span>
                   )}
                 </div>
                 <TagInput
@@ -202,7 +204,7 @@ export default function CreateJob() {
 
               <div className="grid grid-cols-2 gap-4 pt-1">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium">Min Experience (years)</label>
+                  <label className="text-sm font-medium">{t('jobs.minExperience', 'Min Experience (years)')}</label>
                   <div className="flex items-center gap-3">
                     <input
                       type="range" min={0} max={15} value={form.minExperience}
@@ -211,10 +213,10 @@ export default function CreateJob() {
                     />
                     <span className="w-8 text-center text-sm font-bold text-[#4B7BFF]">{form.minExperience}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">{form.minExperience === 0 ? 'No minimum' : `${form.minExperience}+ years required`}</p>
+                  <p className="text-xs text-muted-foreground">{form.minExperience === 0 ? t('jobs.noMinimum', 'No minimum') : `${form.minExperience}+ ${t('jobs.yearsRequired', 'years required')}`}</p>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium">Education Level</label>
+                  <label className="text-sm font-medium">{t('jobs.educationLevel', 'Education Level')}</label>
                   <div className="flex flex-wrap gap-1.5">
                     {educationLevels.map((lvl) => (
                       <button
@@ -259,8 +261,8 @@ export default function CreateJob() {
           {/* Preview */}
           <div className="lg:col-span-2">
             <div className="sticky top-24 bg-card rounded-xl shadow-sm border p-6 space-y-4">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Preview</p>
-              <h3 className="text-lg font-semibold">{form.title || 'Job Title'}</h3>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('jobs.preview', 'Preview')}</p>
+              <h3 className="text-lg font-semibold">{form.title || t('jobs.jobTitle', 'Job Title')}</h3>
               <div className="flex flex-wrap gap-2">
                 {form.type && <TypeBadge type={form.type} />}
                 {form.employmentType && <StatusBadge status={form.employmentType} />}
@@ -278,10 +280,10 @@ export default function CreateJob() {
 
               <div className="flex gap-3 pt-4 border-t">
                 <Button variant="outline" className="flex-1" onClick={() => submitJob('draft')} disabled={saving !== null}>
-                  {saving === 'draft' ? 'Saving...' : 'Save as Draft'}
+                  {saving === 'draft' ? t('common.saving', 'Saving...') : t('jobs.saveDraft', 'Save as Draft')}
                 </Button>
                 <Button className="flex-1" onClick={() => submitJob('publish')} disabled={saving !== null}>
-                  {saving === 'publish' ? 'Posting...' : 'Post Job'}
+                  {saving === 'publish' ? t('jobs.posting', 'Posting...') : t('jobs.postJob', 'Post Job')}
                 </Button>
               </div>
             </div>
