@@ -152,7 +152,7 @@ const SLIDES = [
     Illustration: ClockSvg,
     question: 'How long does it take you to screen 200 Resumes?',
     options: ['Less than a day', '2–3 days', 'A full week', 'More than a week'],
-    punchline: 'Intore does it in under 5 seconds.',
+    punchline: 'Intore does it in under 3 minutes.',
     punchColor: 'text-[#4B7BFF]',
   },
   {
