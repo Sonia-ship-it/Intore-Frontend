@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Loader2, ShieldCheck } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { RevealOnScroll, RevealChild } from '@/components/animations/RevealOnScroll';
@@ -14,7 +14,7 @@ import { useToast } from '@/components/ui/use-toast';
 export default function RegisterPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const { register } = useAuthStore();
+    const { register, verifyRegistration, resendOtp } = useAuthStore();
 
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -24,6 +24,12 @@ export default function RegisterPage() {
     const [phone, setPhone] = useState<string>('');
     const [password, setPassword] = useState('');
     const [companyName, setCompanyName] = useState('');
+    
+    // OTP verification state
+    const [showOtpForm, setShowOtpForm] = useState(false);
+    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const [resendLoading, setResendLoading] = useState(false);
+    const [countdown, setCountdown] = useState(0);
 
     const getPasswordStrength = (pwd: string) => {
         if (!pwd) return null;
@@ -46,15 +52,25 @@ export default function RegisterPage() {
         e.preventDefault();
         setLoading(true);
         try {
-            await register({
+            const response = await register({
                 name: `${firstName} ${lastName}`.trim(),
                 email,
                 password,
                 role: 'recruiter',
-                phoneNumber: phone,
+                phoneNumber: phone, 
                 companyName,
             });
-            router.push('/onboarding');
+            
+            if (response?.requiresVerification) {
+                setShowOtpForm(true);
+                setCountdown(60);
+                toast({
+                    title: 'OTP Sent',
+                    description: `A verification code has been sent to ${email}`,
+                });
+            } else {
+                router.push('/onboarding');
+            }
         } catch (err) {
             toast({
                 title: 'Registration failed',
@@ -65,6 +81,89 @@ export default function RegisterPage() {
             setLoading(false);
         }
     };
+
+    const handleOtpChange = (index: number, value: string) => {
+        if (value.length > 1) value = value[0];
+        if (!/^\d*$/.test(value)) return;
+        
+        const newOtp = [...otp];
+        newOtp[index] = value;
+        setOtp(newOtp);
+        
+        if (value && index < 5) {
+            const nextInput = document.getElementById(`otp-${index + 1}`);
+            nextInput?.focus();
+        }
+    };
+
+    const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+        if (e.key === 'Backspace' && !otp[index] && index > 0) {
+            const prevInput = document.getElementById(`otp-${index - 1}`);
+            prevInput?.focus();
+        }
+    };
+
+    const handleOtpSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const code = otp.join('');
+        if (code.length !== 6) {
+            toast({
+                title: 'Invalid OTP',
+                description: 'Please enter all 6 digits',
+                variant: 'destructive',
+            });
+            return;
+        }
+        
+        setLoading(true);
+        try {
+            await verifyRegistration(email, code);
+            toast({
+                title: 'Email verified!',
+                description: 'Your account has been created successfully.',
+            });
+            router.push('/onboarding');
+        } catch (err) {
+            toast({
+                title: 'Verification failed',
+                description: err instanceof Error ? err.message : 'Invalid or expired code.',
+                variant: 'destructive',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResendOtp = async () => {
+        if (countdown > 0) return;
+        
+        setResendLoading(true);
+        try {
+            await resendOtp(email, 'register');
+            setCountdown(60);
+            setOtp(['', '', '', '', '', '']);
+            toast({
+                title: 'OTP Resent',
+                description: 'A new verification code has been sent to your email.',
+            });
+        } catch (err) {
+            toast({
+                title: 'Failed to resend',
+                description: err instanceof Error ? err.message : 'Please try again.',
+                variant: 'destructive',
+            });
+        } finally {
+            setResendLoading(false);
+        }
+    };
+
+    // Countdown timer
+    useEffect(() => {
+        if (countdown > 0) {
+            const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [countdown]);
 
     return (
         <div className="min-h-screen flex bg-[#f7f9fc] animate-page-in">
@@ -105,13 +204,14 @@ export default function RegisterPage() {
                         <span className="text-xl font-bold tracking-tight text-slate-900">Intore</span>
                     </div>
 
-                    <RevealOnScroll staggerChildren={0.1} preset="fadeIn">
-                        <RevealChild preset="fadeUp">
-                            <h2 className="text-3xl font-black tracking-tight text-slate-900">Create an account</h2>
-                            <p className="mt-2 text-sm text-slate-500 font-medium">Get started with Intore in seconds</p>
-                        </RevealChild>
+                    {!showOtpForm ? (
+                        <RevealOnScroll staggerChildren={0.1} preset="fadeIn">
+                            <RevealChild preset="fadeUp">
+                                <h2 className="text-3xl font-black tracking-tight text-slate-900">Create an account</h2>
+                                <p className="mt-2 text-sm text-slate-500 font-medium">Get started with Intore in seconds</p>
+                            </RevealChild>
 
-                        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+                            <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
                             {/* Company Name */}
                             <RevealChild preset="fadeUp">
                                 <div className="space-y-2">
@@ -224,6 +324,84 @@ export default function RegisterPage() {
                             </p>
                         </RevealChild>
                     </RevealOnScroll>
+                    ) : (
+                        <RevealOnScroll staggerChildren={0.1} preset="fadeIn">
+                            <RevealChild preset="fadeUp">
+                                <div className="flex items-center justify-center mb-6">
+                                    <div className="w-16 h-16 rounded-full bg-[#4B7BFF]/10 flex items-center justify-center">
+                                        <ShieldCheck className="w-8 h-8 text-[#4B7BFF]" />
+                                    </div>
+                                </div>
+                                <h2 className="text-3xl font-black tracking-tight text-slate-900 text-center">Verify your email</h2>
+                                <p className="mt-2 text-sm text-slate-500 font-medium text-center">
+                                    We've sent a 6-digit code to<br />
+                                    <span className="font-bold text-slate-700">{email}</span>
+                                </p>
+                            </RevealChild>
+
+                            <form className="mt-8 space-y-6" onSubmit={handleOtpSubmit}>
+                                <RevealChild preset="fadeUp">
+                                    <div className="flex gap-2 justify-center">
+                                        {otp.map((digit, index) => (
+                                            <input
+                                                key={index}
+                                                id={`otp-${index}`}
+                                                type="text"
+                                                inputMode="numeric"
+                                                maxLength={1}
+                                                value={digit}
+                                                onChange={(e) => handleOtpChange(index, e.target.value)}
+                                                onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                                                className="w-12 h-14 text-center text-2xl font-bold bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#4B7BFF]/20 focus:border-[#4B7BFF] transition-all"
+                                            />
+                                        ))}
+                                    </div>
+                                </RevealChild>
+
+                                <RevealChild preset="fadeUp">
+                                    <button
+                                        type="submit"
+                                        disabled={loading || otp.join('').length !== 6}
+                                        className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-[#4B7BFF] hover:bg-[#3461DF] focus:outline-none focus:ring-4 focus:ring-[#4B7BFF]/20 transition-all shadow-lg shadow-[#4B7BFF]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {loading ? (
+                                            <><Loader2 className="w-4 h-4 animate-spin" />Verifying...</>
+                                        ) : (
+                                            <>Verify Email<ArrowRight className="w-4 h-4" /></>
+                                        )}
+                                    </button>
+                                </RevealChild>
+
+                                <RevealChild preset="fadeIn">
+                                    <div className="text-center">
+                                        <button
+                                            type="button"
+                                            onClick={handleResendOtp}
+                                            disabled={countdown > 0 || resendLoading}
+                                            className="text-sm font-semibold text-[#2D3DB5] hover:text-[#1E2A8A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {resendLoading ? (
+                                                'Sending...'
+                                            ) : countdown > 0 ? (
+                                                `Resend code in ${countdown}s`
+                                            ) : (
+                                                'Resend code'
+                                            )}
+                                        </button>
+                                    </div>
+                                </RevealChild>
+                            </form>
+
+                            <RevealChild preset="fadeIn">
+                                <button
+                                    onClick={() => setShowOtpForm(false)}
+                                    className="mt-6 text-center w-full text-sm text-slate-500 hover:text-slate-700 font-medium transition-colors"
+                                >
+                                    ← Back to registration
+                                </button>
+                            </RevealChild>
+                        </RevealOnScroll>
+                    )}
                 </div>
             </div>
         </div>

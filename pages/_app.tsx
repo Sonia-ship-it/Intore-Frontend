@@ -3,12 +3,14 @@ import { useRouter } from "next/router";
 import { useEffect, useCallback, useRef } from "react";
 import Lenis from "lenis";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import "@/index.css";
 
 const queryClient = new QueryClient();
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
 export default function NextApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -79,16 +81,18 @@ export default function NextApp({ Component, pageProps }: AppProps) {
   }, [router.asPath, forceScrollTop]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
 
-        {/* Simple CSS animation wrap, solves the complex Framer unmount scroll bug completely */}
-        <div key={router.asPath} className="animate-page-in">
-          <Component {...pageProps} />
-        </div>
-      </TooltipProvider>
-    </QueryClientProvider>
+          {/* Simple CSS animation wrap, solves the complex Framer unmount scroll bug completely */}
+          <div key={router.asPath} className="animate-page-in">
+            <Component {...pageProps} />
+          </div>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </GoogleOAuthProvider>
   );
 }
